@@ -23,6 +23,8 @@ import { EvidenceList } from "@/components/shared/evidence-list";
 import { FileUploader } from "@/components/shared/file-uploader";
 import { ResolutionPanel } from "@/components/shared/resolution-panel";
 import { CaseActionDialog, TONE_TO_BUTTON_VARIANT } from "@/components/shared/case-action-dialog";
+import { DisputePanel } from "@/components/shared/dispute-panel";
+import { disputeActorForRole } from "@/lib/dispute-workflow";
 import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
 import { getCaseByTicket, formatCurrency, CASE_TASKS } from "@/lib/mock-data";
@@ -257,8 +259,9 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
         <CaseStatusExplanation complaintCase={c} viewer="internal" actions={isInternal ? bannerActions : undefined} />
       </div>
 
-      <Tabs defaultValue="ringkasan">
+      <Tabs defaultValue={c.dispute ? "perselisihan" : "ringkasan"}>
         <TabsList>
+          {c.dispute && <TabsTrigger value="perselisihan">Penyelesaian Perselisihan</TabsTrigger>}
           <TabsTrigger value="ringkasan">Ringkasan Pengaduan</TabsTrigger>
           <TabsTrigger value="bukti">Bukti</TabsTrigger>
           <TabsTrigger value="respons">Respon ke Public</TabsTrigger>
@@ -267,6 +270,16 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
           <TabsTrigger value="resolusi">Resolusi</TabsTrigger>
           {isInternal && <TabsTrigger value="kronologi">Kronologi Kasus</TabsTrigger>}
         </TabsList>
+
+        {c.dispute && (
+          <TabsContent value="perselisihan">
+            <DisputePanel
+              complaintCase={c}
+              actor={viewerGroup === "EkosistemPengawas" ? null : disputeActorForRole(user.role)}
+              actorName={user.name}
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="ringkasan">
           <Card>

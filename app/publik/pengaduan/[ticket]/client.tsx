@@ -16,18 +16,20 @@ import { EvidenceList } from "@/components/shared/evidence-list";
 import { FileUploader } from "@/components/shared/file-uploader";
 import { ResolutionPanel } from "@/components/shared/resolution-panel";
 import { PrototypeNotice } from "@/components/shared/prototype-notice";
+import { DisputePanel } from "@/components/shared/dispute-panel";
+import { getDisputeActionOwner } from "@/lib/dispute-workflow";
 import { useToast } from "@/components/shared/toast-provider";
 import { getCaseByTicket } from "@/lib/mock-data";
 import { formatCurrencyIDR } from "@/lib/format";
 import { useCaseData, addClarificationReply, respondToResolution, addEvidence } from "@/lib/mock-service/store";
-import { Printer, Info, Activity, MessageSquare, Paperclip, FileCheck2 } from "lucide-react";
+import { Printer, Info, Activity, MessageSquare, Paperclip, FileCheck2, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
   const base = getCaseByTicket(ticket);
   const c = useCaseData(base);
   const { showToast } = useToast();
-  const [tab, setTab] = useState("ringkasan");
+  const [tab, setTab] = useState(c?.dispute ? "perselisihan" : "ringkasan");
   const [newEvidenceFiles, setNewEvidenceFiles] = useState<string[]>([]);
 
   if (!c) {
@@ -53,6 +55,7 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
 
   const publicTimeline = c.timeline.filter((e) => e.visibility !== "internal");
   const solusiActionRequired = !!c.resolution && !c.resolution.reporterDecision;
+  const disputeActionRequired = !!c.dispute && getDisputeActionOwner(c.dispute) === "Nasabah";
 
   return (
     <div>
@@ -94,6 +97,14 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
         <div className="lg:col-span-2">
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
+              {c.dispute && (
+                <TabsTrigger value="perselisihan" className={cn(disputeActionRequired && "data-[state=inactive]:text-amber")}>
+                  <Scale className="size-3.5" /> Penyelesaian Perselisihan
+                  {disputeActionRequired && (
+                    <span className="ml-0.5 inline-flex size-1.5 rounded-full bg-amber" aria-label="Tindakan diperlukan" />
+                  )}
+                </TabsTrigger>
+              )}
               <TabsTrigger value="ringkasan">
                 <Info className="size-3.5" /> Ringkasan Pengaduan
               </TabsTrigger>
@@ -113,6 +124,12 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
                 <Activity className="size-3.5" /> Perkembangan
               </TabsTrigger>
             </TabsList>
+
+            {c.dispute && (
+              <TabsContent value="perselisihan">
+                <DisputePanel complaintCase={c} actor="Nasabah" actorName={c.reporterName} />
+              </TabsContent>
+            )}
 
             <TabsContent value="ringkasan">
               <Card>

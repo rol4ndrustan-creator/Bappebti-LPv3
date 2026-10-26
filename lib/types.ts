@@ -70,7 +70,16 @@ export type PublicStatus =
   | "Selesai"
   | "Ditutup Secara Administratif"
   | "Dialihkan ke Instansi Lain"
-  | "Di Luar Kewenangan";
+  | "Di Luar Kewenangan"
+  // Mekanisme Penanganan Perselisihan Nasabah PBK
+  | "Verifikasi Bappebti"
+  | "Perbaikan Berkas"
+  | "Ditolak"
+  | "Musyawarah dengan Pialang"
+  | "Mediasi di Bursa"
+  | "Penyampaian Kesepakatan"
+  | "Pilihan Pengadilan/BAKTI"
+  | "Diteruskan ke Pengadilan/BAKTI";
 
 /** Internal workflow state driving routing, SLA clocks and permitted transitions. */
 export type InternalWorkflowState =
@@ -141,7 +150,16 @@ export type SlaClockType =
   | "Review Bappebti"
   | "Klarifikasi Pelapor"
   | "Implementasi Resolusi"
-  | "Usia Kasus Keseluruhan";
+  | "Usia Kasus Keseluruhan"
+  // Mekanisme Penanganan Perselisihan Nasabah PBK
+  | "Verifikasi Materiil & Formil Bappebti"
+  | "Klarifikasi Pialang Berjangka"
+  | "Perbaikan Berkas Formil"
+  | "Musyawarah Pialang"
+  | "Mediasi Bursa"
+  | "Laporan Hasil Mediasi ke Bappebti"
+  | "Penyampaian Dokumen Kesepakatan"
+  | "Pemilihan Pengadilan/BAKTI";
 
 export type SlaClockStatus = "Aman" | "Perlu Perhatian" | "Mendekati Batas Waktu" | "Lewat Batas Waktu" | "Dijeda" | "Selesai";
 
@@ -290,6 +308,85 @@ export interface ComplaintCase {
   platformPic?: string;
   /** Ecosystem institutions (Bursa/Kliring/Custody) linked to this ticket via the Manajemen Pengaduan "Hubungkan Member" modal — a ticket may be linked to more than one. */
   linkedEcosystemEntities?: LinkedEcosystemEntity[];
+
+  /** Proses penyelesaian perselisihan nasabah PBK (lihat lib/dispute-workflow.ts). */
+  dispute?: DisputeRecord;
+}
+
+// ---------------------------------------------------------------------------
+// Mekanisme Penanganan Perselisihan Nasabah PBK
+// Nasabah → pengaduan online + unggah berkas → verifikasi paralel (Bappebti
+// materiil & formil 2 HK ∥ klarifikasi Pialang 1 HK) → disposisi ke Pialang →
+// Musyawarah (21 HK + perpanjangan maks. 14 hari) → Mediasi Bursa (21 HK +
+// perpanjangan maks. 14 hari) → lapor ke Bappebti (1 HK) → kesepakatan
+// (dokumen kesepakatan / akta perdamaian) atau Pengadilan/BAKTI.
+// ---------------------------------------------------------------------------
+
+export type DisputeStage =
+  | "VERIFIKASI"
+  | "PERBAIKAN_FORMIL"
+  | "DITOLAK_MATERIIL"
+  | "MUSYAWARAH"
+  | "MEDIASI_BURSA"
+  | "LAPOR_HASIL_MEDIASI"
+  | "PENYAMPAIAN_KESEPAKATAN"
+  | "PILIHAN_PENYELESAIAN"
+  | "PENGADILAN_BAKTI"
+  | "SELESAI";
+
+export type RequirementResult = "Terpenuhi" | "Tidak Terpenuhi";
+
+export type AgreementDocumentType = "Dokumen Kesepakatan" | "Akta Perdamaian";
+
+export interface DisputeRecord {
+  stage: DisputeStage;
+  /** Waktu pengaduan online & unggah berkas diterima sistem — awal verifikasi paralel. */
+  submittedAt: string;
+  bappebtiVerification: {
+    materiil?: RequirementResult;
+    formil?: RequirementResult;
+    verifiedAt?: string;
+    verifiedBy?: string;
+    note?: string;
+  };
+  pialangClarification: {
+    respondedAt?: string;
+    respondedBy?: string;
+    /** Hasil klarifikasi Pialang, mis. daluarsa, informasi kontrak, dll. */
+    note?: string;
+  };
+  formilReturnedAt?: string;
+  formilCorrectedAt?: string;
+  dispositionAt?: string;
+  musyawarah?: {
+    startedAt: string;
+    extendedDays?: number;
+    endedAt?: string;
+    outcome?: "Tercapai" | "Tidak Tercapai";
+  };
+  mediasi?: {
+    startedAt: string;
+    extendedDays?: number;
+    endedAt?: string;
+    outcome?: "Sepakat" | "Tidak Sepakat";
+    reportedAt?: string;
+  };
+  agreement?: {
+    forum: "Musyawarah" | "Mediasi";
+    value: number;
+    documentType: AgreementDocumentType;
+    /** Pihak yang wajib menyampaikan dokumen ke Bappebti: Pialang (musyawarah) atau Bursa (mediasi). */
+    submitter: string;
+    documentName?: string;
+    submittedAt?: string;
+  };
+  forumChoice?: {
+    /** Bursa menjelaskan pilihan sarana penyelesaian; tenggat 20 HK dihitung dari sini. */
+    explainedAt: string;
+    choice?: "BAKTI" | "Pengadilan";
+    chosenAt?: string;
+  };
+  closedAt?: string;
 }
 
 /** One Bursa/Kliring/Custody institution linked to a complaint ticket (List Revisi 4 — Kolom Member). */

@@ -14,6 +14,7 @@ import {
   CaseStatus,
   ClarificationMessage,
   ComplaintCase,
+  DisputeRecord,
   EscalationLevel,
   InternalNote,
   InternalWorkflowState,
@@ -29,6 +30,7 @@ import {
 import { nowDateTimeID } from "../format";
 import { getInstitution } from "../workflow-config";
 import { getCaseByTicket } from "../mock-data";
+import { DISPUTE_STAGES, DisputeActionInput, applyDisputeAction, getDisputeOwner } from "../dispute-workflow";
 import { subscribe, emitChange, getVersion } from "./event-bus";
 
 const STORAGE_KEY = "bappebti-demo-overrides";
@@ -54,6 +56,7 @@ interface CaseOverride {
   platformPicOverride?: string;
   evidenceAdditions?: string[];
   linkedEcosystemEntitiesOverride?: LinkedEcosystemEntity[];
+  disputeOverride?: DisputeRecord;
 }
 
 /** Same fallback formula as getInstitution() in workflow-config.ts, kept in sync so a live owner/severity change is reflected immediately even on cases whose institution structure was pre-authored in the seed data. */
@@ -113,6 +116,7 @@ export function getMergedCase(base: ComplaintCase | undefined): ComplaintCase | 
     platformPic: o.platformPicOverride ?? base.platformPic,
     evidences: [...base.evidences, ...(o.evidenceAdditions ?? [])],
     linkedEcosystemEntities: o.linkedEcosystemEntitiesOverride ?? base.linkedEcosystemEntities ?? [],
+    dispute: o.disputeOverride ?? base.dispute,
     institution:
       o.caseOfficerOverride || o.escalationLevelOverride !== undefined
         ? {
@@ -286,6 +290,37 @@ export function reopenCase(ticket: string, reason: string, actor = "Bappebti") {
       action: "Kasus dibuka kembali",
       note: reason,
       status: "warning",
+      visibility: "public",
+    });
+  });
+}
+
+/**
+ * Menjalankan satu langkah Mekanisme Penanganan Perselisihan Nasabah PBK:
+ * memperbarui catatan perselisihan, pemilik tindakan, status publik, dan
+ * mencatat langkah tersebut pada kronologi kasus.
+ */
+export function runDisputeAction(ticket: string, input: DisputeActionInput, actorRole: string) {
+  const base = getMergedCase(getCaseByTicket(ticket));
+  if (!base?.dispute) return;
+  const bursaName = base.institution?.bursa ?? base.bursaEntity;
+  const result = applyDisputeAction(base.dispute, input, base.platform, bursaName);
+  const stage = DISPUTE_STAGES[result.next.stage];
+  mutate(ticket, (o) => {
+    o.disputeOverride = result.next;
+    o.currentOwnerOverride = getDisputeOwner(result.next);
+    o.publicStatusOverride = stage.publicLabel;
+    if (result.next.stage === "SELESAI" || result.next.stage === "PENGADILAN_BAKTI") o.statusOverride = "Selesai";
+    else if (result.next.stage === "DITOLAK_MATERIIL") o.statusOverride = "Ditolak";
+    else if (result.next.stage === "PERBAIKAN_FORMIL" || result.next.stage === "PILIHAN_PENYELESAIAN") o.statusOverride = "Menunggu Klarifikasi";
+    else o.statusOverride = "Diproses";
+    o.timelineAdditions.push({
+      datetime: nowDateTimeID(),
+      actor: input.actor,
+      role: actorRole,
+      action: result.timelineAction,
+      note: result.timelineNote,
+      status: result.tone,
       visibility: "public",
     });
   });

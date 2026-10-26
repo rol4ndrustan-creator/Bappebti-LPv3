@@ -1,3 +1,35 @@
+# Bappebti LPv3 — Layanan Pengaduan
+
+LPv3 is a copy of Bappebti-LPv2 (branch `claude/bappebti-review-redesign`). It adds the
+**Mekanisme Penanganan Perselisihan Nasabah PBK** (the Bappebti dispute-handling flowchart).
+
+## Mekanisme Penanganan Perselisihan Nasabah PBK
+
+| Tahap | Pihak | Tenggat |
+|---|---|---|
+| Pengaduan online + unggah berkas → diteruskan otomatis | Sistem | – |
+| Verifikasi materiil & formil | Bappebti | 2 hari kerja |
+| Klarifikasi (paralel); bila tidak ada → dianggap menyetujui | Pialang | 1 hari kerja |
+| Materiil tidak terpenuhi → ditolak & ditutup | Bappebti | – |
+| Formil tidak terpenuhi → dikembalikan untuk perbaikan | Nasabah | 2 hari kerja |
+| Disposisi → Musyawarah | Pialang | 21 hari kerja (+ maks. 14 hari) |
+| Mediasi (jika musyawarah gagal) | Bursa | 21 hari kerja (+ maks. 14 hari) |
+| Lapor hasil mediasi | Bursa → Bappebti | 1 hari kerja |
+| Kesepakatan: < Rp100 juta dokumen kesepakatan, ≥ Rp100 juta akta perdamaian | Pialang / Bursa | – |
+| Tidak sepakat → Pengadilan / BAKTI | Nasabah | BAKTI ≤ 20 hari kerja |
+
+- Rules & transitions: `lib/dispute-workflow.ts` (`DISPUTE_RULES`)
+- Business-day calendar: `lib/business-days.ts` (add yearly moveable holidays / cuti bersama to `HOLIDAYS_BY_DATE`)
+- Demo data per stage: `lib/dispute-seed.ts`
+- UI: tab **Penyelesaian Perselisihan** on every case detail (Bappebti, Platform, Ekosistem, Publik);
+  queues at `/bappebti/pengaduan/perselisihan`, `/platform/musyawarah`, `/ekosistem/active/mediasi`;
+  public explainer at `/publik/alur-penyelesaian`.
+
+Assumptions (flowchart is ambiguous): exactly Rp100.000.000 is treated as *akta perdamaian*;
+the "maks. 14 hari" extension is counted in calendar days.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

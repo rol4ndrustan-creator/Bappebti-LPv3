@@ -13,6 +13,15 @@ import {
 } from "./types";
 import { Role } from "./permissions";
 import { getActionOwnerLabel } from "./format";
+import { formatMockDateTime } from "./clarification-workflow";
+import {
+  DISPUTE_STAGES,
+  describeRemaining,
+  getDisputeActionOwner,
+  getDisputeDeadlines,
+  getDisputeProgress,
+  getDisputeSlaClocks,
+} from "./dispute-workflow";
 
 export type BadgeTone = "navy" | "amber" | "red" | "green" | "muted";
 
@@ -462,6 +471,7 @@ export function deriveWorkflowState(c: ComplaintCase): InternalWorkflowState {
 }
 
 export function getPublicStatus(c: ComplaintCase): PublicStatus {
+  if (c.dispute) return DISPUTE_STAGES[c.dispute.stage].publicLabel;
   if (c.publicStatus) return c.publicStatus;
   return WORKFLOW_STATES[deriveWorkflowState(c)].publicLabel;
 }
@@ -490,6 +500,7 @@ export function getInstitution(c: ComplaintCase): InstitutionStructure {
 
 /** Derives a minimal but real SLA clock set for cases authored before the multi-clock model existed. */
 export function getSlaClocks(c: ComplaintCase): SlaClock[] {
+  if (c.dispute) return getDisputeSlaClocks(c.dispute);
   if (c.slaClocks) return c.slaClocks;
   const status: SlaClockStatus =
     c.slaStatus === "Aman" ? "Aman" : c.slaStatus === "Mendekati SLA" ? "Mendekati Batas Waktu" : "Lewat Batas Waktu";
@@ -534,7 +545,46 @@ export interface StatusExplanation {
   actionRequiredFromViewer: boolean;
 }
 
+const DISPUTE_ACTOR_LABEL = {
+  Nasabah: "Anda (Nasabah)",
+  Bappebti: "Bappebti",
+  Pialang: "Pialang Berjangka",
+  Bursa: "Bursa Berjangka",
+} as const;
+
+function getDisputeStatusExplanation(c: ComplaintCase, viewer: "public" | "internal"): StatusExplanation {
+  const d = c.dispute!;
+  const stage = DISPUTE_STAGES[d.stage];
+  const actor = getDisputeActionOwner(d);
+  const actorName =
+    actor === "Pialang" ? `${DISPUTE_ACTOR_LABEL.Pialang} (${c.platform})`
+    : actor === "Bursa" ? `${DISPUTE_ACTOR_LABEL.Bursa} (${c.institution?.bursa ?? c.bursaEntity})`
+    : actor === "Nasabah" ? (viewer === "public" ? DISPUTE_ACTOR_LABEL.Nasabah : `Nasabah (${c.reporterName})`)
+    : actor ? DISPUTE_ACTOR_LABEL[actor] : "-";
+  const deadlines = getDisputeDeadlines(d).filter((x) => !x.done);
+  const primary = deadlines[0];
+  const deadline = primary
+    ? `${primary.type}: paling lambat ${formatMockDateTime(primary.deadline)} WIB (${primary.ruleLabel}; ${describeRemaining(primary.deadline)}).`
+    : stage.isOpen ? "Belum ada batas waktu yang berjalan." : "Proses telah berakhir.";
+  const actionRequiredFromViewer = viewer === "public" ? actor === "Nasabah" : !!actor && actor !== "Nasabah";
+  return {
+    what: `${stage.label}: ${stage.description}`,
+    who: stage.isOpen ? `Pihak yang wajib bertindak: ${actorName}.` : "Tidak ada pihak yang wajib bertindak.",
+    action:
+      viewer === "public"
+        ? actor === "Nasabah"
+          ? "Tindakan Anda diperlukan — lihat tab Penyelesaian Perselisihan."
+          : "Tidak ada tindakan yang diperlukan dari Anda saat ini."
+        : stage.isOpen
+          ? "Ikuti langkah pada tab Penyelesaian Perselisihan sesuai Mekanisme Penanganan Perselisihan Nasabah PBK."
+          : "Tidak ada tindakan lanjutan.",
+    deadline,
+    actionRequiredFromViewer,
+  };
+}
+
 export function getStatusExplanation(c: ComplaintCase, viewer: "public" | "internal" = "public"): StatusExplanation {
+  if (c.dispute) return getDisputeStatusExplanation(c, viewer);
   const state = WORKFLOW_STATES[deriveWorkflowState(c)];
   const ownerLabel = getActionOwnerLabel(c.currentOwner);
   const deadline = c.slaDeadline ? `Pembaruan berikutnya diharapkan paling lambat ${c.slaDeadline} WIB.` : "Belum ada batas waktu yang ditetapkan.";
@@ -568,6 +618,11 @@ export function getStatusExplanation(c: ComplaintCase, viewer: "public" | "inter
 }
 
 export function getNextRequiredAction(c: ComplaintCase): { owner: string; action: string; dueDate: string } {
+  if (c.dispute) {
+    const ex = getDisputeStatusExplanation(c, "internal");
+    const dl = getDisputeDeadlines(c.dispute).find((x) => !x.done);
+    return { owner: ex.who, action: DISPUTE_STAGES[c.dispute.stage].description, dueDate: dl ? formatMockDateTime(dl.deadline) : "-" };
+  }
   const state = WORKFLOW_STATES[deriveWorkflowState(c)];
   return {
     owner: getActionOwnerLabel(c.currentOwner),
@@ -622,6 +677,14 @@ export interface CaseProgress {
 }
 
 export function getCaseProgress(c: ComplaintCase): CaseProgress {
+  if (c.dispute) {
+    const steps = getDisputeProgress(c.dispute);
+    return {
+      stageIndex: steps.findIndex((s) => s.status === "current"),
+      // "skipped" (mis. tahap mediasi saat musyawarah sudah tercapai) ditampilkan sebagai selesai/terlewati.
+      stages: steps.map((s) => ({ label: s.label, status: s.status === "skipped" ? "done" : s.status })),
+    };
+  }
   const state = deriveWorkflowState(c);
   const idx = STATE_TO_STAGE_INDEX[state];
   return {

@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     output: "export",
-    basePath: "/Bappebti-LPv2",
-    assetPrefix: "/Bappebti-LPv2",
+    basePath: "/Bappebti-LPv3",
+    assetPrefix: "/Bappebti-LPv3",
     images: {
           unoptimized: true,
     },

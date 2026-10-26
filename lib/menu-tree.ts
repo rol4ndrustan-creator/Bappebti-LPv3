@@ -32,6 +32,7 @@ export const MENU_TREE: MenuTreeItem[] = [
     matchPrefixes: ["/bappebti/kasus"],
     children: [
       { key: "pengaduan.semua", label: "Semua Pengaduan", href: "/bappebti/antrean", iconName: "" },
+      { key: "pengaduan.perselisihan", label: "Perselisihan Nasabah PBK", href: "/bappebti/pengaduan/perselisihan", iconName: "" },
       { key: "pengaduan.bappebti", label: "Penanganan Bappebti", href: "/bappebti/pengaduan/penanganan-bappebti", iconName: "" },
       { key: "pengaduan.tanpa-platform", label: "Tanpa ID Platform", href: "/bappebti/pengaduan/tanpa-platform", iconName: "" },
       { key: "pengaduan.menunggu-konfirmasi", label: "Menunggu Konfirmasi Pelapor", href: "/bappebti/pengaduan/menunggu-konfirmasi", iconName: "" },

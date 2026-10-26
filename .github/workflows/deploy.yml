@@ -3,10 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - claude/peaceful-feynman-7oxt1n
-      - claude/bappebti-complaint-platform-r86iya
-      - claude/pengajuan-form-fields-nbb4bm
-      - claude/bappebti-review-redesign
+      - main
   workflow_dispatch:
 
 permissions:

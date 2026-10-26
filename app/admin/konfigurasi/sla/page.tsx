@@ -14,7 +14,20 @@ import { SLA_HISTORY, CONFIG_CHANGE_REQUESTS } from "@/lib/mock-data";
 import { useSlaHistory } from "@/lib/mock-service/sla-store";
 import { requestConfigChange, useConfigChangeRequests } from "@/lib/mock-service/config-approval-store";
 import { useToast } from "@/components/shared/toast-provider";
+import { DISPUTE_RULES } from "@/lib/dispute-workflow";
+import { formatCurrencyIDR } from "@/lib/format";
 import { Clock3, Pencil } from "lucide-react";
+
+const DISPUTE_SLA_ROWS: { tahap: string; pihak: string; tenggat: string; akibat: string }[] = [
+  { tahap: "Verifikasi materiil & formil", pihak: "Bappebti", tenggat: `${DISPUTE_RULES.bappebtiVerificationBusinessDays} hari kerja`, akibat: "Materiil tidak terpenuhi → ditolak & ditutup; formil tidak terpenuhi → dikembalikan" },
+  { tahap: "Klarifikasi pengaduan", pihak: "Pialang Berjangka", tenggat: `${DISPUTE_RULES.pialangClarificationBusinessDays} hari kerja`, akibat: "Lewat tanpa klarifikasi → Pialang dianggap menyetujui pengaduan" },
+  { tahap: "Perbaikan berkas formil", pihak: "Nasabah", tenggat: `${DISPUTE_RULES.formilCorrectionBusinessDays} hari kerja sejak dikembalikan`, akibat: "Diverifikasi ulang oleh Bappebti" },
+  { tahap: "Musyawarah", pihak: "Pialang Berjangka", tenggat: `${DISPUTE_RULES.musyawarahBusinessDays} hari kerja (+ maks. ${DISPUTE_RULES.maxExtensionCalendarDays} hari)`, akibat: "Tidak tercapai → Mediasi Bursa" },
+  { tahap: "Mediasi", pihak: "Bursa Berjangka", tenggat: `${DISPUTE_RULES.mediasiBusinessDays} hari kerja (+ maks. ${DISPUTE_RULES.maxExtensionCalendarDays} hari)`, akibat: "Hasil dilaporkan ke Bappebti" },
+  { tahap: "Lapor hasil mediasi", pihak: "Bursa Berjangka", tenggat: `${DISPUTE_RULES.mediasiReportBusinessDays} hari kerja`, akibat: "Sepakat → dokumen ke Bappebti; tidak sepakat → Pengadilan/BAKTI" },
+  { tahap: "Pemilihan BAKTI", pihak: "Nasabah", tenggat: `${DISPUTE_RULES.forumChoiceBusinessDays} hari kerja`, akibat: "Penyelesaian melalui BAKTI atau Pengadilan" },
+  { tahap: "Dokumen kesepakatan", pihak: "Pialang / Bursa", tenggat: "-", akibat: `< ${formatCurrencyIDR(DISPUTE_RULES.agreementValueThreshold)} dokumen kesepakatan; ≥ ${formatCurrencyIDR(DISPUTE_RULES.agreementValueThreshold)} akta perdamaian` },
+];
 
 export default function SlaManagementPage() {
   const history = useSlaHistory(SLA_HISTORY);
@@ -79,6 +92,31 @@ export default function SlaManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      <h2 className="text-sm font-semibold text-navy mt-6 mb-1">Tenggat Mekanisme Penanganan Perselisihan Nasabah PBK</h2>
+      <p className="text-[11px] text-muted mb-2">
+        Ditetapkan oleh mekanisme Bappebti (bukan SLA global di atas) dan dihitung dalam hari kerja. Nilai dikelola di lib/dispute-workflow.ts.
+      </p>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Tahap</TableHead>
+            <TableHead>Pihak</TableHead>
+            <TableHead>Tenggat</TableHead>
+            <TableHead>Akibat / Lanjutan</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {DISPUTE_SLA_ROWS.map((r) => (
+            <TableRow key={r.tahap}>
+              <TableCell className="font-medium whitespace-nowrap">{r.tahap}</TableCell>
+              <TableCell className="whitespace-nowrap">{r.pihak}</TableCell>
+              <TableCell className="whitespace-nowrap">{r.tenggat}</TableCell>
+              <TableCell className="text-muted">{r.akibat}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
       <h2 className="text-sm font-semibold text-navy mt-6 mb-2">Riwayat Perubahan SLA</h2>
       <Table>
