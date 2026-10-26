@@ -2,6 +2,7 @@ import * as React from "react";
 import { ComplaintCase } from "@/lib/types";
 import { getStatusExplanation } from "@/lib/workflow-config";
 import { CaseStatusBadge } from "./case-status-badge";
+import { SourceBadge } from "./source-badge";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,20 +45,30 @@ export function CaseStatusExplanation({
         {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
       </div>
       <p className="text-sm text-foreground leading-relaxed">{ex.what}</p>
-      <dl className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
-        <div>
-          <dt className="text-muted">Siapa yang menangani</dt>
-          <dd className="font-medium text-foreground">{ex.who}</dd>
-        </div>
-        <div>
-          <dt className="text-muted">Tindakan yang diperlukan</dt>
-          <dd className="font-medium text-foreground">{ex.action}</dd>
-        </div>
-        <div className="sm:col-span-2">
-          <dt className="text-muted">Batas waktu</dt>
-          <dd className="font-medium text-foreground">{ex.deadline}</dd>
-        </div>
-      </dl>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
+        <dl className="space-y-2">
+          <div>
+            <dt className="text-muted">Siapa yang menangani</dt>
+            <dd className="font-medium text-foreground">{ex.who}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Batas waktu</dt>
+            <dd className="font-medium text-foreground">{ex.deadline}</dd>
+          </div>
+        </dl>
+        <dl className="space-y-2">
+          <div>
+            <dt className="text-muted">Tindakan yang diperlukan</dt>
+            <dd className="font-medium text-foreground">{ex.action}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Sumber Pengaduan</dt>
+            <dd className="mt-0.5">
+              <SourceBadge source={complaintCase.source} withDescription />
+            </dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }

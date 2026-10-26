@@ -1,10 +1,9 @@
 import { PortalShell, SidebarItem } from "@/components/layout/portal-shell";
-import { LayoutDashboard, Landmark, FileSearch, FileCheck2, MessageCircle, FileBarChart } from "lucide-react";
+import { Landmark, FileSearch, FileCheck2, MessageCircle, FileBarChart } from "lucide-react";
 
 const iconCls = "size-4 shrink-0";
 
 const sidebarItems: SidebarItem[] = [
-  { label: "Dashboard Kliring", href: "/ekosistem/kliring", icon: <LayoutDashboard className={iconCls} /> },
   { label: "Settlement Queue", href: "/ekosistem/kliring/settlement-queue", icon: <Landmark className={iconCls} /> },
   { label: "Reconciliation Review", href: "/ekosistem/kliring/reconciliation-review", icon: <FileSearch className={iconCls} /> },
   { label: "Settlement Evidence", href: "/ekosistem/kliring/settlement-evidence", icon: <FileCheck2 className={iconCls} /> },

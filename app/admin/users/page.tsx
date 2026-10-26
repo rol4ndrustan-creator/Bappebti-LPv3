@@ -35,7 +35,7 @@ const cell = "py-1.5";
 
 export default function UserManagementPage() {
   const users = useAdminUsers(ADMIN_USERS);
-  const roles = useRoles(ROLE_DEFINITIONS);
+  const roles = useRoles(ROLE_DEFINITIONS).filter((r) => !r.portal);
   const { showToast } = useToast();
 
   const [search, setSearch] = React.useState("");

@@ -315,6 +315,64 @@ export interface ComplaintCase {
 
   /** Proses penyelesaian perselisihan nasabah PBK (lihat lib/dispute-workflow.ts). */
   dispute?: DisputeRecord;
+  /** Kanal asal pengaduan: kanal resmi Bappebti atau kanal internal Pialang (default Bappebti). */
+  source?: ComplaintSource;
+}
+
+export type ComplaintSource = "Bappebti" | "Platform";
+
+// ---------------------------------------------------------------------------
+// Pertemuan Musyawarah (List Revisi 11)
+// ---------------------------------------------------------------------------
+
+export type MeetingLocationType = "Tautan Video Conference" | "Kantor Fisik Bappebti" | "Kantor Pialang";
+export type MeetingProposerRole = "Bappebti" | "Platform" | "Bursa" | "Kliring" | "Custody";
+export type MeetingStatus = "Dijadwalkan" | "Berlangsung" | "Selesai" | "Lanjut Musyawarah Berikutnya";
+export type MeetingDecision = "Selesai (Damai / Kesepakatan Tercapai)" | "Diundang ke Musyawarah Berikutnya";
+export type AttendanceStatus = "Hadir" | "Tidak Hadir";
+
+export interface MusyawarahMeeting {
+  id: string;
+  ticket: string;
+  title: string;
+  /** yyyy-mm-dd */
+  date: string;
+  /** HH:mm (WIB) */
+  startTime: string;
+  endTime: string;
+  locationType: MeetingLocationType;
+  /** Tautan meeting atau alamat kantor. */
+  locationDetail: string;
+  agenda: string;
+  proposedBy: { name: string; institution: string; role: MeetingProposerRole };
+  createdAt: string;
+  outcome?: {
+    decision: MeetingDecision;
+    notula: string;
+    reporterAttendance: AttendanceStatus;
+    respondentAttendance: AttendanceStatus;
+    recordedBy: string;
+    recordedAt: string;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Audit Log operasional (List Revisi 11)
+// ---------------------------------------------------------------------------
+
+export type AuditPortal = "Bappebti" | "Platform" | "EkosistemActive" | "EkosistemPengawas" | "Publik" | "Sistem";
+
+export interface OperationalAuditEvent {
+  id: string;
+  /** ISO timestamp; ditampilkan dalam WIB. */
+  timestamp: string;
+  userName: string;
+  institution: string;
+  roleLabel: string;
+  portal: AuditPortal;
+  activity: string;
+  ticket?: string;
+  detail: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -511,6 +569,8 @@ export interface ApprovalRequest {
 
 export interface RoleDefinition {
   id: string;
+  /** Portal pemilik role; kosong = role portal Bappebti/Admin. */
+  portal?: "Platform" | "EkosistemActive" | "EkosistemPengawas";
   name: string;
   description?: string;
   /** Keys referencing MenuTreeItem.key in lib/menu-tree.ts — at least one required. */

@@ -18,6 +18,7 @@ import {
   Route,
   Settings2,
   History,
+  Handshake,
 } from "lucide-react";
 import { MENU_TREE } from "@/lib/menu-tree";
 import { SidebarItem } from "./portal-shell";
@@ -37,6 +38,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Route,
   Settings2,
   History,
+  Handshake,
 };
 
 const iconCls = "size-4 shrink-0";

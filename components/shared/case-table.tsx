@@ -3,6 +3,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { SeverityBadge, StatusBadge, OwnerBadge, SlaBadge } from "@/components/shared/badges";
 import { ComplaintCase } from "@/lib/types";
 import { ArrowRight } from "lucide-react";
+import { SourceBadge } from "@/components/shared/source-badge";
 
 /** Shared case list table used across every Manajemen Pengaduan view — every row always links to the full case detail page. */
 export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
@@ -11,6 +12,7 @@ export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
       <TableHeader>
         <TableRow>
           <TableHead>Tiket</TableHead>
+            <TableHead>Sumber Pengaduan</TableHead>
           <TableHead>Pengaduan</TableHead>
           <TableHead>Nama Pelapor</TableHead>
           <TableHead>Email Pelapor</TableHead>
@@ -27,6 +29,9 @@ export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
         {cases.map((c) => (
           <TableRow key={c.ticket}>
             <TableCell className="font-medium text-navy whitespace-nowrap">{c.ticket}</TableCell>
+              <TableCell>
+                <SourceBadge source={c.source} />
+              </TableCell>
             <TableCell className="max-w-[240px] truncate">{c.title}</TableCell>
             <TableCell className="whitespace-nowrap">{c.reporterName}</TableCell>
             <TableCell className="text-muted whitespace-nowrap">{c.reporter?.verifiedEmail ?? "-"}</TableCell>
@@ -56,7 +61,7 @@ export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
         ))}
         {cases.length === 0 && (
           <TableRow>
-            <TableCell colSpan={11} className="text-center text-muted py-6">
+            <TableCell colSpan={12} className="text-center text-muted py-6">
               Tidak ada kasus pada kategori ini.
             </TableCell>
           </TableRow>

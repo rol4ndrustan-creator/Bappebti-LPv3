@@ -39,6 +39,7 @@ export const MENU_TREE: MenuTreeItem[] = [
       { key: "pengaduan.selesai-otomatis", label: "Ditutup Otomatis", href: "/bappebti/pengaduan/selesai-otomatis", iconName: "" },
     ],
   },
+  { key: "musyawarah", label: "Musyawarah", href: "/bappebti/musyawarah", iconName: "Handshake" },
   { key: "risiko", label: "Pemantauan Risiko", href: "/bappebti/risiko", iconName: "ShieldAlert" },
   { key: "kinerja", label: "Kinerja Anggota", href: "/bappebti/kinerja-anggota", iconName: "Users" },
   {

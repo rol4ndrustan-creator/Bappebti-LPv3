@@ -11,6 +11,7 @@
 import * as React from "react";
 import { CaseTask, CaseTaskStatus } from "../types";
 import { subscribe, emitChange, getVersion } from "./event-bus";
+import { logAudit } from "./audit-store";
 import { nowDateTimeID } from "../format";
 
 const ADDED_KEY = "bappebti-demo-added-tasks";
@@ -48,10 +49,22 @@ export function addTask(input: Omit<CaseTask, "id" | "createdAt" | "status"> & {
     createdAt: nowDateTimeID(),
   };
   writeJSON(ADDED_KEY, [...readJSON<CaseTask[]>(ADDED_KEY, []), task]);
+  logAudit({ activity: "Buat Tugas", ticket: task.ticket, detail: `Membuat tugas '${task.description}' untuk ${task.assignee}.` });
   return task;
 }
 
-export function updateTaskStatus(id: string, status: CaseTaskStatus) {
+export function updateTaskStatus(
+  id: string,
+  status: CaseTaskStatus,
+  audit?: { ticket: string; from: CaseTaskStatus; description: string }
+) {
+  if (audit && audit.from !== status) {
+    logAudit({
+      activity: "Ubah Status Tugas",
+      ticket: audit.ticket,
+      detail: `Memperbarui status tugas '${audit.description}' dari '${audit.from}' menjadi '${status}'.`,
+    });
+  }
   const map = readJSON<Record<string, CaseTaskStatus>>(STATUS_KEY, {});
   map[id] = status;
   writeJSON(STATUS_KEY, map);

@@ -12,6 +12,7 @@ import { CASES, formatCurrency } from "@/lib/mock-data";
 import { useCasesData } from "@/lib/mock-service/store";
 import { useEkosistemActiveRole } from "@/lib/ekosistem-active-role";
 import { useQueryParamState, useCurrentPathWithQuery } from "@/lib/use-query-param";
+import { SourceBadge } from "@/components/shared/source-badge";
 
 function EkosistemActivePengaduanContent() {
   const { roleType } = useEkosistemActiveRole();
@@ -40,6 +41,7 @@ function EkosistemActivePengaduanContent() {
         <TableHeader>
           <TableRow>
             <TableHead>Tiket</TableHead>
+            <TableHead>Sumber Pengaduan</TableHead>
             <TableHead>Pengaduan</TableHead>
             <TableHead>Entitas Pengoordinasi</TableHead>
             <TableHead>Kategori</TableHead>
@@ -53,6 +55,9 @@ function EkosistemActivePengaduanContent() {
           {cases.map((c) => (
             <TableRow key={c.ticket}>
               <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
+              <TableCell>
+                <SourceBadge source={c.source} />
+              </TableCell>
               <TableCell className="max-w-[220px] truncate">{c.title}</TableCell>
               <TableCell className="text-muted whitespace-nowrap">{c.currentOwner}</TableCell>
               <TableCell className="text-muted">{c.category}</TableCell>
@@ -68,7 +73,7 @@ function EkosistemActivePengaduanContent() {
           ))}
           {cases.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8} className="text-center text-muted py-6">
+              <TableCell colSpan={9} className="text-center text-muted py-6">
                 Tidak ada kasus yang sesuai dengan filter.
               </TableCell>
             </TableRow>

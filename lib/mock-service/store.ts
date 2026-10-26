@@ -31,6 +31,7 @@ import { nowDateTimeID } from "../format";
 import { getInstitution } from "../workflow-config";
 import { getCaseByTicket } from "../mock-data";
 import { DISPUTE_STAGES, DisputeActionInput, applyDisputeAction, getDisputeOwner } from "../dispute-workflow";
+import { logAudit } from "./audit-store";
 import { subscribe, emitChange, getVersion } from "./event-bus";
 
 const STORAGE_KEY = "bappebti-demo-overrides";
@@ -319,6 +320,11 @@ export function runDisputeAction(ticket: string, input: DisputeActionInput, acto
   const bursaName = base.institution?.bursa ?? base.bursaEntity;
   const result = applyDisputeAction(base.dispute, input, base.platform, bursaName);
   const stage = DISPUTE_STAGES[result.next.stage];
+  logAudit({
+    activity: "Tindakan Penyelesaian Perselisihan",
+    ticket,
+    detail: `${result.timelineAction}: tahap '${DISPUTE_STAGES[base.dispute.stage].label}' menjadi '${stage.label}'.`,
+  });
   mutate(ticket, (o) => {
     o.disputeOverride = result.next;
     o.currentOwnerOverride = getDisputeOwner(result.next);
@@ -345,6 +351,9 @@ export function resetDemoData() {
     window.localStorage.removeItem(NOTIF_STORAGE_KEY);
     window.localStorage.removeItem("bappebti-demo-supervisory-actions");
     window.localStorage.removeItem("bappebti-demo-added-members");
+    window.localStorage.removeItem("bappebti-demo-audit-events");
+    window.localStorage.removeItem("bappebti-demo-meetings");
+    window.localStorage.removeItem("bappebti-demo-meeting-outcomes");
   } catch {
     // ignore
   }

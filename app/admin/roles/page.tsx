@@ -21,7 +21,7 @@ function newRoleId(name: string): string {
 }
 
 export default function RoleAccessPage() {
-  const roles = useRoles(ROLE_DEFINITIONS);
+  const roles = useRoles(ROLE_DEFINITIONS).filter((r) => !r.portal);
   const { showToast } = useToast();
 
   const [addOpen, setAddOpen] = React.useState(false);

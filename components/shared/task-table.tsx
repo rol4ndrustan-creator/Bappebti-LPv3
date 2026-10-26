@@ -143,7 +143,7 @@ export function TaskTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <StatusBadgeSelect value={t.status} editable={canEdit} onChange={(s) => updateTaskStatus(t.id, s)} />
+                  <StatusBadgeSelect value={t.status} editable={canEdit} onChange={(s) => updateTaskStatus(t.id, s, { ticket: t.ticket, from: t.status, description: t.description })} />
                 </TableCell>
                 {!readOnly && (
                   <TableCell>

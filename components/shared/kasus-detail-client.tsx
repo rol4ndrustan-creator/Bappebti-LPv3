@@ -25,8 +25,10 @@ import { ResolutionPanel } from "@/components/shared/resolution-panel";
 import { CaseActionDialog, TONE_TO_BUTTON_VARIANT } from "@/components/shared/case-action-dialog";
 import { DisputePanel } from "@/components/shared/dispute-panel";
 import { disputeActorForRole } from "@/lib/dispute-workflow";
-import { useOptionalEkosistemActiveRole } from "@/lib/ekosistem-active-role";
+import { useActingParty } from "@/lib/use-acting-party";
 import { DownloadCaseButton } from "@/components/shared/download-case-button";
+import { MusyawarahTab } from "@/components/shared/musyawarah";
+import { logAudit } from "@/lib/mock-service/audit-store";
 import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
 import { getCaseByTicket, formatCurrency, CASE_TASKS } from "@/lib/mock-data";
@@ -69,7 +71,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   const { showToast } = useToast();
   const { user } = useDemoSession();
   const tasks = useTasksForCase(ticket, CASE_TASKS);
-  const ekosistemActiveRole = useOptionalEkosistemActiveRole();
+  const actingParty = useActingParty();
 
   const [noteText, setNoteText] = useState("");
   const [noteTargetType, setNoteTargetType] = useState<InternalNoteTargetType>("Semua Pihak Tertutup");
@@ -145,6 +147,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
 
   function handleExecuteAction(actionId: CaseActionId, values: Record<string, string>) {
     executeCaseAction(actionId, { ticket, actor: user.name, values });
+    logAudit({ activity: CASE_ACTIONS[actionId].label, ticket, detail: `Menjalankan tindakan "${CASE_ACTIONS[actionId].label}".` });
     showToast(`${CASE_ACTIONS[actionId].label} berhasil dijalankan.`);
   }
 
@@ -190,25 +193,16 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   // Respon ke Public: Bappebti, Platform, dan Ekosistem Active dapat membalas; Ekosistem Pengawas read-only.
   const canReplyPublic = viewerGroup === "Bappebti" || viewerGroup === "Platform" || viewerGroup === "EkosistemActive";
 
-  /** Peran & lembaga pengirim untuk label "[Peran: Lembaga] Nama" pada balon percakapan. */
-  function replySender(): { role: string; institution: string } {
-    if (viewerGroup === "Bappebti") return { role: "Bappebti", institution: "Bappebti" };
-    if (viewerGroup === "Platform") return { role: "Platform", institution: user.institution };
-    if (user.role.startsWith("BURSA_")) return { role: "Bursa", institution: user.institution };
-    if (user.role.startsWith("CLEARING_")) return { role: "Kliring", institution: user.institution };
-    const type = ekosistemActiveRole?.roleType ?? "Bursa";
-    const institution =
-      type === "Bursa"
-        ? c!.institution?.bursa ?? c!.bursaEntity
-        : type === "Kliring"
-          ? c!.institution?.clearing ?? c!.kliringEntity
-          : c!.linkedEcosystemEntities?.find((e) => e.type === "Custody")?.name ?? user.institution;
-    return { role: type, institution };
-  }
-
   function sendPublicResponse(message: string, { sendEmail }: { sendEmail: boolean }) {
-    const sender = replySender();
+    const sender = actingParty(c);
     addClarificationReply(ticket, user.name, sender.role, message, { institution: sender.institution, emailSent: sendEmail });
+    logAudit({
+      activity: "Publikasi Respon Publik",
+      ticket,
+      detail: sendEmail
+        ? "Mempublikasikan respon ke kolom tanggapan publik dan mengirim salinan ke email pelapor."
+        : "Mempublikasikan respon ke kolom tanggapan publik (tanpa email).",
+    });
     showToast(sendEmail ? "Respon berhasil dipublikasikan dan telah dikirimkan ke email klien." : "Respon berhasil dipublikasikan.");
   }
 
@@ -298,6 +292,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
           <TabsTrigger value="ringkasan">Ringkasan Pengaduan</TabsTrigger>
           <TabsTrigger value="bukti">Bukti</TabsTrigger>
           <TabsTrigger value="respons">Respon ke Public</TabsTrigger>
+          {isInternal && <TabsTrigger value="musyawarah">Pertemuan Musyawarah</TabsTrigger>}
           {isInternal && <TabsTrigger value="catatan">Catatan Internal</TabsTrigger>}
           {isInternal && <TabsTrigger value="tugas">Tugas Internal</TabsTrigger>}
           <TabsTrigger value="resolusi">Resolusi</TabsTrigger>
@@ -395,6 +390,12 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
         </TabsContent>
 
         {isInternal && (
+          <TabsContent value="musyawarah">
+            <MusyawarahTab complaintCase={c} readOnly={viewerGroup === "EkosistemPengawas"} />
+          </TabsContent>
+        )}
+
+        {isInternal && (
           <TabsContent value="catatan">
             <Card>
               <CardHeader>
@@ -471,6 +472,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
                             : undefined,
                         text: noteText.trim(),
                       });
+                      logAudit({ activity: "Tambah Catatan Internal", ticket, detail: `Menambahkan catatan internal (sasaran: ${noteTargetType}).` });
                       setNoteText("");
                       setNoteTargetType("Semua Pihak Tertutup");
                       setNoteTargetEntity("");
@@ -534,7 +536,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
                       </div>
                       <div className="flex items-center gap-2">
                         <PriorityBadge priority={t.priority} />
-                        <StatusBadgeSelect value={t.status} editable={canEdit} onChange={(s) => updateTaskStatus(t.id, s)} />
+                        <StatusBadgeSelect value={t.status} editable={canEdit} onChange={(s) => updateTaskStatus(t.id, s, { ticket: t.ticket, from: t.status, description: t.description })} />
                       </div>
                     </div>
                   );

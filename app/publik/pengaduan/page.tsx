@@ -18,6 +18,7 @@ import {
 import { StatusBadge, ComplaintTypeBadge } from "@/components/shared/badges";
 import { CASES, CATEGORY_LIST } from "@/lib/mock-data";
 import { CaseStatus, ComplaintType } from "@/lib/types";
+import { SourceBadge } from "@/components/shared/source-badge";
 
 const STATUS_LIST: CaseStatus[] = [
   "Baru",
@@ -159,6 +160,7 @@ export default function PengaduanListPage() {
         <TableHeader>
           <TableRow>
             <TableHead>Tiket</TableHead>
+            <TableHead>Sumber Pengaduan</TableHead>
             <TableHead>Judul</TableHead>
             <TableHead>Platform</TableHead>
             <TableHead>Kategori</TableHead>
@@ -172,6 +174,9 @@ export default function PengaduanListPage() {
           {filtered.map((c) => (
             <TableRow key={c.ticket}>
               <TableCell className="font-medium text-navy whitespace-nowrap">{c.ticket}</TableCell>
+              <TableCell>
+                <SourceBadge source={c.source} />
+              </TableCell>
               <TableCell className="max-w-xs">{c.title}</TableCell>
               <TableCell className="whitespace-nowrap">{c.platform}</TableCell>
               <TableCell className="whitespace-nowrap">{c.category}</TableCell>
@@ -193,7 +198,7 @@ export default function PengaduanListPage() {
           ))}
           {filtered.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8} className="text-center text-muted py-6">
+              <TableCell colSpan={9} className="text-center text-muted py-6">
                 Tidak ada pengaduan yang sesuai dengan filter.
               </TableCell>
             </TableRow>

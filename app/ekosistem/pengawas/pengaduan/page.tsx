@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { CASES } from "@/lib/mock-data";
 import { useCasesData } from "@/lib/mock-service/store";
 import { useQueryParamState, useCurrentPathWithQuery } from "@/lib/use-query-param";
+import { SourceBadge } from "@/components/shared/source-badge";
 
 function EkosistemPengawasPengaduanContent() {
   const allCases = useCasesData(CASES);
@@ -41,6 +42,7 @@ function EkosistemPengawasPengaduanContent() {
         <TableHeader>
           <TableRow>
             <TableHead>Tiket</TableHead>
+            <TableHead>Sumber Pengaduan</TableHead>
             <TableHead>Pengaduan</TableHead>
             <TableHead>Pelaku Usaha</TableHead>
             <TableHead>Kategori</TableHead>
@@ -53,6 +55,9 @@ function EkosistemPengawasPengaduanContent() {
           {cases.map((c) => (
             <TableRow key={c.ticket}>
               <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
+              <TableCell>
+                <SourceBadge source={c.source} />
+              </TableCell>
               <TableCell className="max-w-[220px] truncate">{c.title}</TableCell>
               <TableCell className="text-muted max-w-[180px] truncate">{c.platform}</TableCell>
               <TableCell className="text-muted">{c.category}</TableCell>
@@ -67,7 +72,7 @@ function EkosistemPengawasPengaduanContent() {
           ))}
           {cases.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted py-6">
+              <TableCell colSpan={8} className="text-center text-muted py-6">
                 Tidak ada kasus yang sesuai dengan filter.
               </TableCell>
             </TableRow>

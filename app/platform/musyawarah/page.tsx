@@ -1,25 +1,16 @@
 "use client";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { DisputeQueue } from "@/components/shared/dispute-queue";
-import { CASES } from "@/lib/mock-data";
-import { useCasesData } from "@/lib/mock-service/store";
+import { MusyawarahModule } from "@/components/shared/musyawarah";
 
-export default function MusyawarahPlatformPage() {
-  const cases = useCasesData(CASES);
-
+export default function MusyawarahPage() {
   return (
     <div>
       <PageHeader
-        title="Klarifikasi & Musyawarah Nasabah"
-        description="Klarifikasi pengaduan baru (maks. 1 hari kerja — lewat tanpa klarifikasi berarti Pialang dianggap menyetujui), musyawarah 21 hari kerja (perpanjangan maks. 14 hari), dan penyampaian dokumen kesepakatan/akta perdamaian ke Bappebti."
+        title="Musyawarah"
+        description="Jadwal dan catatan hasil seluruh pertemuan musyawarah lintas tiket pengaduan."
       />
-      <DisputeQueue
-        cases={cases}
-        stages={["VERIFIKASI", "MUSYAWARAH", "PENYAMPAIAN_KESEPAKATAN"]}
-        detailHref={(t) => `/platform/kasus/${t}`}
-        highlightActor="Pialang"
-      />
+      <MusyawarahModule detailHref={(t) => `/platform/kasus/${t}`} readOnly={false} />
     </div>
   );
 }

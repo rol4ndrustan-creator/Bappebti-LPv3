@@ -6,6 +6,7 @@ import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
 import { ROLE_LABEL } from "@/lib/permissions";
 import { addTimelineEvent } from "@/lib/mock-service/store";
+import { logAudit } from "@/lib/mock-service/audit-store";
 import { ComplaintCase } from "@/lib/types";
 import { Download } from "lucide-react";
 
@@ -32,6 +33,7 @@ export function DownloadCaseButton({ complaintCase }: { complaintCase: Complaint
         status: "info",
         visibility: "internal",
       });
+      logAudit({ activity: "Unduh PDF Rekap Kasus", ticket: complaintCase.ticket, detail: `Mengunduh ${filename} (ber-watermark identitas pengunduh).` });
       showToast("Detail pengaduan berhasil diunduh. Dokumen memuat cap air identitas Anda.");
     } catch {
       showToast("Gagal membuat dokumen PDF. Silakan coba lagi.");

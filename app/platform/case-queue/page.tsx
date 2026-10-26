@@ -17,6 +17,7 @@ import { useDemoSession } from "@/lib/demo-session";
 import { useCasesData, setPlatformPic, setLinkedEcosystemEntities } from "@/lib/mock-service/store";
 import { PLATFORM_STAFF } from "@/lib/permissions";
 import { Eye } from "lucide-react";
+import { SourceBadge } from "@/components/shared/source-badge";
 
 const UNASSIGNED = "Belum Ditugaskan";
 const ECOSYSTEM_CATEGORY_TYPE: Record<string, LinkedEcosystemEntity["type"]> = { Bursa: "Bursa", Kliring: "Kliring", Custody: "Custody" };
@@ -84,6 +85,7 @@ export default function CaseQueuePage() {
         <TableHeader>
           <TableRow>
             <TableHead>Nomor Ticket</TableHead>
+            <TableHead>Sumber Pengaduan</TableHead>
             <TableHead>Judul Pengaduan</TableHead>
             <TableHead>PIC</TableHead>
             <TableHead>Member</TableHead>
@@ -98,6 +100,9 @@ export default function CaseQueuePage() {
                 <Link href={`/platform/kasus/${c.ticket}`} className="font-medium text-navy hover:underline">
                   {c.ticket}
                 </Link>
+              </TableCell>
+              <TableCell>
+                <SourceBadge source={c.source} />
               </TableCell>
               <TableCell className="max-w-[240px] truncate">{c.title}</TableCell>
               <TableCell>
@@ -127,7 +132,7 @@ export default function CaseQueuePage() {
           ))}
           {cases.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted py-6">
+              <TableCell colSpan={7} className="text-center text-muted py-6">
                 {isSupervisor ? "Tidak ada kasus yang sesuai dengan filter." : "Tidak ada tiket yang ditugaskan kepada Anda."}
               </TableCell>
             </TableRow>
