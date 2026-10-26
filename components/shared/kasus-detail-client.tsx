@@ -25,6 +25,8 @@ import { ResolutionPanel } from "@/components/shared/resolution-panel";
 import { CaseActionDialog, TONE_TO_BUTTON_VARIANT } from "@/components/shared/case-action-dialog";
 import { DisputePanel } from "@/components/shared/dispute-panel";
 import { disputeActorForRole } from "@/lib/dispute-workflow";
+import { useOptionalEkosistemActiveRole } from "@/lib/ekosistem-active-role";
+import { DownloadCaseButton } from "@/components/shared/download-case-button";
 import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
 import { getCaseByTicket, formatCurrency, CASE_TASKS } from "@/lib/mock-data";
@@ -67,6 +69,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   const { showToast } = useToast();
   const { user } = useDemoSession();
   const tasks = useTasksForCase(ticket, CASE_TASKS);
+  const ekosistemActiveRole = useOptionalEkosistemActiveRole();
 
   const [noteText, setNoteText] = useState("");
   const [noteTargetType, setNoteTargetType] = useState<InternalNoteTargetType>("Semua Pihak Tertutup");
@@ -184,6 +187,31 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
     setTaskDueDate("");
   }
 
+  // Respon ke Public: Bappebti, Platform, dan Ekosistem Active dapat membalas; Ekosistem Pengawas read-only.
+  const canReplyPublic = viewerGroup === "Bappebti" || viewerGroup === "Platform" || viewerGroup === "EkosistemActive";
+
+  /** Peran & lembaga pengirim untuk label "[Peran: Lembaga] Nama" pada balon percakapan. */
+  function replySender(): { role: string; institution: string } {
+    if (viewerGroup === "Bappebti") return { role: "Bappebti", institution: "Bappebti" };
+    if (viewerGroup === "Platform") return { role: "Platform", institution: user.institution };
+    if (user.role.startsWith("BURSA_")) return { role: "Bursa", institution: user.institution };
+    if (user.role.startsWith("CLEARING_")) return { role: "Kliring", institution: user.institution };
+    const type = ekosistemActiveRole?.roleType ?? "Bursa";
+    const institution =
+      type === "Bursa"
+        ? c!.institution?.bursa ?? c!.bursaEntity
+        : type === "Kliring"
+          ? c!.institution?.clearing ?? c!.kliringEntity
+          : c!.linkedEcosystemEntities?.find((e) => e.type === "Custody")?.name ?? user.institution;
+    return { role: type, institution };
+  }
+
+  function sendPublicResponse(message: string, { sendEmail }: { sendEmail: boolean }) {
+    const sender = replySender();
+    addClarificationReply(ticket, user.name, sender.role, message, { institution: sender.institution, emailSent: sendEmail });
+    showToast(sendEmail ? "Respon berhasil dipublikasikan dan telah dikirimkan ke email klien." : "Respon berhasil dipublikasikan.");
+  }
+
   const canManageTasks = viewerGroup === "Bappebti" || viewerGroup === "Platform" || viewerGroup === "EkosistemActive";
   const canProposeResolution = isPlatform || isBappebti;
   const canUploadEvidence = isBappebti || isPlatform;
@@ -215,7 +243,12 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
       <PageHeader
         title={`${c.ticket} — ${c.title}`}
         description="Detail pengaduan, riwayat penanganan, dan tindakan yang tersedia sesuai peran Anda."
-        actions={<BackLink fallbackHref={BACK_HREF[viewerGroup]} />}
+        actions={
+          <div className="flex items-center gap-2">
+            {isInternal && <DownloadCaseButton complaintCase={c} />}
+            <BackLink fallbackHref={BACK_HREF[viewerGroup]} />
+          </div>
+        }
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -352,16 +385,10 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
             <CardContent className="py-4">
               <ClarificationThread
                 messages={c.clarifications}
-                onReply={
-                  viewerGroup === "Bappebti" || viewerGroup === "Platform"
-                    ? (message) => {
-                        addClarificationReply(ticket, user.name, isBappebti ? "Bappebti" : "Platform", message);
-                        showToast("Respon telah dikirim.");
-                      }
-                    : undefined
-                }
-                replyPlaceholder="Kirim respon kepada pelapor..."
-                confirmMessage="Respon ini akan dapat dibaca langsung oleh pelapor publik. Lanjutkan?"
+                complaintCase={c}
+                publicResponse
+                onReply={canReplyPublic ? sendPublicResponse : undefined}
+                replyPlaceholder="Tulis respon kepada pelapor..."
               />
             </CardContent>
           </Card>

@@ -135,20 +135,33 @@ export function getMergedCase(base: ComplaintCase | undefined): ComplaintCase | 
   };
 }
 
-export function addClarificationReply(ticket: string, from: string, role: string, message: string) {
+export function addClarificationReply(
+  ticket: string,
+  from: string,
+  role: string,
+  message: string,
+  opts: { institution?: string; emailSent?: boolean } = {}
+) {
+  const isReporter = role === "Pelapor";
   mutate(ticket, (o) => {
     o.clarificationAdditions.push({
       from,
       role,
       datetime: nowDateTimeID(),
       message,
-      kind: "reply",
+      kind: isReporter ? "reply" : "public-response",
+      institution: opts.institution,
+      emailSent: opts.emailSent,
     });
     o.timelineAdditions.push({
       datetime: nowDateTimeID(),
       actor: from,
       role,
-      action: "Jawaban klarifikasi dikirim",
+      action: isReporter
+        ? "Jawaban klarifikasi dikirim"
+        : opts.emailSent
+          ? "Respon publik dipublikasikan & dikirim ke email pelapor"
+          : "Respon publik dipublikasikan",
       note: message,
       status: "info",
       visibility: "public",

@@ -44,9 +44,13 @@ export interface ClarificationMessage {
   datetime: string;
   message: string;
   /** Distinguishes an informational note from a formal clarification request requiring a reply. */
-  kind?: "info" | "formal-request" | "reply" | "resolution";
+  kind?: "info" | "formal-request" | "reply" | "resolution" | "public-response";
   dueDate?: string;
   requiresAttachment?: boolean;
+  /** Lembaga pengirim (mis. "PT Bursa Digital Nusantara", "Kliring Berjangka Indonesia") untuk label [Peran: Lembaga] Nama. */
+  institution?: string;
+  /** Salinan respon juga dikirim ke email pelapor. */
+  emailSent?: boolean;
 }
 
 // ---------------------------------------------------------------------------

@@ -183,6 +183,7 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
                 <CardContent className="py-4">
                   <ClarificationThread
                     messages={c.clarifications}
+                    complaintCase={c}
                     onReply={(message) => {
                       addClarificationReply(ticket, c.reporterName, "Pelapor", message);
                       showToast("Jawaban klarifikasi telah dikirim.");

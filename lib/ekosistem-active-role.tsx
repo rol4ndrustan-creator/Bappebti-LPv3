@@ -60,3 +60,8 @@ export function useEkosistemActiveRole(): EkosistemActiveRoleContextValue {
 }
 
 export const EKOSISTEM_ACTIVE_ROLE_TYPES = ROLE_TYPES;
+
+/** Seperti useEkosistemActiveRole, tetapi mengembalikan null di luar portal Ekosistem Active (tidak melempar error). */
+export function useOptionalEkosistemActiveRole(): EkosistemActiveRoleContextValue | null {
+  return React.useContext(EkosistemActiveRoleContext);
+}
