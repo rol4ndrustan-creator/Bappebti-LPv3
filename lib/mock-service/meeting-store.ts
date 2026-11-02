@@ -9,6 +9,9 @@ import { subscribe, emitChange, getVersion } from "./event-bus";
 
 const ADDED_KEY = "bappebti-demo-meetings";
 const OUTCOME_KEY = "bappebti-demo-meeting-outcomes";
+const EDITS_KEY = "bappebti-demo-meeting-edits";
+
+type MeetingEdit = Partial<Pick<MusyawarahMeeting, "title" | "date" | "startTime" | "endTime" | "locationType" | "locationDetail" | "agenda" | "cancellation" | "reschedules">>;
 
 function readJSON<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -45,9 +48,21 @@ export function recordMeetingOutcome(id: string, outcome: NonNullable<Musyawarah
   writeJSON(OUTCOME_KEY, map);
 }
 
+/** Edit jadwal / pembatalan (List Revisi 12 #12). */
+export function editMeeting(id: string, patch: MeetingEdit) {
+  const map = readJSON<Record<string, MeetingEdit>>(EDITS_KEY, {});
+  map[id] = { ...map[id], ...patch };
+  writeJSON(EDITS_KEY, map);
+}
+
 function merge(seed: MusyawarahMeeting[]): MusyawarahMeeting[] {
   const outcomes = readJSON<Record<string, MusyawarahMeeting["outcome"]>>(OUTCOME_KEY, {});
-  return [...seed, ...readJSON<MusyawarahMeeting[]>(ADDED_KEY, [])].map((m) => (outcomes[m.id] ? { ...m, outcome: outcomes[m.id] } : m));
+  const edits = readJSON<Record<string, MeetingEdit>>(EDITS_KEY, {});
+  return [...seed, ...readJSON<MusyawarahMeeting[]>(ADDED_KEY, [])].map((m) => ({
+    ...m,
+    ...edits[m.id],
+    ...(outcomes[m.id] ? { outcome: outcomes[m.id] } : {}),
+  }));
 }
 
 export function useMeetings(seed: MusyawarahMeeting[]): MusyawarahMeeting[] {

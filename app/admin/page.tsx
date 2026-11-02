@@ -23,7 +23,7 @@ function isClosed(c: ComplaintCase): boolean {
 function buildBreakdown(cases: ComplaintCase[]): PlatformBreakdown[] {
   const map = new Map<string, PlatformBreakdown>();
   for (const c of cases) {
-    const key = c.platformUserId ? c.platform : "Tanpa ID Platform";
+    const key = c.platformUserId ? c.platform : "Tanpa Pialang User ID";
     const row = map.get(key) ?? { platform: key, total: 0, selesai: 0, lewatSla: 0, dalamSla: 0 };
     row.total += 1;
     if (isClosed(c)) {

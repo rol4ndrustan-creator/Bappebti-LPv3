@@ -58,7 +58,7 @@ export function ClarificationResponsePanel({
             </div>
             {r.referencedTransaction && (
               <div>
-                <dt className="text-muted">Referensi Transaksi</dt>
+                <dt className="text-muted">Nomor Akun Transaksi</dt>
                 <dd className="font-medium">{r.referencedTransaction}</dd>
               </div>
             )}

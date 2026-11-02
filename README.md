@@ -1,32 +1,26 @@
 # Bappebti LPv3 — Layanan Pengaduan
 
-LPv3 is a copy of Bappebti-LPv2 (branch `claude/bappebti-review-redesign`). It adds the
-**Mekanisme Penanganan Perselisihan Nasabah PBK** (the Bappebti dispute-handling flowchart).
+LPv3 is a copy of Bappebti-LPv2 (branch `claude/bappebti-review-redesign`), extended through
+List Revisi 10–12.
 
-## Mekanisme Penanganan Perselisihan Nasabah PBK
+## Siklus Tiket (List Revisi 12)
 
-| Tahap | Pihak | Tenggat |
-|---|---|---|
-| Pengaduan online + unggah berkas → diteruskan otomatis | Sistem | – |
-| Verifikasi materiil & formil | Bappebti | 2 hari kerja |
-| Klarifikasi (paralel); bila tidak ada → dianggap menyetujui | Pialang | 1 hari kerja |
-| Materiil tidak terpenuhi → ditolak & ditutup | Bappebti | – |
-| Formil tidak terpenuhi → dikembalikan untuk perbaikan | Nasabah | 2 hari kerja |
-| Disposisi → Musyawarah | Pialang | 21 hari kerja (+ maks. 14 hari) |
-| Mediasi (jika musyawarah gagal) | Bursa | 21 hari kerja (+ maks. 14 hari) |
-| Lapor hasil mediasi | Bursa → Bappebti | 1 hari kerja |
-| Kesepakatan: < Rp100 juta dokumen kesepakatan, ≥ Rp100 juta akta perdamaian | Pialang / Bursa | – |
-| Tidak sepakat → Pengadilan / BAKTI | Nasabah | BAKTI ≤ 20 hari kerja |
+The former "Perselisihan PBK" tab/menus were removed; every ticket now follows one lifecycle
+(`lib/ticket-lifecycle.ts`, actions in `lib/lifecycle-actions.ts`):
 
-- Rules & transitions: `lib/dispute-workflow.ts` (`DISPUTE_RULES`)
-- Business-day calendar: `lib/business-days.ts` (add yearly moveable holidays / cuti bersama to `HOLIDAYS_BY_DATE`)
-- Demo data per stage: `lib/dispute-seed.ts`
-- UI: tab **Penyelesaian Perselisihan** on every case detail (Bappebti, Platform, Ekosistem, Publik);
-  queues at `/bappebti/pengaduan/perselisihan`, `/platform/musyawarah`, `/ekosistem/active/mediasi`;
-  public explainer at `/publik/alur-penyelesaian`.
+| Status | Meaning |
+|---|---|
+| Menunggu Verifikasi Pialang | New ticket in the Pialang's *Verifikasi Komplain Baru* queue (auto-approved after SLA Review Pialang) |
+| Pengajuan Reject → Rejected | Pialang rejected (reason + PDF); Bappebti *Verifikasi Ditolak Pialang* approves (Rejected) or returns it (forced musyawarah) |
+| Proses Musyawarah | Meetings scheduled/edited/cancelled; outcome *Tidak Sepakat* opens the arbitration window |
+| Diajukan Penyelesaian → Close Resolusi / Close Auto | Pialang resolution offer; nasabah agrees, or no response within the configured deadline |
+| Masa Pengajuan Arbitrase → Proses Arbitrase BAKTI → Close Arbitrase | Nasabah files BAKTI arbitration H+1 … 20 business days; BAKTI verifies, records hearings, issues verdict |
+| Selesai Non-Arbitrase | Window lapsed; Bappebti cover letter for Pengadilan Negeri (PDF) |
 
-Assumptions (flowchart is ambiguous): exactly Rp100.000.000 is treated as *akta perdamaian*;
-the "maks. 14 hari" extension is counted in calendar days.
+Parameters (SLA Review Pialang, SLA Penyelesaian, Kedaluwarsa 730 hari, Jendela Arbitrase 20 HK,
+Tenggat Persetujuan Resolusi) live at `/admin/konfigurasi/parameter`. Demo lifecycle data is
+generated relative to the current date (`lib/lifecycle-seed.ts`); pialang officials are simulated
+"Profiling Bappebti" data (`lib/pialang-profiles.ts`).
 
 ---
 

@@ -19,6 +19,7 @@ import { StatusBadge, ComplaintTypeBadge } from "@/components/shared/badges";
 import { CASES, CATEGORY_LIST } from "@/lib/mock-data";
 import { CaseStatus, ComplaintType } from "@/lib/types";
 import { SourceBadge } from "@/components/shared/source-badge";
+import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
 const STATUS_LIST: CaseStatus[] = [
   "Baru",
@@ -165,7 +166,7 @@ export default function PengaduanListPage() {
             <TableHead>Platform</TableHead>
             <TableHead>Kategori</TableHead>
             <TableHead>Jenis Pengaduan</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Status Tiket</TableHead>
             <TableHead>Update Terakhir</TableHead>
             <TableHead>Aksi</TableHead>
           </TableRow>
@@ -184,7 +185,7 @@ export default function PengaduanListPage() {
                 <ComplaintTypeBadge type={c.complaintType} />
               </TableCell>
               <TableCell>
-                <StatusBadge status={c.status} />
+                <TicketStatusBadge complaintCase={c} />
               </TableCell>
               <TableCell className="whitespace-nowrap text-muted">{c.updatedAt}</TableCell>
               <TableCell>

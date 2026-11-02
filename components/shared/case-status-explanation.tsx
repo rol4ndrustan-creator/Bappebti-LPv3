@@ -1,8 +1,15 @@
+"use client";
+
 import * as React from "react";
 import { ComplaintCase } from "@/lib/types";
 import { getStatusExplanation } from "@/lib/workflow-config";
 import { CaseStatusBadge } from "./case-status-badge";
 import { SourceBadge } from "./source-badge";
+import { SlaCountdown } from "./ticket-lifecycle";
+import { useLifecycleView } from "@/lib/mock-service/lifecycle-store";
+import { TICKET_STATUS_TONE, lifecycleExplanation } from "@/lib/ticket-lifecycle";
+import { formatWIB } from "@/lib/case-pdf";
+import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +27,9 @@ export function CaseStatusExplanation({
   /** Optional standalone action buttons, right-aligned in the banner's header row (internal viewers only). */
   actions?: React.ReactNode;
 }) {
-  const ex = getStatusExplanation(complaintCase, viewer);
+  const lifecycle = useLifecycleView(complaintCase);
+  // Setelah siklus tiket termuat, kartu status mengikuti siklus tiket (List Revisi 12).
+  const ex = lifecycle ? lifecycleExplanation(lifecycle, complaintCase, viewer, formatWIB) : getStatusExplanation(complaintCase, viewer);
 
   return (
     <div
@@ -31,7 +40,8 @@ export function CaseStatusExplanation({
     >
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex flex-wrap items-center gap-2">
-          <CaseStatusBadge complaintCase={complaintCase} />
+          {lifecycle ? <Badge variant={TICKET_STATUS_TONE[lifecycle.status]}>{lifecycle.status.toUpperCase()}</Badge> : <CaseStatusBadge complaintCase={complaintCase} />}
+          {lifecycle && <SlaCountdown view={lifecycle} />}
           {ex.actionRequiredFromViewer ? (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber">
               <AlertCircle className="size-3.5" /> Tindakan diperlukan

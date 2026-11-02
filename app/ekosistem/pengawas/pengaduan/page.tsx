@@ -12,6 +12,7 @@ import { CASES } from "@/lib/mock-data";
 import { useCasesData } from "@/lib/mock-service/store";
 import { useQueryParamState, useCurrentPathWithQuery } from "@/lib/use-query-param";
 import { SourceBadge } from "@/components/shared/source-badge";
+import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
 function EkosistemPengawasPengaduanContent() {
   const allCases = useCasesData(CASES);
@@ -46,7 +47,7 @@ function EkosistemPengawasPengaduanContent() {
             <TableHead>Pengaduan</TableHead>
             <TableHead>Pelaku Usaha</TableHead>
             <TableHead>Kategori</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Status Tiket</TableHead>
             <TableHead>SLA</TableHead>
             <TableHead>Aksi</TableHead>
           </TableRow>
@@ -61,7 +62,7 @@ function EkosistemPengawasPengaduanContent() {
               <TableCell className="max-w-[220px] truncate">{c.title}</TableCell>
               <TableCell className="text-muted max-w-[180px] truncate">{c.platform}</TableCell>
               <TableCell className="text-muted">{c.category}</TableCell>
-              <TableCell><StatusBadge status={c.status} /></TableCell>
+              <TableCell><TicketStatusBadge complaintCase={c} /></TableCell>
               <TableCell><SlaBadge sla={c.slaStatus} /></TableCell>
               <TableCell>
                 <Link href={`/ekosistem/pengawas/kasus/${c.ticket}?from=${from}`}>

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { CASES, NOTIFICATIONS } from "@/lib/mock-data";
 import { FileText, Clock, UserCheck, FileCheck2, CheckCircle2, Bell, ArrowRight } from "lucide-react";
+import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
 export default function PublikDashboardPage() {
   const total = CASES.length;
@@ -53,7 +54,7 @@ export default function PublikDashboardPage() {
               <TableRow>
                 <TableHead>Tiket</TableHead>
                 <TableHead>Judul</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Status Tiket</TableHead>
                 <TableHead>Current Owner</TableHead>
                 <TableHead>Update Terakhir</TableHead>
               </TableRow>
@@ -75,7 +76,7 @@ export default function PublikDashboardPage() {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={c.status} />
+                    <TicketStatusBadge complaintCase={c} />
                   </TableCell>
                   <TableCell>
                     <OwnerBadge owner={c.currentOwner} />

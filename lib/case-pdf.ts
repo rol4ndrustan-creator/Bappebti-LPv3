@@ -7,7 +7,6 @@ import { ComplaintCase } from "./types";
 import { formatCurrencyIDR } from "./format";
 import { formatSenderLabel } from "./sender-label";
 import { getPublicStatus } from "./workflow-config";
-import { DISPUTE_STAGES } from "./dispute-workflow";
 
 export interface Downloader {
   name: string;
@@ -143,7 +142,6 @@ export async function downloadCasePdf(c: ComplaintCase, downloader: Downloader):
   field("Nomor Tiket", c.ticket);
   field("Judul Pengaduan", c.title);
   field("Status", getPublicStatus(c));
-  if (c.dispute) field("Tahap Perselisihan", DISPUTE_STAGES[c.dispute.stage].label);
   field("Prioritas", c.severity ?? "Belum ditentukan");
   field("Kategori", `${c.category} / ${c.subcategory}`);
   field("Tanggal Pengaduan", c.createdAt);
@@ -156,7 +154,7 @@ export async function downloadCasePdf(c: ComplaintCase, downloader: Downloader):
   field("Email", c.reporter?.verifiedEmail);
   field("Telepon", c.reporter?.verifiedPhone);
   field("Domisili", c.reporterCity ?? [c.reporter?.city, c.reporter?.province].filter(Boolean).join(", "));
-  field("ID Pengguna Platform", c.platformUserId);
+  field("Pialang User ID", c.platformUserId);
 
   section("Data Terlapor");
   field("Pialang / Platform", c.platform);
@@ -168,7 +166,7 @@ export async function downloadCasePdf(c: ComplaintCase, downloader: Downloader):
 
   section("Ringkasan Kasus");
   field("Nilai Transaksi", formatCurrencyIDR(c.amount));
-  field("Referensi Transaksi", c.transactionRef);
+  field("Nomor Akun Transaksi", c.transactionRef);
   y += 1;
   paragraph("Kronologi", { bold: true });
   paragraph(c.chronology);

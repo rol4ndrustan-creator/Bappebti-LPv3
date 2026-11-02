@@ -21,7 +21,6 @@ import {
   RoutingMapping,
   SlaConfigEntry,
 } from "./types";
-import { DISPUTE_SEED, DISPUTE_SEED_OWNER } from "./dispute-seed";
 
 // Pialang berjangka yang berizin dan diawasi Bappebti (Section "Platform terkait" pada
 // formulir pengaduan publik).
@@ -976,16 +975,14 @@ export const CASES: ComplaintCase[] = [
 const PLATFORM_CHANNEL_TICKETS = new Set(["BPP-2026-000184", "BPP-2026-000187", "BPP-2026-000191", "BPP-2026-000196", "BPP-2026-000198"]);
 for (const c of CASES) c.source ??= PLATFORM_CHANNEL_TICKETS.has(c.ticket) ? "Platform" : "Bappebti";
 
-// Mekanisme Penanganan Perselisihan Nasabah PBK — lampirkan data contoh per tahap.
-for (const c of CASES) {
-  const dispute = DISPUTE_SEED[c.ticket];
-  if (!dispute) continue;
-  c.dispute = dispute;
-  c.currentOwner = DISPUTE_SEED_OWNER[dispute.stage];
-  if (c.institution) c.institution = { ...c.institution, currentActionOwner: c.currentOwner };
-  if (dispute.stage === "SELESAI" || dispute.stage === "PENGADILAN_BAKTI") c.status = "Selesai";
-  else if (dispute.stage === "DITOLAK_MATERIIL") c.status = "Ditolak";
-}
+// Profil demografi pengadu (contoh) untuk filter dashboard Bappebti (List Revisi 12 #8).
+const REPORTER_AGE: Record<string, number> = {
+  "BPP-2026-000184": 34, "BPP-2026-000185": 29, "BPP-2026-000186": 41, "BPP-2026-000187": 58, "BPP-2026-000188": 23,
+  "BPP-2026-000189": 47, "BPP-2026-000190": 31, "BPP-2026-000191": 26, "BPP-2026-000192": 29, "BPP-2026-000193": 52,
+  "BPP-2026-000194": 38, "BPP-2026-000195": 44, "BPP-2026-000196": 34, "BPP-2026-000197": 29, "BPP-2026-000198": 34, "BPP-2026-000199": 63,
+};
+for (const c of CASES) c.reporterAge ??= REPORTER_AGE[c.ticket];
+
 
 
 export const INCIDENTS: IncidentRecord[] = [
@@ -1242,7 +1239,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     id: "role-intake",
     name: "Petugas Intake Bappebti",
     description: "Verifikasi awal dan triase pengaduan yang baru masuk.",
-    menuKeys: ["dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.perselisihan", "musyawarah", "pengaduan.tanpa-platform", "kritik", "kritik.daftar", "kritik.belum-dibaca"],
+    menuKeys: ["dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "musyawarah", "arbitrase", "pengaduan.tanpa-platform", "kritik", "kritik.daftar", "kritik.belum-dibaca"],
     createdAt: "01 Jun 2026",
     builtIn: true,
   },
@@ -1251,7 +1248,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     name: "Petugas Kasus Bappebti",
     description: "Menangani penyelesaian kasus pengaduan harian.",
     menuKeys: [
-      "dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.perselisihan", "musyawarah", "pengaduan.bappebti", "pengaduan.tanpa-platform",
+      "dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "musyawarah", "arbitrase", "pengaduan.bappebti", "pengaduan.tanpa-platform",
       "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis", "risiko", "kinerja",
       "kritik", "kritik.daftar", "kritik.belum-dibaca", "kritik.tindak-lanjut", "laporan",
     ],
@@ -1263,7 +1260,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     name: "Supervisor Bappebti",
     description: "Supervisi penanganan kasus, kinerja anggota, dan eskalasi.",
     menuKeys: [
-      "dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.perselisihan", "musyawarah", "pengaduan.bappebti",
+      "dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "musyawarah", "arbitrase", "pengaduan.bappebti",
       "pengaduan.tanpa-platform", "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis",
       "risiko", "kinerja", "kritik", "kritik.daftar", "kritik.belum-dibaca", "kritik.tindak-lanjut",
       "laporan", "audit-logs",
@@ -1275,7 +1272,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     id: "role-enforcement",
     name: "Unit Penegakan Bappebti",
     description: "Investigasi lanjutan atas kasus dugaan pelanggaran/fraud.",
-    menuKeys: ["dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.perselisihan", "musyawarah", "pengaduan.bappebti", "risiko", "audit-logs"],
+    menuKeys: ["dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "musyawarah", "arbitrase", "pengaduan.bappebti", "risiko", "audit-logs"],
     createdAt: "01 Jun 2026",
     builtIn: true,
   },
@@ -1283,7 +1280,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     id: "role-executive",
     name: "Eksekutif Bappebti",
     description: "Ringkasan eksekutif lintas kasus, kinerja, dan laporan agregat.",
-    menuKeys: ["dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.perselisihan", "musyawarah", "risiko", "kinerja", "laporan", "audit-logs"],
+    menuKeys: ["dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "musyawarah", "arbitrase", "risiko", "kinerja", "laporan", "audit-logs"],
     createdAt: "01 Jun 2026",
     builtIn: true,
   },
@@ -1292,7 +1289,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     name: "Administrator Sistem",
     description: "Akses penuh ke seluruh menu administrasi dan konfigurasi sistem.",
     menuKeys: [
-      "dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.perselisihan", "musyawarah", "pengaduan.bappebti",
+      "dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "musyawarah", "arbitrase", "pengaduan.bappebti",
       "pengaduan.tanpa-platform", "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis",
       "risiko", "kinerja", "kritik", "kritik.daftar", "kritik.belum-dibaca", "kritik.tindak-lanjut",
       "laporan", "user-management", "user-management.users", "user-management.roles", "user-management.approval",
@@ -1308,7 +1305,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     id: "role-auditor",
     name: "Auditor (Baca Saja)",
     description: "Akses baca untuk kebutuhan audit dan kepatuhan.",
-    menuKeys: ["dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.perselisihan", "musyawarah", "laporan", "audit-logs"],
+    menuKeys: ["dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "musyawarah", "arbitrase", "laporan", "audit-logs"],
     createdAt: "01 Jun 2026",
     builtIn: true,
   },

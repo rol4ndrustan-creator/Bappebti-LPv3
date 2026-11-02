@@ -5,11 +5,13 @@ import { MeetingLocationType, MeetingStatus, MusyawarahMeeting } from "./types";
 
 export const MEETING_LOCATION_OPTIONS: MeetingLocationType[] = ["Tautan Video Conference", "Kantor Fisik Bappebti", "Kantor Pialang"];
 
-export const MEETING_STATUS_TONE: Record<MeetingStatus, "navy" | "amber" | "green" | "muted"> = {
+export const MEETING_STATUS_TONE: Record<MeetingStatus, "navy" | "amber" | "green" | "red" | "muted"> = {
   Dijadwalkan: "navy",
   Berlangsung: "amber",
   Selesai: "green",
   "Lanjut Musyawarah Berikutnya": "muted",
+  "Tidak Sepakat": "red",
+  Dibatalkan: "muted",
 };
 
 function wib(date: string, time: string): Date {
@@ -22,7 +24,12 @@ function wib(date: string, time: string): Date {
  * sejak jam mulai sampai hasilnya dicatat.
  */
 export function getMeetingStatus(m: MusyawarahMeeting, now: Date | null): MeetingStatus {
-  if (m.outcome) return m.outcome.decision === "Selesai (Damai / Kesepakatan Tercapai)" ? "Selesai" : "Lanjut Musyawarah Berikutnya";
+  if (m.cancellation) return "Dibatalkan";
+  if (m.outcome) {
+    if (m.outcome.decision === "Selesai (Damai / Kesepakatan Tercapai)") return "Selesai";
+    if (m.outcome.decision === "Tidak Sepakat (Musyawarah Berakhir)") return "Tidak Sepakat";
+    return "Lanjut Musyawarah Berikutnya";
+  }
   if (!now) return "Dijadwalkan";
   return now >= wib(m.date, m.startTime) ? "Berlangsung" : "Dijadwalkan";
 }
@@ -40,6 +47,10 @@ export function useNow(): Date | null {
 }
 
 /** Urutan kronologis per tiket → Musyawarah ke-1, ke-2, dst. */
+export function meetingEndIso(m: Pick<MusyawarahMeeting, "date" | "endTime">): string {
+  return wib(m.date, m.endTime).toISOString();
+}
+
 export function sortMeetings(list: MusyawarahMeeting[]): MusyawarahMeeting[] {
   return [...list].sort((a, b) => `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`) || a.createdAt.localeCompare(b.createdAt));
 }

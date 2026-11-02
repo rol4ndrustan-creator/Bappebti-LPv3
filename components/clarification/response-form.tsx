@@ -89,7 +89,7 @@ export function ClarificationResponseForm({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="resp-ref">Referensi Transaksi</Label>
+          <Label htmlFor="resp-ref">Nomor Akun Transaksi</Label>
           <Input id="resp-ref" value={form.referencedTransaction} onChange={(e) => update("referencedTransaction", e.target.value)} placeholder="Contoh: WD-88213471" />
         </div>
         <div>

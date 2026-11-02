@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { KpiCard } from "@/components/shared/kpi-card";
@@ -5,6 +8,7 @@ import { SeverityBadge, SlaBadge, RiskBadge } from "@/components/shared/badges";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { CASES, MEMBERS } from "@/lib/mock-data";
+import { DashboardFilterBar, useDashboardFilters } from "@/components/shared/dashboard-filters";
 import { deriveWorkflowState, WORKFLOW_STATES } from "@/lib/workflow-config";
 import { ComplaintCase } from "@/lib/types";
 import {
@@ -21,7 +25,7 @@ function isOpenCase(c: ComplaintCase): boolean {
   return WORKFLOW_STATES[deriveWorkflowState(c)].isOpen;
 }
 
-export default function DashboardEksekutifPage() {
+function DashboardContent({ cases: CASES, toolbar }: { cases: ComplaintCase[]; toolbar: React.ReactNode }) {
   const open = CASES.filter(isOpenCase);
   const bappebtiOwned = CASES.filter((c) => c.responsibility === "BAPPEBTI OWNED");
   const memberAssigned = CASES.filter((c) => c.responsibility === "MEMBER ASSIGNED");
@@ -36,7 +40,7 @@ export default function DashboardEksekutifPage() {
     categoryCounts[c.category] = (categoryCounts[c.category] || 0) + 1;
   }
   const categoryEntries = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
-  const maxCategory = Math.max(...categoryEntries.map(([, v]) => v));
+  const maxCategory = Math.max(...categoryEntries.map(([, v]) => v), 1);
 
   // Per-platform breakdown of still-active/in-process complaints
   const platformCounts: Record<string, number> = {};
@@ -78,6 +82,7 @@ export default function DashboardEksekutifPage() {
         title="Dashboard Eksekutif"
         description="Ringkasan kondisi penanganan pengaduan lintas platform, bursa, dan kliring untuk pengawasan Bappebti."
       />
+      {toolbar}
 
       {/* KPI Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-3 mb-4">
@@ -123,9 +128,9 @@ export default function DashboardEksekutifPage() {
           </CardHeader>
           <CardContent>
             <div className="flex h-3 w-full overflow-hidden rounded-full mb-3">
-              <div className="bg-green" style={{ width: `${(safeCount / total) * 100}%` }} />
-              <div className="bg-amber" style={{ width: `${(nearCount / total) * 100}%` }} />
-              <div className="bg-red" style={{ width: `${(overCount / total) * 100}%` }} />
+              <div className="bg-green" style={{ width: `${(safeCount / Math.max(total, 1)) * 100}%` }} />
+              <div className="bg-amber" style={{ width: `${(nearCount / Math.max(total, 1)) * 100}%` }} />
+              <div className="bg-red" style={{ width: `${(overCount / Math.max(total, 1)) * 100}%` }} />
             </div>
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between">
@@ -133,7 +138,7 @@ export default function DashboardEksekutifPage() {
                   <span className="size-2.5 rounded-full bg-green inline-block" /> Aman
                 </span>
                 <span className="text-muted">
-                  {safeCount} kasus ({Math.round((safeCount / total) * 100)}%)
+                  {safeCount} kasus ({Math.round((safeCount / Math.max(total, 1)) * 100)}%)
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -141,7 +146,7 @@ export default function DashboardEksekutifPage() {
                   <span className="size-2.5 rounded-full bg-amber inline-block" /> Mendekati SLA
                 </span>
                 <span className="text-muted">
-                  {nearCount} kasus ({Math.round((nearCount / total) * 100)}%)
+                  {nearCount} kasus ({Math.round((nearCount / Math.max(total, 1)) * 100)}%)
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -149,7 +154,7 @@ export default function DashboardEksekutifPage() {
                   <span className="size-2.5 rounded-full bg-red inline-block" /> Lewat SLA
                 </span>
                 <span className="text-muted">
-                  {overCount} kasus ({Math.round((overCount / total) * 100)}%)
+                  {overCount} kasus ({Math.round((overCount / Math.max(total, 1)) * 100)}%)
                 </span>
               </div>
             </div>
@@ -194,9 +199,9 @@ export default function DashboardEksekutifPage() {
           </CardHeader>
           <CardContent>
             <div className="flex h-3 w-full overflow-hidden rounded-full mb-3">
-              <div className="bg-red" style={{ width: `${(bappebtiOwned.length / respTotal) * 100}%` }} />
-              <div className="bg-navy" style={{ width: `${(memberAssigned.length / respTotal) * 100}%` }} />
-              <div className="bg-amber" style={{ width: `${(waitingPublic.length / respTotal) * 100}%` }} />
+              <div className="bg-red" style={{ width: `${(bappebtiOwned.length / Math.max(respTotal, 1)) * 100}%` }} />
+              <div className="bg-navy" style={{ width: `${(memberAssigned.length / Math.max(respTotal, 1)) * 100}%` }} />
+              <div className="bg-amber" style={{ width: `${(waitingPublic.length / Math.max(respTotal, 1)) * 100}%` }} />
             </div>
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between">
@@ -365,4 +370,9 @@ export default function DashboardEksekutifPage() {
       </Card>
     </div>
   );
+}
+
+export default function DashboardEksekutifPage() {
+  const filters = useDashboardFilters(CASES);
+  return <DashboardContent cases={filters.cases} toolbar={<DashboardFilterBar {...filters} />} />;
 }

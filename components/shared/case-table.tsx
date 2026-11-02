@@ -4,6 +4,7 @@ import { SeverityBadge, StatusBadge, OwnerBadge, SlaBadge } from "@/components/s
 import { ComplaintCase } from "@/lib/types";
 import { ArrowRight } from "lucide-react";
 import { SourceBadge } from "@/components/shared/source-badge";
+import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
 /** Shared case list table used across every Manajemen Pengaduan view — every row always links to the full case detail page. */
 export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
@@ -19,7 +20,7 @@ export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
           <TableHead>Platform</TableHead>
           <TableHead>Kategori</TableHead>
           <TableHead>Prioritas</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead>Status Tiket</TableHead>
           <TableHead>Penanggung Jawab</TableHead>
           <TableHead>SLA</TableHead>
           <TableHead>Aksi</TableHead>
@@ -41,7 +42,7 @@ export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
               <SeverityBadge severity={c.severity} />
             </TableCell>
             <TableCell>
-              <StatusBadge status={c.status} />
+              <TicketStatusBadge complaintCase={c} />
             </TableCell>
             <TableCell>
               <OwnerBadge owner={c.currentOwner} />

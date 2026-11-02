@@ -11,7 +11,7 @@ export default function PengaduanTanpaPlatformPage() {
   return (
     <div>
       <PageHeader
-        title="Pengaduan Tanpa ID Platform"
+        title="Pengaduan Tanpa Pialang User ID"
         description="Pengaduan yang masuk tanpa ID pengguna platform terverifikasi — perlu diperiksa kelengkapan datanya sebelum diteruskan ke pelaku usaha terkait."
       />
       <FilterableCaseList cases={cases} />

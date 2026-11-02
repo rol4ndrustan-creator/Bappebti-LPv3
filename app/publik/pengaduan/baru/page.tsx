@@ -15,12 +15,28 @@ import { StatusBadge } from "@/components/shared/badges";
 import { FileUploader } from "@/components/shared/file-uploader";
 import { useToast } from "@/components/shared/toast-provider";
 import { CATEGORY_LIST, PLATFORM_LIST, PROVINCE_LIST } from "@/lib/mock-data";
+import { getPialangOfficials } from "@/lib/pialang-profiles";
+import { useBusinessParams } from "@/lib/mock-service/params-store";
+import { useClock } from "@/lib/clock";
+import { PialangOfficial } from "@/lib/types";
 import { usePublikAuth } from "@/lib/publik-auth";
 import {
   CheckCircle2,
   ChevronRight,
   Info,
+  FileText,
+  Plus,
+  Trash2,
 } from "lucide-react";
+
+const MAX_KRONOLOGI_BYTES = 5 * 1024 * 1024;
+const OFFICIAL_POSITIONS: PialangOfficial["position"][] = ["Direksi", "Kepala Cabang", "Wakil Pialang Berjangka (WPB)"];
+
+interface SupportingDoc {
+  id: string;
+  file: string;
+  label: string;
+}
 
 type ServiceType = "resmi" | "kritik" | "panduan" | null;
 
@@ -52,6 +68,9 @@ interface FormData {
   platformUserId: string;
   kronologi: string;
   permintaan: string;
+  /** Pihak terlapor (orang) dari data kepengurusan hasil profiling Pialang. */
+  terlaporJabatan: string;
+  terlaporNama: string;
 }
 
 const INITIAL_FORM: FormData = {
@@ -71,6 +90,8 @@ const INITIAL_FORM: FormData = {
   platformUserId: "",
   kronologi: "",
   permintaan: "",
+  terlaporJabatan: "",
+  terlaporNama: "",
 };
 
 const PANDUAN_EXAMPLES = [
@@ -123,6 +144,17 @@ export default function BuatPengaduanPage() {
       : INITIAL_FORM
   );
   const [agree, setAgree] = useState(false);
+  const [agreeRegulation, setAgreeRegulation] = useState(false);
+  const [agreeMateriil, setAgreeMateriil] = useState(false);
+  const params = useBusinessParams();
+  const now = useClock();
+  // Kronologi: ketik narasi atau unggah dokumen (PDF/DOC/JPG maks. 5MB).
+  const [kronologiMode, setKronologiMode] = useState<"teks" | "file">("teks");
+  const [kronologiFile, setKronologiFile] = useState("");
+  const [kronologiFileError, setKronologiFileError] = useState("");
+  // Dokumen bukti: KTP otomatis dari akun, Bukti Setor wajib, dokumen lain berlabel.
+  const [buktiSetor, setBuktiSetor] = useState<string[]>([]);
+  const [supportingDocs, setSupportingDocs] = useState<SupportingDoc[]>([]);
 
   // Identitas Pelapor is auto-filled from the reporter's registration data
   // once the account has loaded from localStorage.
@@ -140,13 +172,6 @@ export default function BuatPengaduanPage() {
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync when the account identity changes
   }, [account?.email]);
-
-  // evidence state (pre-populated mock files)
-  const [files, setFiles] = useState<string[]>([
-    "Bukti transfer.pdf",
-    "Screenshot status withdrawal.png",
-    "Riwayat percakapan CS.png",
-  ]);
 
   // feedback (Kritik & Saran) state
   const [feedbackTopic, setFeedbackTopic] = useState("");
@@ -174,11 +199,13 @@ export default function BuatPengaduanPage() {
         : INITIAL_FORM
     );
     setAgree(false);
-    setFiles([
-      "Bukti transfer.pdf",
-      "Screenshot status withdrawal.png",
-      "Riwayat percakapan CS.png",
-    ]);
+    setAgreeRegulation(false);
+    setAgreeMateriil(false);
+    setKronologiMode("teks");
+    setKronologiFile("");
+    setKronologiFileError("");
+    setBuktiSetor([]);
+    setSupportingDocs([]);
     setFeedbackTopic("");
     setFeedbackMessage("");
     setFeedbackSubmitted(false);
@@ -192,8 +219,38 @@ export default function BuatPengaduanPage() {
     // kritik & panduan stay on step 1 and render their own branch
   }
 
+  const officials = getPialangOfficials(form.platform);
+  const ktpFile = `KTP_${(form.nama || "Pelapor").replace(/\s+/g, "_")}.jpg`;
+  const incidentAgeDays = form.tanggalKejadian && now
+    ? Math.floor((now.getTime() - new Date(`${form.tanggalKejadian}T00:00:00+07:00`).getTime()) / 86_400_000)
+    : 0;
+  const incidentExpired = !!form.tanggalKejadian && incidentAgeDays > params.kedaluwarsaDays;
+  const incidentInFuture = !!form.tanggalKejadian && incidentAgeDays < 0;
+  const kronologiOk = kronologiMode === "teks" ? !!form.kronologi.trim() : !!kronologiFile;
+  const step3Valid = !!form.platform && !!form.tanggalKejadian && !incidentExpired && !incidentInFuture && kronologiOk;
+  const step4Valid = buktiSetor.length > 0 && supportingDocs.every((d) => !d.file || d.label.trim());
+  const consentOk = agree && agreeRegulation && agreeMateriil;
+  const allEvidence = [`${ktpFile} (KTP)`, ...buktiSetor.map((f) => `${f} (Bukti Setor)`), ...supportingDocs.filter((d) => d.file).map((d) => `${d.file} (${d.label.trim()})`)];
+
+  function handleKronologiFile(file: File | undefined) {
+    if (!file) return;
+    const okType = /\.(pdf|docx?|jpe?g)$/i.test(file.name);
+    if (!okType) {
+      setKronologiFile("");
+      setKronologiFileError("Format harus PDF, DOC/DOCX, atau JPG.");
+      return;
+    }
+    if (file.size > MAX_KRONOLOGI_BYTES) {
+      setKronologiFile("");
+      setKronologiFileError("Ukuran berkas melebihi 5MB.");
+      return;
+    }
+    setKronologiFileError("");
+    setKronologiFile(file.name);
+  }
+
   function handleSubmitComplaint() {
-    if (!agree) return;
+    if (!consentOk) return;
     setStep(6);
     showToast("Pengaduan Anda telah diterima dan tiket telah diterbitkan.");
   }
@@ -462,7 +519,7 @@ export default function BuatPengaduanPage() {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-navy">&bull;</span>
-                  Nomor transaksi membantu verifikasi.
+                  Nomor akun transaksi membantu verifikasi.
                 </li>
                 <li className="flex gap-2">
                   <span className="text-navy">&bull;</span>
@@ -491,9 +548,13 @@ export default function BuatPengaduanPage() {
                 <Input id="judul" value={form.judul} onChange={(e) => update("judul", e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="platform">Platform terkait</Label>
-                <Select id="platform" value={form.platform} onChange={(e) => update("platform", e.target.value)}>
-                  <option value="">Pilih platform</option>
+                <Label htmlFor="platform">Pialang terkait *</Label>
+                <Select
+                  id="platform"
+                  value={form.platform}
+                  onChange={(e) => setForm((prev) => ({ ...prev, platform: e.target.value, terlaporJabatan: "", terlaporNama: "" }))}
+                >
+                  <option value="">Pilih pialang</option>
                   {PLATFORM_LIST.map((p) => (
                     <option key={p} value={p}>
                       {p}
@@ -501,6 +562,49 @@ export default function BuatPengaduanPage() {
                   ))}
                 </Select>
               </div>
+              {form.platform && (
+                <div className="sm:col-span-2 rounded-md border border-border bg-muted-bg/40 p-3">
+                  <p className="text-xs font-semibold text-navy mb-0.5">Pihak yang Diadukan</p>
+                  <p className="text-[11px] text-muted mb-2">
+                    Pilih jabatan dan nama orang yang diadukan berdasarkan data kepengurusan hasil profiling Bappebti atas {form.platform} (data simulasi).
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="terlaporJabatan">Jabatan</Label>
+                      <Select
+                        id="terlaporJabatan"
+                        value={form.terlaporJabatan}
+                        onChange={(e) => setForm((prev) => ({ ...prev, terlaporJabatan: e.target.value, terlaporNama: "" }))}
+                      >
+                        <option value="">Tidak spesifik / lembaga Pialang</option>
+                        {OFFICIAL_POSITIONS.map((p) => (
+                          <option key={p} value={p}>
+                            {p}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="terlaporNama">Nama orang yang diadukan</Label>
+                      <Select
+                        id="terlaporNama"
+                        value={form.terlaporNama}
+                        disabled={!form.terlaporJabatan}
+                        onChange={(e) => update("terlaporNama", e.target.value)}
+                      >
+                        <option value="">{form.terlaporJabatan ? "Pilih nama" : "Pilih jabatan terlebih dahulu"}</option>
+                        {officials
+                          .filter((o) => o.position === form.terlaporJabatan)
+                          .map((o) => (
+                            <option key={o.id} value={o.name}>
+                              {o.name} — {o.office} ({o.licenseNumber})
+                            </option>
+                          ))}
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div>
                 <Label htmlFor="kategori">Kategori pengaduan</Label>
                 <Select id="kategori" value={form.kategori} onChange={(e) => update("kategori", e.target.value)}>
@@ -521,13 +625,19 @@ export default function BuatPengaduanPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="tanggalKejadian">Tanggal kejadian</Label>
+                <Label htmlFor="tanggalKejadian">Tanggal kejadian *</Label>
                 <Input
                   id="tanggalKejadian"
                   type="date"
                   value={form.tanggalKejadian}
                   onChange={(e) => update("tanggalKejadian", e.target.value)}
                 />
+                {incidentExpired && (
+                  <p className="text-[11px] text-red mt-1">
+                    Perkara telah kedaluwarsa: melewati batas {params.kedaluwarsaDays} hari sejak tanggal kejadian, sehingga tidak dapat diajukan.
+                  </p>
+                )}
+                {incidentInFuture && <p className="text-[11px] text-red mt-1">Tanggal kejadian tidak boleh di masa depan.</p>}
               </div>
               <div>
                 <Label htmlFor="nilaiTransaksi">Nilai transaksi (opsional)</Label>
@@ -540,7 +650,7 @@ export default function BuatPengaduanPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="nomorTransaksi">Nomor transaksi/referensi (Opsional)</Label>
+                <Label htmlFor="nomorTransaksi">Nomor Akun Transaksi (Opsional)</Label>
                 <Input
                   id="nomorTransaksi"
                   value={form.nomorTransaksi}
@@ -548,7 +658,7 @@ export default function BuatPengaduanPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="platformUserId">Platform User ID (Opsional)</Label>
+                <Label htmlFor="platformUserId">Pialang User ID (Opsional)</Label>
                 <Input
                   id="platformUserId"
                   value={form.platformUserId}
@@ -556,13 +666,41 @@ export default function BuatPengaduanPage() {
                 />
               </div>
               <div className="sm:col-span-2">
-                <Label htmlFor="kronologi">Kronologi pengaduan</Label>
-                <Textarea
-                  id="kronologi"
-                  className="min-h-[100px]"
-                  value={form.kronologi}
-                  onChange={(e) => update("kronologi", e.target.value)}
-                />
+                <Label>Kronologi perkara *</Label>
+                <div className="flex flex-wrap gap-4 text-xs mb-2">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="kronologi-mode" checked={kronologiMode === "teks"} onChange={() => setKronologiMode("teks")} />
+                    Ketik narasi langsung
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="kronologi-mode" checked={kronologiMode === "file"} onChange={() => setKronologiMode("file")} />
+                    Unggah dokumen (PDF, DOC, atau JPG maks. 5MB)
+                  </label>
+                </div>
+                {kronologiMode === "teks" ? (
+                  <Textarea
+                    id="kronologi"
+                    className="min-h-[100px]"
+                    placeholder="Ceritakan kronologi kejadian secara runtut..."
+                    value={form.kronologi}
+                    onChange={(e) => update("kronologi", e.target.value)}
+                  />
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      id="kronologi-file"
+                      type="file"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg"
+                      className="hidden"
+                      onChange={(e) => handleKronologiFile(e.target.files?.[0])}
+                    />
+                    <Button type="button" size="sm" variant="outline" onClick={() => document.getElementById("kronologi-file")?.click()}>
+                      <FileText className="size-3.5" /> {kronologiFile ? "Ganti Dokumen" : "Pilih Dokumen Kronologi"}
+                    </Button>
+                    {kronologiFile && <span className="text-xs text-foreground/80">{kronologiFile}</span>}
+                    {kronologiFileError && <span className="text-xs text-red">{kronologiFileError}</span>}
+                  </div>
+                )}
               </div>
               <div className="sm:col-span-2">
                 <Label htmlFor="permintaan">Permintaan pelapor / resolusi yang diharapkan</Label>
@@ -582,14 +720,76 @@ export default function BuatPengaduanPage() {
       {step === 4 && (
         <Card>
           <CardHeader>
-            <CardTitle>Bukti Pendukung</CardTitle>
+            <CardTitle>Dokumen Bukti</CardTitle>
           </CardHeader>
-          <CardContent>
-            <FileUploader
-              files={files}
-              onChange={setFiles}
-              hint="PDF, JPG, PNG — maksimal 10MB per file, maksimal 5 file"
-            />
+          <CardContent className="flex flex-col gap-4">
+            <div>
+              <p className="text-xs font-semibold text-navy mb-1">Dokumen Wajib</p>
+              <div className="rounded-md border border-border p-2.5 text-xs flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-green shrink-0" />
+                <span className="font-medium">KTP</span>
+                <span className="text-muted">— {ktpFile} (terisi otomatis dari akun pelapor)</span>
+              </div>
+            </div>
+            <div>
+              <Label>Bukti Setor *</Label>
+              <FileUploader files={buktiSetor} onChange={setBuktiSetor} multiple={false} maxFiles={1} label="Unggah bukti setor dana (PDF/JPG/PNG)" />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-semibold text-navy">Dokumen Pendukung Lain (opsional)</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSupportingDocs((prev) => [...prev, { id: `DOC-${Date.now().toString(36)}`, file: "", label: "" }])}
+                >
+                  <Plus className="size-3.5" /> Tambah Dokumen
+                </Button>
+              </div>
+              {supportingDocs.length === 0 && <p className="text-[11px] text-muted">Belum ada dokumen pendukung tambahan.</p>}
+              <div className="flex flex-col gap-2">
+                {supportingDocs.map((d) => (
+                  <div key={d.id} className="rounded-md border border-border p-2.5 flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        id={`doc-${d.id}`}
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                        onChange={(e) => {
+                          const name = e.target.files?.[0]?.name ?? "";
+                          setSupportingDocs((prev) => prev.map((x) => (x.id === d.id ? { ...x, file: name } : x)));
+                        }}
+                      />
+                      <Button type="button" size="sm" variant="secondary" onClick={() => document.getElementById(`doc-${d.id}`)?.click()}>
+                        {d.file ? "Ganti File" : "Pilih File"}
+                      </Button>
+                      <span className="text-xs truncate flex-1">{d.file || "Belum ada file"}</span>
+                      <button
+                        type="button"
+                        title="Hapus"
+                        onClick={() => setSupportingDocs((prev) => prev.filter((x) => x.id !== d.id))}
+                        className="text-muted hover:text-red"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                    {d.file && (
+                      <div>
+                        <Label className="text-[11px]">Nama / label berkas *</Label>
+                        <Input
+                          placeholder="Contoh: Riwayat percakapan CS, Rekening koran"
+                          value={d.label}
+                          onChange={(e) => setSupportingDocs((prev) => prev.map((x) => (x.id === d.id ? { ...x, label: e.target.value } : x)))}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted mt-2">Bukti susulan tetap dapat diunggah setelah tiket terbit melalui tab Bukti pada detail pengaduan.</p>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -608,8 +808,12 @@ export default function BuatPengaduanPage() {
                   <dd className="font-medium">{form.judul || "-"}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted">Platform terkait</dt>
+                  <dt className="text-muted">Pialang terkait</dt>
                   <dd className="font-medium">{form.platform || "-"}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted">Pihak yang diadukan</dt>
+                  <dd className="font-medium">{form.terlaporNama ? `${form.terlaporJabatan}: ${form.terlaporNama}` : "Tidak spesifik"}</dd>
                 </div>
                 <div>
                   <dt className="text-muted">Kategori / Subkategori</dt>
@@ -623,16 +827,16 @@ export default function BuatPengaduanPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Referensi Transaksi</CardTitle>
+              <CardTitle>Nomor Akun Transaksi</CardTitle>
             </CardHeader>
             <CardContent>
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <dt className="text-muted">Platform User ID</dt>
+                  <dt className="text-muted">Pialang User ID</dt>
                   <dd className="font-medium">{form.platformUserId || "-"}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted">Nomor transaksi/referensi</dt>
+                  <dt className="text-muted">Nomor Akun Transaksi</dt>
                   <dd className="font-medium">{form.nomorTransaksi || "-"}</dd>
                 </div>
                 <div>
@@ -659,7 +863,7 @@ export default function BuatPengaduanPage() {
               <div className="flex flex-col gap-3 text-xs">
                 <div>
                   <p className="text-muted mb-1">Ringkasan kronologi</p>
-                  <p className="text-foreground/80">{form.kronologi || "-"}</p>
+                  <p className="text-foreground/80">{kronologiMode === "teks" ? form.kronologi || "-" : `Dokumen terlampir: ${kronologiFile || "-"}`}</p>
                 </div>
                 <div>
                   <p className="text-muted mb-1">Permintaan pelapor</p>
@@ -667,11 +871,11 @@ export default function BuatPengaduanPage() {
                 </div>
                 <div>
                   <p className="text-muted mb-1">Bukti terlampir</p>
-                  {files.length === 0 ? (
+                  {allEvidence.length === 0 ? (
                     <p className="text-foreground/80">Tidak ada bukti terlampir.</p>
                   ) : (
                     <ul className="flex flex-col gap-1">
-                      {files.map((file) => (
+                      {allEvidence.map((file) => (
                         <li key={file} className="flex items-center gap-2">
                           <CheckCircle2 className="size-3.5 text-green shrink-0" />
                           <span>{file}</span>
@@ -713,17 +917,28 @@ export default function BuatPengaduanPage() {
           </Card>
 
           <Card>
-            <CardContent className="flex items-start gap-2 py-3">
-              <Checkbox
-                id="agree"
-                checked={agree}
-                onCheckedChange={(v) => setAgree(v === true)}
-                className="mt-0.5"
-              />
-              <Label htmlFor="agree" className="mb-0 cursor-pointer">
-                Saya menyatakan informasi dan bukti yang disampaikan benar dan dapat
-                dipertanggungjawabkan.
-              </Label>
+            <CardHeader>
+              <CardTitle>Persetujuan Regulasi</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2.5 py-3">
+              <div className="flex items-start gap-2">
+                <Checkbox id="agree" checked={agree} onCheckedChange={(v) => setAgree(v === true)} className="mt-0.5" />
+                <Label htmlFor="agree" className="mb-0 cursor-pointer">
+                  Saya menyatakan informasi dan bukti yang disampaikan benar dan dapat dipertanggungjawabkan.
+                </Label>
+              </div>
+              <div className="flex items-start gap-2">
+                <Checkbox id="agree-regulation" checked={agreeRegulation} onCheckedChange={(v) => setAgreeRegulation(v === true)} className="mt-0.5" />
+                <Label htmlFor="agree-regulation" className="mb-0 cursor-pointer">
+                  Saya setuju untuk mengikuti peraturan Bappebti yang berlaku terkait mekanisme penanganan pengaduan dan penyelesaian perselisihan.
+                </Label>
+              </div>
+              <div className="flex items-start gap-2">
+                <Checkbox id="agree-materiil" checked={agreeMateriil} onCheckedChange={(v) => setAgreeMateriil(v === true)} className="mt-0.5" />
+                <Label htmlFor="agree-materiil" className="mb-0 cursor-pointer">
+                  Saya memahami bahwa laporan dapat ditolak apabila tidak memenuhi syarat materiil.
+                </Label>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -790,11 +1005,15 @@ export default function BuatPengaduanPage() {
             Kembali
           </Button>
           {step < 5 ? (
-            <Button size="sm" onClick={() => setStep((s) => Math.min(5, s + 1))}>
+            <Button
+              size="sm"
+              disabled={(step === 3 && !step3Valid) || (step === 4 && !step4Valid)}
+              onClick={() => setStep((s) => Math.min(5, s + 1))}
+            >
               Lanjutkan
             </Button>
           ) : (
-            <Button size="sm" disabled={!agree} onClick={handleSubmitComplaint}>
+            <Button size="sm" disabled={!consentOk} onClick={handleSubmitComplaint}>
               Kirim Pengaduan
             </Button>
           )}

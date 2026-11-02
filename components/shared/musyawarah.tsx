@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useToast } from "@/components/shared/toast-provider";
 import { AttendanceStatus, ComplaintCase, MeetingDecision, MeetingLocationType, MeetingStatus, MusyawarahMeeting } from "@/lib/types";
 import {
+  meetingEndIso,
   MEETING_LOCATION_OPTIONS,
   MEETING_SEED,
   MEETING_STATUS_TONE,
@@ -24,17 +25,33 @@ import {
   sortMeetings,
   useNow,
 } from "@/lib/meeting";
-import { addMeeting, recordMeetingOutcome, useMeetings } from "@/lib/mock-service/meeting-store";
+import { addMeeting, editMeeting, recordMeetingOutcome, useMeetings } from "@/lib/mock-service/meeting-store";
+import { markMusyawarahFailed } from "@/lib/lifecycle-actions";
+import { useLifecycleActor } from "@/components/shared/ticket-lifecycle";
+import { getViewerGroup } from "@/lib/permissions";
 import { addTimelineEvent } from "@/lib/mock-service/store";
 import { logAudit } from "@/lib/mock-service/audit-store";
 import { useActingParty } from "@/lib/use-acting-party";
 import { useDemoSession } from "@/lib/demo-session";
 import { CASES } from "@/lib/mock-data";
-import { CalendarPlus, ClipboardEdit, Eye, MapPin, Video } from "lucide-react";
+import { Ban, CalendarPlus, ClipboardEdit, Eye, MapPin, Pencil, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DECISIONS: MeetingDecision[] = ["Selesai (Damai / Kesepakatan Tercapai)", "Diundang ke Musyawarah Berikutnya"];
-const STATUSES: MeetingStatus[] = ["Dijadwalkan", "Berlangsung", "Selesai", "Lanjut Musyawarah Berikutnya"];
+const DECISIONS: MeetingDecision[] = ["Selesai (Damai / Kesepakatan Tercapai)", "Diundang ke Musyawarah Berikutnya", "Tidak Sepakat (Musyawarah Berakhir)"];
+const STATUSES: MeetingStatus[] = ["Dijadwalkan", "Berlangsung", "Selesai", "Lanjut Musyawarah Berikutnya", "Tidak Sepakat", "Dibatalkan"];
+
+/**
+ * Edit Jadwal / Batalkan Musyawarah (List Revisi 12 #12): penyelenggara,
+ * Bappebti, dan Pialang. Ekosistem Pengawas (pasif) & nasabah hanya melihat.
+ */
+function useCanManageMeeting(): (m: MusyawarahMeeting) => boolean {
+  const { user } = useDemoSession();
+  const group = getViewerGroup(user.role);
+  return (m) =>
+    !m.outcome &&
+    !m.cancellation &&
+    (group === "Bappebti" || group === "Platform" || (group === "EkosistemActive" && m.proposedBy.name === user.name));
+}
 
 function StatusBadge({ status }: { status: MeetingStatus }) {
   return <Badge variant={MEETING_STATUS_TONE[status]}>{status.toUpperCase()}</Badge>;
@@ -64,12 +81,24 @@ function LocationText({ m }: { m: MusyawarahMeeting }) {
 // Tab "Pertemuan Musyawarah" pada detail pengaduan
 // ---------------------------------------------------------------------------
 
-export function MusyawarahTab({ complaintCase: c, readOnly }: { complaintCase: ComplaintCase; readOnly: boolean }) {
+export function MusyawarahTab({
+  complaintCase: c,
+  readOnly,
+  publicView = false,
+}: {
+  complaintCase: ComplaintCase;
+  readOnly: boolean;
+  /** Portal nasabah: daftar jadwal tanpa aksi. */
+  publicView?: boolean;
+}) {
   const all = useMeetings(MEETING_SEED);
   const meetings = sortMeetings(all.filter((m) => m.ticket === c.ticket));
   const now = useNow();
+  const canManage = useCanManageMeeting();
   const [formOpen, setFormOpen] = React.useState(false);
   const [recording, setRecording] = React.useState<MusyawarahMeeting | null>(null);
+  const [editing, setEditing] = React.useState<MusyawarahMeeting | null>(null);
+  const [cancelling, setCancelling] = React.useState<MusyawarahMeeting | null>(null);
 
   return (
     <div className="space-y-4">
@@ -78,7 +107,9 @@ export function MusyawarahTab({ complaintCase: c, readOnly }: { complaintCase: C
           <div>
             <CardTitle>Pertemuan Musyawarah</CardTitle>
             <p className="text-[11px] text-muted mt-1">
-              {readOnly
+              {publicView
+                ? "Jadwal pertemuan musyawarah atas pengaduan Anda. Undangan resmi juga dikirim ke email Anda."
+                : readOnly
                 ? "Mode pemantauan (read-only): Anda dapat melihat jadwal, lokasi, agenda, kehadiran, dan hasil musyawarah."
                 : "Jadwalkan pertemuan musyawarah/mediasi bersama pelapor. Undangan resmi dikirim ke email pengadu."}
             </p>
@@ -96,18 +127,28 @@ export function MusyawarahTab({ complaintCase: c, readOnly }: { complaintCase: C
         )}
         <CardContent className="py-4 space-y-3">
           {meetings.length === 0 && <p className="text-sm text-muted">Belum ada pertemuan musyawarah untuk tiket ini.</p>}
-          {meetings.map((m, i) => (
-            <MeetingCard
-              key={m.id}
-              meeting={m}
-              sequence={i + 1}
-              status={getMeetingStatus(m, now)}
-              onRecord={!readOnly && !m.outcome ? () => setRecording(m) : undefined}
-            />
-          ))}
+          {meetings.map((m, i) =>
+            editing?.id === m.id ? (
+              <div key={m.id} className="rounded-md border border-navy/30 p-3">
+                <MeetingForm complaintCase={c} sequence={i + 1} existing={m} onDone={() => setEditing(null)} />
+              </div>
+            ) : (
+              <MeetingCard
+                key={m.id}
+                meeting={m}
+                sequence={i + 1}
+                status={getMeetingStatus(m, now)}
+                publicView={publicView}
+                onRecord={!readOnly && !m.outcome && !m.cancellation ? () => setRecording(m) : undefined}
+                onEdit={!readOnly && canManage(m) ? () => setEditing(m) : undefined}
+                onCancel={!readOnly && canManage(m) ? () => setCancelling(m) : undefined}
+              />
+            )
+          )}
         </CardContent>
       </Card>
       {recording && <OutcomeDialog meeting={recording} onClose={() => setRecording(null)} />}
+      {cancelling && <CancelMeetingDialog meeting={cancelling} onClose={() => setCancelling(null)} />}
     </div>
   );
 }
@@ -116,12 +157,18 @@ function MeetingCard({
   meeting: m,
   sequence,
   status,
+  publicView = false,
   onRecord,
+  onEdit,
+  onCancel,
 }: {
   meeting: MusyawarahMeeting;
   sequence: number;
   status: MeetingStatus;
+  publicView?: boolean;
   onRecord?: () => void;
+  onEdit?: () => void;
+  onCancel?: () => void;
 }) {
   return (
     <div className="rounded-md border border-border p-3 text-xs">
@@ -150,12 +197,14 @@ function MeetingCard({
             {m.proposedBy.institution !== m.proposedBy.role ? `: ${m.proposedBy.institution}` : ""}] {m.proposedBy.name}
           </dd>
         </div>
+        {!publicView && (
         <div>
           <dt className="text-muted">Status Kehadiran</dt>
           <dd className="font-medium">
             {m.outcome ? `Pelapor: ${m.outcome.reporterAttendance} · Terlapor: ${m.outcome.respondentAttendance}` : "Belum dicatat"}
           </dd>
         </div>
+        )}
         <div className="sm:col-span-2">
           <dt className="text-muted">Agenda Pembahasan</dt>
           <dd className="text-foreground/90">{m.agenda}</dd>
@@ -168,27 +217,62 @@ function MeetingCard({
           <p className="mt-0.5 text-[11px] text-muted">Dicatat oleh {m.outcome.recordedBy}</p>
         </div>
       )}
-      {onRecord && (
-        <div className="mt-2">
-          <Button size="sm" variant="secondary" onClick={onRecord}>
-            <ClipboardEdit className="size-3.5" /> Catat Hasil
-          </Button>
+      {m.cancellation && (
+        <div className="mt-2 rounded-md bg-muted-bg p-2">
+          <p className="font-semibold">Musyawarah dibatalkan</p>
+          <p className="mt-0.5">Alasan: {m.cancellation.reason}</p>
+          <p className="mt-0.5 text-[11px] text-muted">Dibatalkan oleh {m.cancellation.by}</p>
+        </div>
+      )}
+      {m.reschedules && m.reschedules.length > 0 && (
+        <p className="mt-1.5 text-[11px] text-muted">
+          Dijadwalkan ulang {m.reschedules.length}x — terakhir dari {m.reschedules[m.reschedules.length - 1].before} oleh {m.reschedules[m.reschedules.length - 1].by}.
+        </p>
+      )}
+      {(onRecord || onEdit || onCancel) && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {onRecord && (
+            <Button size="sm" variant="secondary" onClick={onRecord}>
+              <ClipboardEdit className="size-3.5" /> Catat Hasil
+            </Button>
+          )}
+          {onEdit && (
+            <Button size="sm" variant="outline" onClick={onEdit}>
+              <Pencil className="size-3.5" /> Edit Jadwal
+            </Button>
+          )}
+          {onCancel && (
+            <Button size="sm" variant="ghost" onClick={onCancel}>
+              <Ban className="size-3.5" /> Batalkan Musyawarah
+            </Button>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function MeetingForm({ complaintCase: c, sequence, onDone }: { complaintCase: ComplaintCase; sequence: number; onDone: () => void }) {
+function MeetingForm({
+  complaintCase: c,
+  sequence,
+  existing,
+  onDone,
+}: {
+  complaintCase: ComplaintCase;
+  sequence: number;
+  /** Diisi saat Edit Jadwal. */
+  existing?: MusyawarahMeeting;
+  onDone: () => void;
+}) {
   const { showToast } = useToast();
   const actingParty = useActingParty();
-  const [title, setTitle] = React.useState(`Musyawarah ${sequence > 1 ? `Lanjutan ke-${sequence} ` : ""}Mediasi ${c.title} #${c.ticket}`);
-  const [date, setDate] = React.useState("");
-  const [startTime, setStartTime] = React.useState("10:00");
-  const [endTime, setEndTime] = React.useState("12:00");
-  const [locationType, setLocationType] = React.useState<MeetingLocationType>("Tautan Video Conference");
-  const [locationDetail, setLocationDetail] = React.useState("");
-  const [agenda, setAgenda] = React.useState("");
+  const [title, setTitle] = React.useState(existing?.title ?? `Musyawarah ${sequence > 1 ? `Lanjutan ke-${sequence} ` : ""}Mediasi ${c.title} #${c.ticket}`);
+  const [date, setDate] = React.useState(existing?.date ?? "");
+  const [startTime, setStartTime] = React.useState(existing?.startTime ?? "10:00");
+  const [endTime, setEndTime] = React.useState(existing?.endTime ?? "12:00");
+  const [locationType, setLocationType] = React.useState<MeetingLocationType>(existing?.locationType ?? "Tautan Video Conference");
+  const [locationDetail, setLocationDetail] = React.useState(existing?.locationDetail ?? "");
+  const [agenda, setAgenda] = React.useState(existing?.agenda ?? "");
 
   const timeInvalid = !!startTime && !!endTime && endTime <= startTime;
   const invalid = !title.trim() || !date || !startTime || !endTime || timeInvalid || !locationDetail.trim() || !agenda.trim();
@@ -196,6 +280,32 @@ function MeetingForm({ complaintCase: c, sequence, onDone }: { complaintCase: Co
   function submit() {
     if (invalid) return;
     const party = actingParty(c);
+    if (existing) {
+      const before = formatMeetingDate(existing);
+      const after = formatMeetingDate({ date, startTime, endTime });
+      editMeeting(existing.id, {
+        title: title.trim(),
+        date,
+        startTime,
+        endTime,
+        locationType,
+        locationDetail: locationDetail.trim(),
+        agenda: agenda.trim(),
+        reschedules: [...(existing.reschedules ?? []), { before, after, by: party.name, at: new Date().toISOString() }],
+      });
+      addTimelineEvent(c.ticket, {
+        actor: party.name,
+        role: party.role,
+        action: "Jadwal musyawarah diubah",
+        note: `${title.trim()} — dari ${before} menjadi ${after}, ${locationType}. Notifikasi perubahan dikirim ke email pengadu dan pihak terkait.`,
+        status: "info",
+        visibility: "public",
+      });
+      logAudit({ activity: "Edit Jadwal Musyawarah", ticket: c.ticket, detail: `Menjadwalkan ulang "${title.trim()}" dari ${before} menjadi ${after}.` });
+      showToast("Jadwal musyawarah diperbarui dan notifikasi perubahan telah dikirimkan ke email pengadu dan pihak terkait.");
+      onDone();
+      return;
+    }
     const m = addMeeting({
       ticket: c.ticket,
       title: title.trim(),
@@ -223,7 +333,7 @@ function MeetingForm({ complaintCase: c, sequence, onDone }: { complaintCase: Co
 
   return (
     <div className="space-y-2.5">
-      <p className="text-xs font-semibold text-navy">Ajukan Pertemuan Musyawarah</p>
+      <p className="text-xs font-semibold text-navy">{existing ? "Edit Jadwal Musyawarah" : "Ajukan Pertemuan Musyawarah"}</p>
       <div>
         <Label>Judul Pertemuan</Label>
         <Input value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -272,7 +382,7 @@ function MeetingForm({ complaintCase: c, sequence, onDone }: { complaintCase: Co
           Batal
         </Button>
         <Button size="sm" disabled={invalid} onClick={submit}>
-          Ajukan / Kirim Undangan Musyawarah
+          {existing ? "Simpan Perubahan Jadwal" : "Ajukan / Kirim Undangan Musyawarah"}
         </Button>
       </div>
     </div>
@@ -282,6 +392,7 @@ function MeetingForm({ complaintCase: c, sequence, onDone }: { complaintCase: Co
 function OutcomeDialog({ meeting: m, onClose }: { meeting: MusyawarahMeeting; onClose: () => void }) {
   const { showToast } = useToast();
   const { user } = useDemoSession();
+  const actor = useLifecycleActor();
   const [decision, setDecision] = React.useState<MeetingDecision>(DECISIONS[0]);
   const [reporterAttendance, setReporterAttendance] = React.useState<AttendanceStatus>("Hadir");
   const [respondentAttendance, setRespondentAttendance] = React.useState<AttendanceStatus>("Hadir");
@@ -306,10 +417,15 @@ function OutcomeDialog({ meeting: m, onClose }: { meeting: MusyawarahMeeting; on
       visibility: "public",
     });
     logAudit({ activity: "Catat Hasil Musyawarah", ticket: m.ticket, detail: `"${m.title}" → ${decision}.` });
+    if (decision === "Tidak Sepakat (Musyawarah Berakhir)") {
+      markMusyawarahFailed(m.ticket, actor, meetingEndIso(m));
+    }
     showToast(
       decision.startsWith("Selesai")
         ? "Hasil musyawarah tersimpan: kesepakatan tercapai."
-        : "Hasil musyawarah tersimpan. Silakan ajukan jadwal musyawarah berikutnya."
+        : decision.startsWith("Tidak Sepakat")
+          ? "Hasil musyawarah tersimpan: Tidak Sepakat. Jendela pengajuan arbitrase nasabah dibuka mulai H+1."
+          : "Hasil musyawarah tersimpan. Silakan ajukan jadwal musyawarah berikutnya."
     );
     onClose();
   }
@@ -357,7 +473,12 @@ function OutcomeDialog({ meeting: m, onClose }: { meeting: MusyawarahMeeting; on
           </div>
           {decision.startsWith("Selesai") && (
             <p className="text-[11px] rounded-md bg-muted-bg px-2 py-1.5">
-              Untuk pengaduan PBK, catat juga nilai kesepakatan pada tab Penyelesaian Perselisihan agar jenis dokumen (dokumen kesepakatan / akta perdamaian) ditentukan.
+              Kesepakatan damai dituangkan Pialang melalui tombol Ajukan Resolusi pada tab Resolusi, lalu disetujui nasabah.
+            </p>
+          )}
+          {decision.startsWith("Tidak Sepakat") && (
+            <p className="text-[11px] rounded-md bg-amber-bg/60 px-2 py-1.5">
+              Nasabah dapat mengajukan penyelesaian melalui arbitrase BAKTI mulai H+1 selama jendela waktu arbitrase. Tanpa pendaftaran, status menjadi Selesai Non-Arbitrase.
             </p>
           )}
         </div>
@@ -385,6 +506,8 @@ export function MusyawarahModule({ detailHref, readOnly }: { detailHref: (ticket
   const [search, setSearch] = React.useState("");
   const [viewing, setViewing] = React.useState<MusyawarahMeeting | null>(null);
   const [recording, setRecording] = React.useState<MusyawarahMeeting | null>(null);
+  const [cancelling, setCancelling] = React.useState<MusyawarahMeeting | null>(null);
+  const canManage = useCanManageMeeting();
 
   const rows = [...all]
     .sort((a, b) => `${b.date} ${b.startTime}`.localeCompare(`${a.date} ${a.startTime}`))
@@ -452,10 +575,22 @@ export function MusyawarahModule({ detailHref, readOnly }: { detailHref: (ticket
                   <Button size="sm" variant="ghost" onClick={() => setViewing(m)}>
                     <Eye className="size-3.5" /> Detail
                   </Button>
-                  {!readOnly && !m.outcome && (
+                  {!readOnly && !m.outcome && !m.cancellation && (
                     <Button size="sm" variant="secondary" onClick={() => setRecording(m)}>
                       <ClipboardEdit className="size-3.5" /> Catat Hasil
                     </Button>
+                  )}
+                  {!readOnly && canManage(m) && (
+                    <>
+                      <Link href={`${detailHref(m.ticket)}?tab=musyawarah`} title="Edit jadwal pada tab Pertemuan Musyawarah tiket">
+                        <Button size="sm" variant="ghost">
+                          <Pencil className="size-3.5" /> Edit
+                        </Button>
+                      </Link>
+                      <Button size="sm" variant="ghost" onClick={() => setCancelling(m)}>
+                        <Ban className="size-3.5" /> Batalkan
+                      </Button>
+                    </>
                   )}
                 </div>
               </TableCell>
@@ -473,7 +608,57 @@ export function MusyawarahModule({ detailHref, readOnly }: { detailHref: (ticket
 
       {viewing && <MeetingDetailDialog meeting={viewing} all={all} now={now} detailHref={detailHref} onClose={() => setViewing(null)} />}
       {recording && <OutcomeDialog meeting={recording} onClose={() => setRecording(null)} />}
+      {cancelling && <CancelMeetingDialog meeting={cancelling} onClose={() => setCancelling(null)} />}
     </div>
+  );
+}
+
+function CancelMeetingDialog({ meeting: m, onClose }: { meeting: MusyawarahMeeting; onClose: () => void }) {
+  const { showToast } = useToast();
+  const actingParty = useActingParty();
+  const [reason, setReason] = React.useState("");
+  return (
+    <Dialog open onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Batalkan Musyawarah</DialogTitle>
+          <DialogDescription>
+            {m.title} — {formatMeetingDate(m)}. Email notifikasi pembatalan akan dikirim ke nasabah dan pihak terkait.
+          </DialogDescription>
+        </DialogHeader>
+        <div>
+          <Label>Alasan pembatalan (wajib)</Label>
+          <Textarea value={reason} onChange={(e) => setReason(e.target.value)} className="min-h-[80px] text-sm" />
+        </div>
+        <DialogFooter>
+          <Button size="sm" variant="secondary" onClick={onClose}>
+            Kembali
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={!reason.trim()}
+            onClick={() => {
+              const party = actingParty(CASES.find((x) => x.ticket === m.ticket));
+              editMeeting(m.id, { cancellation: { reason: reason.trim(), by: party.name, at: new Date().toISOString() } });
+              addTimelineEvent(m.ticket, {
+                actor: party.name,
+                role: party.role,
+                action: "Musyawarah dibatalkan",
+                note: `${m.title} (${formatMeetingDate(m)}) dibatalkan. Alasan: ${reason.trim()}. Notifikasi pembatalan dikirim ke email nasabah dan pihak terkait.`,
+                status: "warning",
+                visibility: "public",
+              });
+              logAudit({ activity: "Batalkan Musyawarah", ticket: m.ticket, detail: `Membatalkan "${m.title}". Alasan: ${reason.trim()}.` });
+              showToast("Musyawarah dibatalkan dan email notifikasi pembatalan telah dikirimkan ke nasabah dan pihak terkait.");
+              onClose();
+            }}
+          >
+            Batalkan Musyawarah
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

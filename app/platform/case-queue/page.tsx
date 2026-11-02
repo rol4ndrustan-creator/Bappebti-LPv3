@@ -18,6 +18,7 @@ import { useCasesData, setPlatformPic, setLinkedEcosystemEntities } from "@/lib/
 import { PLATFORM_STAFF } from "@/lib/permissions";
 import { Eye } from "lucide-react";
 import { SourceBadge } from "@/components/shared/source-badge";
+import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
 const UNASSIGNED = "Belum Ditugaskan";
 const ECOSYSTEM_CATEGORY_TYPE: Record<string, LinkedEcosystemEntity["type"]> = { Bursa: "Bursa", Kliring: "Kliring", Custody: "Custody" };
@@ -89,7 +90,7 @@ export default function CaseQueuePage() {
             <TableHead>Judul Pengaduan</TableHead>
             <TableHead>PIC</TableHead>
             <TableHead>Member</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Status Tiket</TableHead>
             <TableHead>Aksi</TableHead>
           </TableRow>
         </TableHeader>
@@ -121,7 +122,7 @@ export default function CaseQueuePage() {
                 />
               </TableCell>
               <TableCell>
-                <SimpleStatusBadge status={c.status} />
+                <TicketStatusBadge complaintCase={c} />
               </TableCell>
               <TableCell>
                 <Link href={`/platform/kasus/${c.ticket}`} title="Lihat Detail" className="inline-flex rounded p-1 text-muted hover:bg-muted-bg hover:text-navy">

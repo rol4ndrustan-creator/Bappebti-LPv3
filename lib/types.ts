@@ -74,16 +74,7 @@ export type PublicStatus =
   | "Selesai"
   | "Ditutup Secara Administratif"
   | "Dialihkan ke Instansi Lain"
-  | "Di Luar Kewenangan"
-  // Mekanisme Penanganan Perselisihan Nasabah PBK
-  | "Verifikasi Bappebti"
-  | "Perbaikan Berkas"
-  | "Ditolak"
-  | "Musyawarah dengan Pialang"
-  | "Mediasi di Bursa"
-  | "Penyampaian Kesepakatan"
-  | "Pilihan Pengadilan/BAKTI"
-  | "Diteruskan ke Pengadilan/BAKTI";
+  | "Di Luar Kewenangan";
 
 /** Internal workflow state driving routing, SLA clocks and permitted transitions. */
 export type InternalWorkflowState =
@@ -154,16 +145,7 @@ export type SlaClockType =
   | "Review Bappebti"
   | "Klarifikasi Pelapor"
   | "Implementasi Resolusi"
-  | "Usia Kasus Keseluruhan"
-  // Mekanisme Penanganan Perselisihan Nasabah PBK
-  | "Verifikasi Materiil & Formil Bappebti"
-  | "Klarifikasi Pialang Berjangka"
-  | "Perbaikan Berkas Formil"
-  | "Musyawarah Pialang"
-  | "Mediasi Bursa"
-  | "Laporan Hasil Mediasi ke Bappebti"
-  | "Penyampaian Dokumen Kesepakatan"
-  | "Pemilihan Pengadilan/BAKTI";
+  | "Usia Kasus Keseluruhan";
 
 export type SlaClockStatus = "Aman" | "Perlu Perhatian" | "Mendekati Batas Waktu" | "Lewat Batas Waktu" | "Dijeda" | "Selesai";
 
@@ -313,10 +295,10 @@ export interface ComplaintCase {
   /** Ecosystem institutions (Bursa/Kliring/Custody) linked to this ticket via the Manajemen Pengaduan "Hubungkan Member" modal — a ticket may be linked to more than one. */
   linkedEcosystemEntities?: LinkedEcosystemEntity[];
 
-  /** Proses penyelesaian perselisihan nasabah PBK (lihat lib/dispute-workflow.ts). */
-  dispute?: DisputeRecord;
   /** Kanal asal pengaduan: kanal resmi Bappebti atau kanal internal Pialang (default Bappebti). */
   source?: ComplaintSource;
+  /** Profil demografi pengadu untuk filter dashboard. */
+  reporterAge?: number;
 }
 
 export type ComplaintSource = "Bappebti" | "Platform";
@@ -327,8 +309,8 @@ export type ComplaintSource = "Bappebti" | "Platform";
 
 export type MeetingLocationType = "Tautan Video Conference" | "Kantor Fisik Bappebti" | "Kantor Pialang";
 export type MeetingProposerRole = "Bappebti" | "Platform" | "Bursa" | "Kliring" | "Custody";
-export type MeetingStatus = "Dijadwalkan" | "Berlangsung" | "Selesai" | "Lanjut Musyawarah Berikutnya";
-export type MeetingDecision = "Selesai (Damai / Kesepakatan Tercapai)" | "Diundang ke Musyawarah Berikutnya";
+export type MeetingStatus = "Dijadwalkan" | "Berlangsung" | "Selesai" | "Lanjut Musyawarah Berikutnya" | "Tidak Sepakat" | "Dibatalkan";
+export type MeetingDecision = "Selesai (Damai / Kesepakatan Tercapai)" | "Diundang ke Musyawarah Berikutnya" | "Tidak Sepakat (Musyawarah Berakhir)";
 export type AttendanceStatus = "Hadir" | "Tidak Hadir";
 
 export interface MusyawarahMeeting {
@@ -354,6 +336,9 @@ export interface MusyawarahMeeting {
     recordedBy: string;
     recordedAt: string;
   };
+  cancellation?: { reason: string; by: string; at: string };
+  /** Riwayat penjadwalan ulang. */
+  reschedules?: { before: string; after: string; by: string; at: string }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -373,82 +358,6 @@ export interface OperationalAuditEvent {
   activity: string;
   ticket?: string;
   detail: string;
-}
-
-// ---------------------------------------------------------------------------
-// Mekanisme Penanganan Perselisihan Nasabah PBK
-// Nasabah → pengaduan online + unggah berkas → verifikasi paralel (Bappebti
-// materiil & formil 2 HK ∥ klarifikasi Pialang 1 HK) → disposisi ke Pialang →
-// Musyawarah (21 HK + perpanjangan maks. 14 hari) → Mediasi Bursa (21 HK +
-// perpanjangan maks. 14 hari) → lapor ke Bappebti (1 HK) → kesepakatan
-// (dokumen kesepakatan / akta perdamaian) atau Pengadilan/BAKTI.
-// ---------------------------------------------------------------------------
-
-export type DisputeStage =
-  | "VERIFIKASI"
-  | "PERBAIKAN_FORMIL"
-  | "DITOLAK_MATERIIL"
-  | "MUSYAWARAH"
-  | "MEDIASI_BURSA"
-  | "LAPOR_HASIL_MEDIASI"
-  | "PENYAMPAIAN_KESEPAKATAN"
-  | "PILIHAN_PENYELESAIAN"
-  | "PENGADILAN_BAKTI"
-  | "SELESAI";
-
-export type RequirementResult = "Terpenuhi" | "Tidak Terpenuhi";
-
-export type AgreementDocumentType = "Dokumen Kesepakatan" | "Akta Perdamaian";
-
-export interface DisputeRecord {
-  stage: DisputeStage;
-  /** Waktu pengaduan online & unggah berkas diterima sistem — awal verifikasi paralel. */
-  submittedAt: string;
-  bappebtiVerification: {
-    materiil?: RequirementResult;
-    formil?: RequirementResult;
-    verifiedAt?: string;
-    verifiedBy?: string;
-    note?: string;
-  };
-  pialangClarification: {
-    respondedAt?: string;
-    respondedBy?: string;
-    /** Hasil klarifikasi Pialang, mis. daluarsa, informasi kontrak, dll. */
-    note?: string;
-  };
-  formilReturnedAt?: string;
-  formilCorrectedAt?: string;
-  dispositionAt?: string;
-  musyawarah?: {
-    startedAt: string;
-    extendedDays?: number;
-    endedAt?: string;
-    outcome?: "Tercapai" | "Tidak Tercapai";
-  };
-  mediasi?: {
-    startedAt: string;
-    extendedDays?: number;
-    endedAt?: string;
-    outcome?: "Sepakat" | "Tidak Sepakat";
-    reportedAt?: string;
-  };
-  agreement?: {
-    forum: "Musyawarah" | "Mediasi";
-    value: number;
-    documentType: AgreementDocumentType;
-    /** Pihak yang wajib menyampaikan dokumen ke Bappebti: Pialang (musyawarah) atau Bursa (mediasi). */
-    submitter: string;
-    documentName?: string;
-    submittedAt?: string;
-  };
-  forumChoice?: {
-    /** Bursa menjelaskan pilihan sarana penyelesaian; tenggat 20 HK dihitung dari sini. */
-    explainedAt: string;
-    choice?: "BAKTI" | "Pengadilan";
-    chosenAt?: string;
-  };
-  closedAt?: string;
 }
 
 /** One Bursa/Kliring/Custody institution linked to a complaint ticket (List Revisi 4 — Kolom Member). */
@@ -686,6 +595,8 @@ export interface EcosystemEntity {
   aktaPerubahanDocument?: string;
   izinUsahaDocument?: string;
   strukturOrganisasiDocument?: string;
+  /** Struktur Organisasi Pialang (onboarding tahap 4) — pejabat berizin dari Profiling Bappebti. */
+  strukturOrganisasi?: PialangOfficial[];
   supportingDocuments?: { name: string; file: string }[];
   submitterName?: string;
   submitterPosition?: string;
@@ -991,4 +902,100 @@ export interface ClarificationRequest {
     clearing: boolean;
     bappebti: boolean;
   };
+}
+
+// ---------------------------------------------------------------------------
+// Siklus tiket (List Revisi 12): verifikasi Pialang → review Bappebti →
+// musyawarah → resolusi damai / arbitrase BAKTI / Pengadilan Negeri.
+// ---------------------------------------------------------------------------
+
+export type TicketStatus =
+  | "Menunggu Verifikasi Pialang"
+  | "Pengajuan Reject"
+  | "Rejected"
+  | "Proses Musyawarah"
+  | "Diajukan Penyelesaian"
+  | "Close Resolusi"
+  | "Close Auto"
+  | "Masa Pengajuan Arbitrase"
+  | "Proses Arbitrase BAKTI"
+  | "Close Arbitrase"
+  | "Selesai Non-Arbitrase";
+
+export type PialangRejectReason = "Pengaduan sudah pernah diproses" | "Pengaduan sedang aktif diproses di kanal lain";
+
+export type ArbitrationVerdict =
+  | "Disetujui Sesuai Permintaan"
+  | "Disetujui Sebagian Permintaan"
+  | "Tidak Dipenuhi Semua Permintaan";
+
+export interface ActorStamp {
+  by: string;
+  institution: string;
+  /** ISO timestamp */
+  at: string;
+}
+
+export interface ResolutionOffer extends ActorStamp {
+  id: string;
+  text: string;
+  amount?: number;
+  response?: "Setuju" | "Tolak";
+  responseNote?: string;
+  respondedAt?: string;
+}
+
+export interface ArbitrationHearing extends ActorStamp {
+  id: string;
+  /** yyyy-mm-dd */
+  date: string;
+  number: string;
+  notula: string;
+  document: string;
+}
+
+export interface TicketLifecycle {
+  /** ISO — tiket terbit (awal SLA review Pialang & SLA penyelesaian). */
+  submittedAt: string;
+  /** yyyy-mm-dd */
+  incidentDate?: string;
+  incidentDateLog: (ActorStamp & { before: string; after: string })[];
+  /** Pihak terlapor (orang) hasil profiling kepengurusan Pialang. */
+  respondent?: { position: string; name: string };
+  legalProceeding?: ActorStamp & { answer: "Ya" | "Tidak"; document?: string };
+  pialangReview?: ActorStamp & { decision: "Disetujui" | "Ditolak"; reason?: PialangRejectReason; document?: string; note?: string };
+  bappebtiReview?: ActorStamp & { decision: "Kembalikan ke Pialang" | "Setujui Penolakan"; note: string };
+  resolutionOffers: ResolutionOffer[];
+  /** ISO — musyawarah/mediasi terakhir berakhir Tidak Sepakat; awal jendela arbitrase. */
+  musyawarahFailedAt?: string;
+  arbitration?: {
+    institution: "BAKTI";
+    formFile: string;
+    submittedAt: string;
+    submittedBy: string;
+    verification?: ActorStamp & { decision: "Disetujui" | "Ditolak"; note: string };
+    hearings: ArbitrationHearing[];
+    verdict?: ActorStamp & { decision: ArbitrationVerdict; notes: string; document: string };
+  };
+}
+
+export interface BusinessParams {
+  /** Hari kerja; lewat tanpa keputusan Pialang = disetujui otomatis. */
+  slaReviewPialangBusinessDays: number;
+  /** Hari kalender total penanganan sengketa (hitung mundur pada kartu status). */
+  slaPenyelesaianDays: number;
+  /** Hari; batas umur perkara sejak tanggal kejadian. */
+  kedaluwarsaDays: number;
+  /** Hari kerja masa aktif tombol pengajuan arbitrase. */
+  arbitrationWindowBusinessDays: number;
+  /** Hari kalender; tanpa respons nasabah = Close Auto. */
+  resolutionResponseDays: number;
+}
+
+export interface PialangOfficial {
+  id: string;
+  position: "Direksi" | "Kepala Cabang" | "Wakil Pialang Berjangka (WPB)";
+  name: string;
+  licenseNumber: string;
+  office?: string;
 }

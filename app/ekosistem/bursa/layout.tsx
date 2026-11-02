@@ -4,7 +4,6 @@ import { Building2, ArrowUpRight, ClipboardList, MessageCircle, FileBarChart, Sc
 const iconCls = "size-4 shrink-0";
 
 const sidebarItems: SidebarItem[] = [
-  { label: "Mediasi Perselisihan", href: "/ekosistem/bursa/mediasi", icon: <Scale className={iconCls} /> },
   { label: "Platform Monitoring", href: "/ekosistem/bursa/platform-monitoring", icon: <Building2 className={iconCls} /> },
   { label: "Escalation Queue", href: "/ekosistem/bursa/escalation-queue", icon: <ArrowUpRight className={iconCls} /> },
   { label: "Supervisory Actions", href: "/ekosistem/bursa/supervisory-actions", icon: <ClipboardList className={iconCls} /> },

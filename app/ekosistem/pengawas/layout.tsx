@@ -1,10 +1,11 @@
 import { PortalShell, SidebarItem } from "@/components/layout/portal-shell";
-import { ListChecks, ClipboardCheck, Users, Handshake, UserCog, History } from "lucide-react";
+import { Gavel, ListChecks, ClipboardCheck, Users, Handshake, UserCog, History } from "lucide-react";
 
 const iconCls = "size-4 shrink-0";
 
 const sidebarItems: SidebarItem[] = [
   { label: "Manajemen Pengaduan", href: "/ekosistem/pengawas/pengaduan", icon: <ListChecks className={iconCls} />, matchPrefixes: ["/ekosistem/pengawas/kasus"] },
+  { label: "Proses Penyelesaian Khusus", href: "/ekosistem/pengawas/penyelesaian-khusus", icon: <Gavel className={iconCls} /> },
   { label: "Musyawarah", href: "/ekosistem/pengawas/musyawarah", icon: <Handshake className={iconCls} /> },
   { label: "Manajemen Tugas", href: "/ekosistem/pengawas/tugas", icon: <ClipboardCheck className={iconCls} /> },
   { label: "Data Member", href: "/ekosistem/pengawas/member", icon: <Users className={iconCls} /> },

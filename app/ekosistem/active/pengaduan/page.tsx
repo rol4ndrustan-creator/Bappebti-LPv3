@@ -13,6 +13,7 @@ import { useCasesData } from "@/lib/mock-service/store";
 import { useEkosistemActiveRole } from "@/lib/ekosistem-active-role";
 import { useQueryParamState, useCurrentPathWithQuery } from "@/lib/use-query-param";
 import { SourceBadge } from "@/components/shared/source-badge";
+import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
 function EkosistemActivePengaduanContent() {
   const { roleType } = useEkosistemActiveRole();
@@ -45,7 +46,7 @@ function EkosistemActivePengaduanContent() {
             <TableHead>Pengaduan</TableHead>
             <TableHead>Entitas Pengoordinasi</TableHead>
             <TableHead>Kategori</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Status Tiket</TableHead>
             <TableHead>SLA</TableHead>
             <TableHead>Nilai Transaksi</TableHead>
             <TableHead>Aksi</TableHead>
@@ -61,7 +62,7 @@ function EkosistemActivePengaduanContent() {
               <TableCell className="max-w-[220px] truncate">{c.title}</TableCell>
               <TableCell className="text-muted whitespace-nowrap">{c.currentOwner}</TableCell>
               <TableCell className="text-muted">{c.category}</TableCell>
-              <TableCell><StatusBadge status={c.status} /></TableCell>
+              <TableCell><TicketStatusBadge complaintCase={c} /></TableCell>
               <TableCell><SlaBadge sla={c.slaStatus} /></TableCell>
               <TableCell className="text-muted whitespace-nowrap">{formatCurrency(c.amount)}</TableCell>
               <TableCell>

@@ -1,13 +1,21 @@
 import { PortalShell, SidebarItem } from "@/components/layout/portal-shell";
 import { RequireInternalAuth } from "@/components/shared/require-internal-auth";
-import { LayoutDashboard, ListChecks, Clock, MessageCircle, FileBarChart, ClipboardCheck, Users, Handshake, Scale, UserCog, History } from "lucide-react";
+import { LayoutDashboard, ListChecks, Clock, MessageCircle, FileBarChart, ClipboardCheck, Users, Handshake, UserCog, History } from "lucide-react";
 
 const iconCls = "size-4 shrink-0";
 
 const sidebarItems: SidebarItem[] = [
   { label: "Dashboard Platform", href: "/platform", icon: <LayoutDashboard className={iconCls} /> },
-  { label: "Manajemen Pengaduan", href: "/platform/case-queue", icon: <ListChecks className={iconCls} />, matchPrefixes: ["/platform/kasus"] },
-  { label: "Perselisihan Nasabah", href: "/platform/perselisihan", icon: <Scale className={iconCls} /> },
+  {
+    label: "Manajemen Pengaduan",
+    href: "/platform/case-queue",
+    icon: <ListChecks className={iconCls} />,
+    matchPrefixes: ["/platform/kasus"],
+    children: [
+      { label: "Semua Pengaduan", href: "/platform/case-queue", icon: null },
+      { label: "Verifikasi Komplain Baru", href: "/platform/verifikasi-komplain", icon: null },
+    ],
+  },
   { label: "Musyawarah", href: "/platform/musyawarah", icon: <Handshake className={iconCls} /> },
   { label: "Manajemen Tugas", href: "/platform/tugas", icon: <ClipboardCheck className={iconCls} /> },
   { label: "Manajemen Member", href: "/platform/member", icon: <Users className={iconCls} /> },

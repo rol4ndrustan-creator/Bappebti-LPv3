@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { PROVINCE_LIST, BURSA_LIST, KLIRING_LIST } from "@/lib/mock-data";
+import { getPialangOfficials } from "@/lib/pialang-profiles";
 import {
   EcosystemAccessRole,
   EcosystemCategoryConfig,
@@ -18,8 +19,9 @@ import {
   EcosystemType,
   PlatformBoardMember,
   PlatformMembershipLetter,
+  PialangOfficial,
 } from "@/lib/types";
-import { Upload, Plus, Trash2, X, Check } from "lucide-react";
+import { Upload, Plus, Trash2, X, Check, DatabaseZap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -30,6 +32,10 @@ const STEPS = [
   "Upload Dokumen",
   "Pernyataan dan Pengajuan",
 ];
+
+const STRUKTUR_STEP = "Struktur Organisasi";
+const ADMIN_STEP = "Administrator & Tata Kelola";
+const OFFICIAL_POSITIONS: PialangOfficial["position"][] = ["Direksi", "Kepala Cabang", "Wakil Pialang Berjangka (WPB)"];
 
 const ACCESS_ROLES: EcosystemAccessRole[] = ["Admin Ecosystem", "Petugas Pengaduan", "Penyetuju", "Pemantau"];
 
@@ -92,6 +98,7 @@ function emptyValues(platformMode?: boolean): EcosystemWizardValues {
     direksi: [],
     komisaris: [],
     suratAnggotaBursa: [],
+    strukturOrganisasi: [],
   };
 }
 
@@ -128,13 +135,16 @@ export function EcosystemRegistrationWizard({
           direksi: initialValues.direksi ?? [],
           komisaris: initialValues.komisaris ?? [],
           suratAnggotaBursa: initialValues.suratAnggotaBursa ?? [],
+          strukturOrganisasi: initialValues.strukturOrganisasi ?? [],
         }
       : emptyValues(platformMode)
   );
 
   if (!open) return null;
 
-  const steps = platformMode ? [...STEPS, "Administrator & Tata Kelola"] : STEPS;
+  // Onboarding Pialang: tahap ke-4 "Struktur Organisasi" (List Revisi 12 #1) + tahap tata kelola.
+  const steps = platformMode ? [...STEPS.slice(0, 3), STRUKTUR_STEP, ...STEPS.slice(3), ADMIN_STEP] : STEPS;
+  const stepName = steps[step];
   const activeCategories = categories.filter((c) => c.active);
   const categoriesForType = activeCategories.filter((c) => c.type === values.ecosystemType);
 
@@ -178,6 +188,20 @@ export function EcosystemRegistrationWizard({
     set(key, (values[key] ?? []).filter((m) => m.id !== id));
   }
 
+  const officials = values.strukturOrganisasi ?? [];
+  function setOfficials(next: PialangOfficial[]) {
+    set("strukturOrganisasi", next);
+  }
+  function pullFromProfiling() {
+    setOfficials(getPialangOfficials(values.name ?? ""));
+  }
+  function addOfficial() {
+    setOfficials([...officials, { id: uid("OFF"), position: "Wakil Pialang Berjangka (WPB)", name: "", licenseNumber: "", office: "" }]);
+  }
+  function updateOfficial(id: string, patch: Partial<PialangOfficial>) {
+    setOfficials(officials.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+  }
+
   function addMembershipLetter() {
     set("suratAnggotaBursa", [...(values.suratAnggotaBursa ?? []), { id: uid("SAB"), file: "" }]);
   }
@@ -189,7 +213,7 @@ export function EcosystemRegistrationWizard({
   }
 
   // Minimal required-field checks per step so "Lanjut" stays guarded without being exhaustive.
-  const stepValid = [
+  const baseValid = [
     platformMode ? !!values.description?.trim() : !!values.category && !!values.description?.trim(),
     !!values.name?.trim() && !!values.address?.trim() && !!values.province && !!values.city?.trim() && !!values.postalCode?.trim() && !!values.officePhone?.trim() && !!values.officialEmail?.trim(),
     values.executives.length > 0 && values.executives.every((e) => e.name.trim() && e.position.trim()),
@@ -211,6 +235,13 @@ export function EcosystemRegistrationWizard({
         ]
       : []),
   ];
+
+  const validByName: Record<string, boolean> = Object.fromEntries([...STEPS, ADMIN_STEP].map((n, i) => [n, baseValid[i] ?? true]));
+  validByName[STRUKTUR_STEP] =
+    officials.some((o) => o.position === "Direksi") &&
+    officials.some((o) => o.position === "Wakil Pialang Berjangka (WPB)") &&
+    officials.every((o) => o.name.trim() && o.licenseNumber.trim());
+  const stepValid = steps.map((n) => validByName[n]);
 
   function next() {
     if (step < steps.length - 1) setStep(step + 1);
@@ -257,7 +288,7 @@ export function EcosystemRegistrationWizard({
         </div>
 
         <div className="px-5 py-4 max-h-[55vh] overflow-y-auto space-y-3">
-          {step === 0 && (
+          {stepName === "Klasifikasi Ecosystem" && (
             <div className="space-y-3">
               {platformMode ? (
                 <div className="rounded-md border border-border bg-muted-bg/40 p-3 text-xs space-y-0.5">
@@ -298,7 +329,7 @@ export function EcosystemRegistrationWizard({
             </div>
           )}
 
-          {step === 1 && (
+          {stepName === "Identitas Badan Hukum / Instansi" && (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
@@ -393,7 +424,7 @@ export function EcosystemRegistrationWizard({
             </div>
           )}
 
-          {step === 2 && (
+          {stepName === "Data Pengurus / Pimpinan" && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted">Minimal 1 pengurus/pimpinan wajib ditambahkan.</p>
@@ -425,7 +456,7 @@ export function EcosystemRegistrationWizard({
             </div>
           )}
 
-          {step === 3 && (
+          {stepName === "Data PIC Sistem" && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted">Minimal 1 PIC wajib, dan minimal 1 di antaranya ditandai sebagai PIC Utama.</p>
@@ -464,7 +495,7 @@ export function EcosystemRegistrationWizard({
             </div>
           )}
 
-          {step === 4 && (
+          {stepName === "Upload Dokumen" && (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FileField label="Dokumen NIB" value={values.nibDocument} onChange={(v) => set("nibDocument", v)} />
@@ -524,7 +555,7 @@ export function EcosystemRegistrationWizard({
             </div>
           )}
 
-          {step === 5 && (
+          {stepName === "Pernyataan dan Pengajuan" && (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -559,7 +590,46 @@ export function EcosystemRegistrationWizard({
             </div>
           )}
 
-          {platformMode && step === 6 && (
+          {stepName === STRUKTUR_STEP && (
+            <div className="space-y-3">
+              <p className="text-xs text-muted">
+                Petakan nama dan jabatan pejabat berizin (Direksi, Kepala Cabang, Wakil Pialang Berjangka/WPB) yang terhubung dengan sistem Profiling Bappebti.
+                Data ini dipakai nasabah untuk memilih pihak terlapor pada formulir pengaduan. Minimal 1 Direksi dan 1 WPB.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant="secondary" disabled={!values.name?.trim()} onClick={pullFromProfiling}>
+                  <DatabaseZap className="size-3.5" /> Tarik Data dari Profiling Bappebti
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={addOfficial}>
+                  <Plus className="size-3.5" /> Tambah Pejabat
+                </Button>
+              </div>
+              {!values.name?.trim() && <p className="text-[11px] text-muted">Isi nama badan hukum pada tahap 2 untuk menarik data profiling.</p>}
+              {officials.map((o, i) => (
+                <div key={o.id} className="rounded-md border border-border p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-navy">Pejabat #{i + 1}</p>
+                    <button onClick={() => setOfficials(officials.filter((x) => x.id !== o.id))} className="text-muted hover:text-red" title="Hapus">
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Select value={o.position} onChange={(e) => updateOfficial(o.id, { position: e.target.value as PialangOfficial["position"] })}>
+                      {OFFICIAL_POSITIONS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </Select>
+                    <Input placeholder="Nama Lengkap *" value={o.name} onChange={(e) => updateOfficial(o.id, { name: e.target.value })} />
+                    <Input placeholder="Nomor Izin / Profiling *" value={o.licenseNumber} onChange={(e) => updateOfficial(o.id, { licenseNumber: e.target.value })} />
+                    <Input placeholder="Kantor (Pusat / Cabang)" value={o.office ?? ""} onChange={(e) => updateOfficial(o.id, { office: e.target.value })} />
+                  </div>
+                </div>
+              ))}
+              {officials.length === 0 && <p className="text-xs text-muted text-center py-4">Belum ada pejabat ditambahkan.</p>}
+            </div>
+          )}
+
+          {stepName === ADMIN_STEP && (
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-semibold text-navy mb-2">Data Administrator</p>

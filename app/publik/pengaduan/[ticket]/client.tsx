@@ -9,27 +9,27 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { SeverityBadge } from "@/components/shared/badges";
 import { CaseStatusExplanation } from "@/components/shared/case-status-explanation";
-import { CaseProgressTracker } from "@/components/shared/case-progress-tracker";
 import { ResponsibilityPanel } from "@/components/shared/responsibility-panel";
 import { ClarificationThread } from "@/components/shared/clarification-thread";
 import { EvidenceList } from "@/components/shared/evidence-list";
 import { FileUploader } from "@/components/shared/file-uploader";
-import { ResolutionPanel } from "@/components/shared/resolution-panel";
+import { ArbitrationPublicCard, LifecycleTracker, ResolutionOffersSection } from "@/components/shared/ticket-lifecycle";
+import { MusyawarahTab } from "@/components/shared/musyawarah";
+import { useLifecycleView } from "@/lib/mock-service/lifecycle-store";
 import { PrototypeNotice } from "@/components/shared/prototype-notice";
-import { DisputePanel } from "@/components/shared/dispute-panel";
-import { getDisputeActionOwner } from "@/lib/dispute-workflow";
 import { useToast } from "@/components/shared/toast-provider";
 import { getCaseByTicket } from "@/lib/mock-data";
 import { formatCurrencyIDR } from "@/lib/format";
-import { useCaseData, addClarificationReply, respondToResolution, addEvidence } from "@/lib/mock-service/store";
-import { Printer, Info, Activity, MessageSquare, Paperclip, FileCheck2, Scale } from "lucide-react";
+import { useCaseData, addClarificationReply, addEvidence } from "@/lib/mock-service/store";
+import { Printer, Info, Activity, MessageSquare, Paperclip, FileCheck2, Handshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
   const base = getCaseByTicket(ticket);
   const c = useCaseData(base);
+  const lifecycle = useLifecycleView(c);
   const { showToast } = useToast();
-  const [tab, setTab] = useState(c?.dispute ? "perselisihan" : "ringkasan");
+  const [tab, setTab] = useState("ringkasan");
   const [newEvidenceFiles, setNewEvidenceFiles] = useState<string[]>([]);
 
   if (!c) {
@@ -54,8 +54,7 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
   }
 
   const publicTimeline = c.timeline.filter((e) => e.visibility !== "internal");
-  const solusiActionRequired = !!c.resolution && !c.resolution.reporterDecision;
-  const disputeActionRequired = !!c.dispute && getDisputeActionOwner(c.dispute) === "Nasabah";
+  const solusiActionRequired = lifecycle?.status === "Diajukan Penyelesaian";
 
   return (
     <div>
@@ -89,22 +88,16 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
 
       <Card className="mb-4">
         <CardContent className="py-4">
-          <CaseProgressTracker complaintCase={c} />
+          <LifecycleTracker complaintCase={c} />
         </CardContent>
       </Card>
+
+      <ArbitrationPublicCard complaintCase={c} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
-              {c.dispute && (
-                <TabsTrigger value="perselisihan" className={cn(disputeActionRequired && "data-[state=inactive]:text-amber")}>
-                  <Scale className="size-3.5" /> Penyelesaian Perselisihan
-                  {disputeActionRequired && (
-                    <span className="ml-0.5 inline-flex size-1.5 rounded-full bg-amber" aria-label="Tindakan diperlukan" />
-                  )}
-                </TabsTrigger>
-              )}
               <TabsTrigger value="ringkasan">
                 <Info className="size-3.5" /> Ringkasan Pengaduan
               </TabsTrigger>
@@ -120,16 +113,13 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
                   <span className="ml-0.5 inline-flex size-1.5 rounded-full bg-amber" aria-label="Tindakan diperlukan" />
                 )}
               </TabsTrigger>
+              <TabsTrigger value="musyawarah">
+                <Handshake className="size-3.5" /> Musyawarah
+              </TabsTrigger>
               <TabsTrigger value="perkembangan">
                 <Activity className="size-3.5" /> Perkembangan
               </TabsTrigger>
             </TabsList>
-
-            {c.dispute && (
-              <TabsContent value="perselisihan">
-                <DisputePanel complaintCase={c} actor="Nasabah" actorName={c.reporterName} />
-              </TabsContent>
-            )}
 
             <TabsContent value="ringkasan">
               <Card>
@@ -144,7 +134,7 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
                       <dd className="font-medium">{c.subcategory}</dd>
                     </div>
                     <div>
-                      <dt className="text-muted">Referensi Transaksi</dt>
+                      <dt className="text-muted">Nomor Akun Transaksi</dt>
                       <dd className="font-medium">{c.transactionRef || "-"}</dd>
                     </div>
                     <div>
@@ -156,7 +146,7 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
                       <dd className="font-medium">{c.createdAt}</dd>
                     </div>
                     <div>
-                      <dt className="text-muted">ID Pengguna Platform</dt>
+                      <dt className="text-muted">Pialang User ID</dt>
                       <dd className="font-medium">{c.platformUserId || "-"}</dd>
                     </div>
                   </dl>
@@ -217,13 +207,11 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
             </TabsContent>
 
             <TabsContent value="solusi">
-              <ResolutionPanel
-                complaintCase={c}
-                onRespond={(decision, reason) => {
-                  respondToResolution(ticket, decision, reason);
-                  showToast("Tanggapan Anda atas solusi telah dikirim.");
-                }}
-              />
+              <ResolutionOffersSection complaintCase={c} mode="public" canPropose={false} />
+            </TabsContent>
+
+            <TabsContent value="musyawarah">
+              <MusyawarahTab complaintCase={c} readOnly publicView />
             </TabsContent>
 
             <TabsContent value="perkembangan">

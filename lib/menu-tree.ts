@@ -32,14 +32,15 @@ export const MENU_TREE: MenuTreeItem[] = [
     matchPrefixes: ["/bappebti/kasus"],
     children: [
       { key: "pengaduan.semua", label: "Semua Pengaduan", href: "/bappebti/antrean", iconName: "" },
-      { key: "pengaduan.perselisihan", label: "Perselisihan Nasabah PBK", href: "/bappebti/pengaduan/perselisihan", iconName: "" },
+      { key: "pengaduan.ditolak-pialang", label: "Verifikasi Ditolak Pialang", href: "/bappebti/pengaduan/ditolak-pialang", iconName: "" },
       { key: "pengaduan.bappebti", label: "Penanganan Bappebti", href: "/bappebti/pengaduan/penanganan-bappebti", iconName: "" },
-      { key: "pengaduan.tanpa-platform", label: "Tanpa ID Platform", href: "/bappebti/pengaduan/tanpa-platform", iconName: "" },
+      { key: "pengaduan.tanpa-platform", label: "Tanpa Pialang User ID", href: "/bappebti/pengaduan/tanpa-platform", iconName: "" },
       { key: "pengaduan.menunggu-konfirmasi", label: "Menunggu Konfirmasi Pelapor", href: "/bappebti/pengaduan/menunggu-konfirmasi", iconName: "" },
       { key: "pengaduan.selesai-otomatis", label: "Ditutup Otomatis", href: "/bappebti/pengaduan/selesai-otomatis", iconName: "" },
     ],
   },
   { key: "musyawarah", label: "Musyawarah", href: "/bappebti/musyawarah", iconName: "Handshake" },
+  { key: "arbitrase", label: "Arbitrase BAKTI", href: "/bappebti/arbitrase", iconName: "Gavel" },
   { key: "risiko", label: "Pemantauan Risiko", href: "/bappebti/risiko", iconName: "ShieldAlert" },
   { key: "kinerja", label: "Kinerja Anggota", href: "/bappebti/kinerja-anggota", iconName: "Users" },
   {
@@ -105,6 +106,7 @@ export const MENU_TREE: MenuTreeItem[] = [
     children: [
       { key: "konfigurasi.kategori", label: "Kategori Pengaduan", href: "/admin/konfigurasi/kategori-pengaduan", iconName: "" },
       { key: "konfigurasi.sla", label: "Manajemen SLA", href: "/admin/konfigurasi/sla", iconName: "" },
+      { key: "konfigurasi.parameter", label: "Parameter Bisnis & SLA", href: "/admin/konfigurasi/parameter", iconName: "" },
       { key: "konfigurasi.category-ecosystem", label: "Category Ecosystem", href: "/admin/konfigurasi/category-ecosystem", iconName: "" },
       { key: "konfigurasi.approval", label: "Approval Configuration", href: "/admin/konfigurasi/approval", iconName: "" },
     ],

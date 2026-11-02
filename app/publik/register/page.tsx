@@ -184,7 +184,7 @@ export default function RegisterPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="platformUserId">Platform User ID (Opsional)</Label>
+                  <Label htmlFor="platformUserId">Pialang User ID (Opsional)</Label>
                   <Input
                     id="platformUserId"
                     placeholder="ID akun Anda pada platform terkait"

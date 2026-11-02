@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,10 +21,8 @@ import { EscalationBanner } from "@/components/shared/escalation-banner";
 import { ClarificationThread } from "@/components/shared/clarification-thread";
 import { EvidenceList } from "@/components/shared/evidence-list";
 import { FileUploader } from "@/components/shared/file-uploader";
-import { ResolutionPanel } from "@/components/shared/resolution-panel";
+import { TicketLifecyclePanel, ResolutionOffersSection } from "@/components/shared/ticket-lifecycle";
 import { CaseActionDialog, TONE_TO_BUTTON_VARIANT } from "@/components/shared/case-action-dialog";
-import { DisputePanel } from "@/components/shared/dispute-panel";
-import { disputeActorForRole } from "@/lib/dispute-workflow";
 import { useActingParty } from "@/lib/use-acting-party";
 import { DownloadCaseButton } from "@/components/shared/download-case-button";
 import { MusyawarahTab } from "@/components/shared/musyawarah";
@@ -42,7 +40,6 @@ import {
   setSeverity,
   setCurrentOwner,
   addTimelineEvent,
-  proposeResolution,
   addEvidence,
 } from "@/lib/mock-service/store";
 import { useTasksForCase, addTask, updateTaskStatus, deleteTask } from "@/lib/mock-service/task-store";
@@ -72,13 +69,19 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   const { user } = useDemoSession();
   const tasks = useTasksForCase(ticket, CASE_TASKS);
   const actingParty = useActingParty();
+  // ?tab=... membuka tab tertentu (mis. dari menu Musyawarah → Edit Jadwal).
+  const [tab, setTab] = useState("ringkasan");
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync with the URL after hydration
+    if (t) setTab(t);
+  }, []);
 
   const [noteText, setNoteText] = useState("");
   const [noteTargetType, setNoteTargetType] = useState<InternalNoteTargetType>("Semua Pihak Tertutup");
   const [noteTargetEntity, setNoteTargetEntity] = useState("");
   const [activeAction, setActiveAction] = useState<CaseActionId | null>(null);
   const [escalating, setEscalating] = useState(false);
-  const [resolutionText, setResolutionText] = useState("");
   const [newEvidenceFiles, setNewEvidenceFiles] = useState<string[]>([]);
   const [taskDesc, setTaskDesc] = useState("");
   const [delegationType, setDelegationType] = useState<TaskDelegationType>("Internal Platform");
@@ -207,7 +210,6 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   }
 
   const canManageTasks = viewerGroup === "Bappebti" || viewerGroup === "Platform" || viewerGroup === "EkosistemActive";
-  const canProposeResolution = isPlatform || isBappebti;
   const canUploadEvidence = isBappebti || isPlatform;
   const canEscalateToBappebti =
     (viewerGroup === "Platform" || viewerGroup === "EkosistemActive") && c.currentOwner !== "Bappebti" && c.status !== "Selesai";
@@ -286,9 +288,12 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
         <CaseStatusExplanation complaintCase={c} viewer="internal" actions={isInternal ? bannerActions : undefined} />
       </div>
 
-      <Tabs defaultValue={c.dispute ? "perselisihan" : "ringkasan"}>
+      <div className="mb-4">
+        <TicketLifecyclePanel complaintCase={c} viewerGroup={viewerGroup} />
+      </div>
+
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          {c.dispute && <TabsTrigger value="perselisihan">Penyelesaian Perselisihan</TabsTrigger>}
           <TabsTrigger value="ringkasan">Ringkasan Pengaduan</TabsTrigger>
           <TabsTrigger value="bukti">Bukti</TabsTrigger>
           <TabsTrigger value="respons">Respon ke Public</TabsTrigger>
@@ -298,16 +303,6 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
           <TabsTrigger value="resolusi">Resolusi</TabsTrigger>
           {isInternal && <TabsTrigger value="kronologi">Kronologi Kasus</TabsTrigger>}
         </TabsList>
-
-        {c.dispute && (
-          <TabsContent value="perselisihan">
-            <DisputePanel
-              complaintCase={c}
-              actor={viewerGroup === "EkosistemPengawas" ? null : disputeActorForRole(user.role)}
-              actorName={user.name}
-            />
-          </TabsContent>
-        )}
 
         <TabsContent value="ringkasan">
           <Card>
@@ -325,11 +320,11 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
                 <p>{formatCurrency(c.amount)}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase text-muted font-medium mb-1">Referensi Transaksi</p>
+                <p className="text-[11px] uppercase text-muted font-medium mb-1">Nomor Akun Transaksi</p>
                 <p>{c.transactionRef || "-"}</p>
               </div>
               <div>
-                <p className="text-[11px] uppercase text-muted font-medium mb-1">ID Pengguna Platform</p>
+                <p className="text-[11px] uppercase text-muted font-medium mb-1">Pialang User ID</p>
                 <p>{c.platformUserId || "-"}</p>
               </div>
               <div className="sm:col-span-2">
@@ -641,34 +636,8 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
         )}
 
         <TabsContent value="resolusi">
-          {canProposeResolution && (
-            <Card className="mb-4">
-              <CardHeader>
-                <CardTitle>Ajukan Resolusi</CardTitle>
-              </CardHeader>
-              <CardContent className="py-4 space-y-2">
-                <Textarea
-                  placeholder="Tulis usulan resolusi untuk pelapor..."
-                  value={resolutionText}
-                  onChange={(e) => setResolutionText(e.target.value)}
-                  className="text-sm min-h-[70px]"
-                />
-                <Button
-                  size="sm"
-                  variant="success"
-                  disabled={!resolutionText.trim()}
-                  onClick={() => {
-                    proposeResolution(ticket, resolutionText.trim(), user.name, isBappebti ? "Bappebti" : "Platform");
-                    showToast("Usulan resolusi telah diajukan kepada pelapor.");
-                    setResolutionText("");
-                  }}
-                >
-                  Ajukan Resolusi
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-          <ResolutionPanel complaintCase={c} />
+          {/* Resolusi damai = kesepakatan Pialang & Nasabah: hanya Pialang yang mengajukan; Bursa/Kliring/Pengawas/Bappebti baca-saja. */}
+          <ResolutionOffersSection complaintCase={c} mode="internal" canPropose={isPlatform} />
         </TabsContent>
 
         {isInternal && (
