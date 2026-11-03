@@ -9,19 +9,19 @@ import { FileBarChart, Download } from "lucide-react";
 const reports = [
   {
     title: "Settlement Reconciliation Report",
-    description: "Ringkasan hasil rekonsiliasi batch settlement antara platform dan kliring.",
+    description: "Ringkasan hasil rekonsiliasi batch settlement antara pialang dan kliring.",
   },
   {
     title: "Pending Settlement Proof Report",
-    description: "Daftar bukti settlement yang masih tertunda dari platform maupun bank kustodian.",
+    description: "Daftar bukti settlement yang masih tertunda dari pialang maupun bank kustodian.",
   },
   {
     title: "Settlement Aging Report",
     description: "Rekapitulasi usia kasus settlement yang belum terselesaikan berdasarkan batas waktu.",
   },
   {
-    title: "Platform Data Request Report",
-    description: "Catatan permintaan data kepada platform untuk keperluan rekonsiliasi transaksi.",
+    title: "Pialang Data Request Report",
+    description: "Catatan permintaan data kepada pialang untuk keperluan rekonsiliasi transaksi.",
   },
   {
     title: "Escalated Settlement Case Report",

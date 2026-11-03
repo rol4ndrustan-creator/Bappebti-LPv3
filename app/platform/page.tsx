@@ -14,7 +14,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const platformCases = CASES.filter((c) => c.currentOwner === "Platform");
+const platformCases = CASES.filter((c) => c.currentOwner === "Pialang");
 
 function actionNote(status: string): string {
   switch (status) {
@@ -41,15 +41,15 @@ export default function PlatformDashboardPage() {
   const escalationRisk = platformCases.filter((c) => c.slaStatus === "Lewat SLA");
 
   const actionQueue = platformCases.slice(0, 4);
-  const evidenceCases = platformCases.filter((c) => c.evidences.length <= 1 || c.clarifications.some((cl) => cl.role === "Platform"));
+  const evidenceCases = platformCases.filter((c) => c.evidences.length <= 1 || c.clarifications.some((cl) => cl.role === "Pialang"));
   const dueSoonCases = platformCases.filter((c) => c.slaStatus === "Mendekati SLA");
   const resolutionSummary = CASES.filter((c) => c.status === "Resolusi Diajukan" && !!c.resolutionProposal);
 
   return (
     <div>
       <PageHeader
-        title="Dashboard Platform"
-        description="Ringkasan operasional harian untuk kasus pengaduan yang menjadi tanggung jawab Platform / Pialang."
+        title="Dashboard Pialang"
+        description="Ringkasan operasional harian untuk kasus pengaduan yang menjadi tanggung jawab Pialang."
       />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
@@ -113,7 +113,7 @@ export default function PlatformDashboardPage() {
                     <TableCell className="max-w-[160px] truncate">{c.title}</TableCell>
                     <TableCell className="text-muted">{c.evidences.length} berkas</TableCell>
                     <TableCell className="text-muted">
-                      {c.clarifications.some((cl) => cl.role === "Platform")
+                      {c.clarifications.some((cl) => cl.role === "Pialang")
                         ? "Menunggu unggahan bukti tambahan dari pelapor"
                         : "Lengkapi bukti penanganan kasus"}
                     </TableCell>

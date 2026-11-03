@@ -21,6 +21,7 @@ const SEED_ACCOUNT: PublikAccount = {
   kota: "Jakarta Selatan",
   platformUserId: "andra.w",
   password: "demo123",
+  ktpFile: { name: "KTP_Andra_Wicaksono.jpg", sizeBytes: 845_312 },
 };
 
 export interface PublikAccount {
@@ -32,6 +33,8 @@ export interface PublikAccount {
   kota: string;
   platformUserId: string;
   password: string;
+  /** Foto KTP yang diunggah saat registrasi; otomatis jadi berkas identitas wajib pada setiap pengaduan. */
+  ktpFile?: { name: string; sizeBytes: number };
 }
 
 interface PublikAuthContextValue {

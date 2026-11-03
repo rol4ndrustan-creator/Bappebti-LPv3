@@ -10,7 +10,7 @@ export default function KinerjaAnggotaPage() {
     <div>
       <PageHeader
         title="Kinerja Anggota"
-        description="Ringkasan kinerja penanganan pengaduan oleh seluruh anggota (platform/pialang) yang terdaftar."
+        description="Ringkasan kinerja penanganan pengaduan oleh seluruh anggota (pialang) yang terdaftar."
       />
 
       <Card>

@@ -6,10 +6,13 @@ import { BusinessParams, TicketLifecycle, TicketStatus } from "./types";
 import { addBusinessDays, addCalendarDays, businessDaysBetween } from "./business-days";
 
 export const TICKET_STATUS_TONE: Record<TicketStatus, "navy" | "amber" | "green" | "red" | "muted"> = {
+  "Triase Bappebti": "navy",
+  "Perlu Perbaikan Berkas": "amber",
   "Menunggu Verifikasi Pialang": "navy",
   "Pengajuan Reject": "amber",
   Rejected: "red",
   "Proses Musyawarah": "amber",
+  "Proses Mediasi Bursa": "amber",
   "Diajukan Penyelesaian": "navy",
   "Close Resolusi": "green",
   "Close Auto": "muted",
@@ -46,10 +49,17 @@ function dayStart(d: Date): Date {
 
 export function deriveLifecycle(lc: TicketLifecycle, p: BusinessParams, now: Date): LifecycleView {
   const submitted = new Date(lc.submittedAt);
-  const pialangDeadline = addBusinessDays(submitted, p.slaReviewPialangBusinessDays);
+  const triagePending = !!lc.triage && !lc.triage.assignedPialang;
+  const revisionPending = !!lc.revisionRequest && !lc.revisionRequest.resolvedAt;
+  // SLA review Pialang dihitung sejak tiket sampai ke Pialang: setelah triase / perbaikan berkas terakhir.
+  const reviewStart = [lc.submittedAt, lc.triage?.at, lc.revisionRequest?.resolvedAt]
+    .filter((x): x is string => !!x)
+    .map((x) => new Date(x))
+    .reduce((a, b) => (b > a ? b : a));
+  const pialangDeadline = addBusinessDays(reviewStart, p.slaReviewPialangBusinessDays);
   const slaDeadline = addCalendarDays(submitted, p.slaPenyelesaianDays);
   const slaRemainingDays = Math.ceil((dayStart(slaDeadline).getTime() - dayStart(now).getTime()) / 86_400_000);
-  const autoApproved = !lc.pialangReview && now > pialangDeadline;
+  const autoApproved = !lc.pialangReview && !triagePending && !revisionPending && !lc.bappebtiRejection && now > pialangDeadline;
   const expired = !!lc.incidentDate && (now.getTime() - new Date(`${lc.incidentDate}T00:00:00+07:00`).getTime()) / 86_400_000 > p.kedaluwarsaDays;
 
   const accepted = lc.resolutionOffers.find((o) => o.response === "Setuju");
@@ -74,10 +84,13 @@ export function deriveLifecycle(lc: TicketLifecycle, p: BusinessParams, now: Dat
   else if (pendingOffer && resolutionDeadline && now > resolutionDeadline) status = "Close Auto";
   else if (pendingOffer) status = "Diajukan Penyelesaian";
   else if (arbitrationWindow) status = now >= arbitrationWindow.end ? "Selesai Non-Arbitrase" : "Masa Pengajuan Arbitrase";
-  else if (lc.bappebtiReview?.decision === "Setujui Penolakan") status = "Rejected";
+  else if (lc.mediation) status = "Proses Mediasi Bursa";
+  else if (lc.bappebtiRejection || lc.bappebtiReview?.decision === "Setujui Penolakan") status = "Rejected";
   else if (lc.bappebtiReview?.decision === "Kembalikan ke Pialang") status = "Proses Musyawarah";
   else if (lc.pialangReview?.decision === "Ditolak") status = "Pengajuan Reject";
   else if (lc.pialangReview?.decision === "Disetujui" || autoApproved) status = "Proses Musyawarah";
+  else if (revisionPending) status = "Perlu Perbaikan Berkas";
+  else if (triagePending) status = "Triase Bappebti";
   else status = "Menunggu Verifikasi Pialang";
 
   return {
@@ -105,6 +118,32 @@ export function lifecycleExplanation(
   const pub = viewer === "public";
   const sla = `SLA penyelesaian kasus berakhir ${fmt(v.slaDeadline)} WIB.`;
   switch (v.status) {
+    case "Triase Bappebti":
+      return {
+        what: "Pelapor belum mengetahui nama Pialang. Tiket berada di antrean triase Bappebti untuk dianalisis dan diteruskan ke Pialang terkait.",
+        who: "Bappebti.",
+        action: pub ? "Tidak ada tindakan yang diperlukan dari Anda saat ini." : "Bappebti menganalisis pengaduan lalu menugaskan (assign) ke Pialang terkait.",
+        deadline: sla,
+        actionRequiredFromViewer: !pub,
+      };
+    case "Perlu Perbaikan Berkas":
+      return {
+        what: `Berkas pengaduan perlu diperbaiki: ${v.lc.revisionRequest?.note ?? "-"}`,
+        who: "Nasabah (pelapor).",
+        action: pub ? "Tindakan Anda diperlukan — kirim perbaikan berkas melalui kartu Perbaikan Berkas." : "Menunggu perbaikan berkas dari nasabah.",
+        deadline: "SLA review Pialang dihitung ulang setelah perbaikan diterima.",
+        actionRequiredFromViewer: pub,
+      };
+    case "Proses Mediasi Bursa":
+      return {
+        what: v.lc.mediation?.outcome === "Sepakat"
+          ? `Mediasi oleh ${v.lc.mediation.bursa} mencapai kesepakatan; menunggu tawaran resolusi dari Pialang.`
+          : `Musyawarah tidak mencapai kesepakatan. Perselisihan dimediasi oleh Bursa (${v.lc.mediation?.bursa ?? "-"}).`,
+        who: v.lc.mediation?.outcome === "Sepakat" ? `Pialang — ${c.platform}.` : `Bursa — ${v.lc.mediation?.bursa ?? "-"}.`,
+        action: pub ? "Hadiri jadwal mediasi yang diinformasikan Bursa." : "Bursa mencatat hasil mediasi (Sepakat / Tidak Sepakat).",
+        deadline: sla,
+        actionRequiredFromViewer: !pub,
+      };
     case "Menunggu Verifikasi Pialang":
       return {
         what: `Komplain baru sedang diverifikasi oleh Pialang (${c.platform}).`,
@@ -187,4 +226,15 @@ export function lifecycleExplanation(
         actionRequiredFromViewer: false,
       };
   }
+}
+
+/**
+ * Sisa SLA dalam satuan hari kerja saja (List Revisi 13 #7):
+ * "Sisa N Hari Kerja" · "Hari Terakhir (Hari Ini)" · "Lewat SLA (Overdue X Hari)".
+ */
+export function slaDaysLabel(deadline: Date, now: Date): { label: string; tone: "green" | "amber" | "red" } {
+  const n = businessDaysBetween(now, deadline);
+  if (now > deadline) return { label: `Lewat SLA (Overdue ${Math.max(1, -n)} Hari)`, tone: "red" };
+  if (n <= 0) return { label: "Hari Terakhir (Hari Ini)", tone: "amber" };
+  return { label: `Sisa ${n} Hari Kerja`, tone: n === 1 ? "amber" : "green" };
 }

@@ -59,7 +59,7 @@ export function AddMemberDialog({
         <DialogHeader>
           <DialogTitle>Tambah Anggota</DialogTitle>
           <DialogDescription>
-            Daftarkan anggota baru (Platform/Pialang, Bursa, atau Kliring) ke master data.
+            Daftarkan anggota baru (Pialang, Bursa, atau Kliring) ke master data.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2.5">

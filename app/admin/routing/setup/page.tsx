@@ -36,7 +36,7 @@ export default function RoutingMappingSetupPage() {
   // categories (Bursa, Kliring, Custody, ...) and "Ecosystem Pengawas" ones
   // (Asosiasi, ...) are valid routing destinations.
   const destinationCategories = React.useMemo(
-    () => categories.filter((c) => c.active && c.shortDescription !== "Platform/Pialang"),
+    () => categories.filter((c) => c.active && c.shortDescription !== "Pialang"),
     [categories]
   );
 
@@ -46,7 +46,7 @@ export default function RoutingMappingSetupPage() {
   const baseRows = React.useMemo<RoutingMapping[]>(
     () =>
       entities
-        .filter((e) => e.category === "Platform/Pialang" && e.status === "Disetujui" && !e.disabled)
+        .filter((e) => e.category === "Pialang" && e.status === "Disetujui" && !e.disabled)
         .map((platform) => {
           const mappings: Record<string, string> = {};
           for (const cat of destinationCategories) {
@@ -105,13 +105,13 @@ export default function RoutingMappingSetupPage() {
     <div>
       <PageHeader
         title="Setup Routing Mapping"
-        description="Pemetaan setiap platform/pialang terhadap institusi (Bursa, Kliring, Asosiasi, dan kategori ekosistem lainnya) yang menanganinya. Kolom mengikuti seluruh kategori ekosistem yang sedang aktif."
+        description="Pemetaan setiap pialang terhadap institusi (Bursa, Kliring, Asosiasi, dan kategori ekosistem lainnya) yang menanganinya. Kolom mengikuti seluruh kategori ekosistem yang sedang aktif."
       />
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Platform</TableHead>
+            <TableHead>Pialang</TableHead>
             {destinationCategories.map((c) => (
               <TableHead key={c.id}>{c.shortDescription}</TableHead>
             ))}
@@ -158,7 +158,7 @@ export default function RoutingMappingSetupPage() {
           {rows.length === 0 && (
             <TableRow>
               <TableCell colSpan={destinationCategories.length + 3} className="text-center text-muted py-6">
-                Belum ada platform terdaftar.
+                Belum ada pialang terdaftar.
               </TableCell>
             </TableRow>
           )}

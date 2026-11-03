@@ -27,8 +27,8 @@ export default function PlatformMonitoringPage() {
   return (
     <div>
       <PageHeader
-        title="Platform Monitoring"
-        description={`Pemantauan kinerja platform yang berada di bawah supervisi ${ACTIVE_BURSA}.`}
+        title="Pialang Monitoring"
+        description={`Pemantauan kinerja pialang yang berada di bawah supervisi ${ACTIVE_BURSA}.`}
       />
 
       <Card>
@@ -36,7 +36,7 @@ export default function PlatformMonitoringPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Platform</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Total Kasus</TableHead>
                 <TableHead>Kasus Terbuka</TableHead>
                 <TableHead>Overdue</TableHead>
@@ -99,7 +99,7 @@ export default function PlatformMonitoringPage() {
                             size="sm"
                             onClick={() => setExplainOpen(isExplaining ? null : m.name)}
                           >
-                            Minta Penjelasan Platform
+                            Minta Penjelasan Pialang
                           </Button>
                         </div>
                       </TableCell>
@@ -136,7 +136,7 @@ export default function PlatformMonitoringPage() {
                               Permintaan penjelasan kepada {m.name}
                             </p>
                             <Textarea
-                              placeholder="Tuliskan pertanyaan atau permintaan penjelasan kepada platform..."
+                              placeholder="Tuliskan pertanyaan atau permintaan penjelasan kepada pialang..."
                               value={explainText}
                               onChange={(e) => setExplainText(e.target.value)}
                             />

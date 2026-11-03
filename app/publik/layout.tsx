@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { usePublikAuth } from "@/lib/publik-auth";
 import { PortalShell, SidebarItem } from "@/components/layout/portal-shell";
-import { LayoutDashboard, FileText, PlusCircle, Bell, UserCircle, LogOut, Scale } from "lucide-react";
+import { LayoutDashboard, FileText, PlusCircle, Bell, UserCircle, LogOut } from "lucide-react";
 
 const iconCls = "size-4 shrink-0";
 
@@ -14,7 +14,6 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { label: "Dashboard", href: "/publik/dashboard", icon: <LayoutDashboard className={iconCls} /> },
   { label: "Pengaduan Saya", href: "/publik/pengaduan", icon: <FileText className={iconCls} /> },
   { label: "Buat Pengaduan", href: "/publik/pengaduan/baru", icon: <PlusCircle className={iconCls} /> },
-  { label: "Alur Penyelesaian", href: "/publik/alur-penyelesaian", icon: <Scale className={iconCls} /> },
   { label: "Notifikasi", href: "/publik/notifikasi", icon: <Bell className={iconCls} /> },
   {
     label: "Profil",
@@ -31,7 +30,6 @@ const MOBILE_TAB_ITEMS = [
   { label: "Dashboard", href: "/publik/dashboard" },
   { label: "Pengaduan Saya", href: "/publik/pengaduan" },
   { label: "Buat Pengaduan", href: "/publik/pengaduan/baru" },
-  { label: "Alur Penyelesaian", href: "/publik/alur-penyelesaian" },
   { label: "Notifikasi", href: "/publik/notifikasi" },
   { label: "Profil", href: "/publik/profil" },
 ];

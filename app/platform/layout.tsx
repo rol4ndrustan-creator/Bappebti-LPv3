@@ -5,7 +5,7 @@ import { LayoutDashboard, ListChecks, Clock, MessageCircle, FileBarChart, Clipbo
 const iconCls = "size-4 shrink-0";
 
 const sidebarItems: SidebarItem[] = [
-  { label: "Dashboard Platform", href: "/platform", icon: <LayoutDashboard className={iconCls} /> },
+  { label: "Dashboard Pialang", href: "/platform", icon: <LayoutDashboard className={iconCls} /> },
   {
     label: "Manajemen Pengaduan",
     href: "/platform/case-queue",
@@ -29,7 +29,7 @@ const sidebarItems: SidebarItem[] = [
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireInternalAuth>
-      <PortalShell title="Portal Platform" subtitle="PT Bursa Digital Nusantara" sidebarItems={sidebarItems} portal="platform">
+      <PortalShell title="Portal Pialang" subtitle="PT Bursa Digital Nusantara" sidebarItems={sidebarItems} portal="platform">
         {children}
       </PortalShell>
     </RequireInternalAuth>

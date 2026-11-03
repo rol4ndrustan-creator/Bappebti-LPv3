@@ -8,7 +8,7 @@ function defaultInstitution(role: string, c?: ComplaintCase): string | undefined
   if (role === "Bappebti") return "Bappebti";
   if (!c) return undefined;
   switch (role) {
-    case "Platform":
+    case "Pialang":
       return c.platform;
     case "Bursa":
       return c.institution?.bursa ?? c.bursaEntity;

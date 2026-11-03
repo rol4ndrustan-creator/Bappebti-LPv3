@@ -33,18 +33,18 @@ export default function EkosistemActiveMemberPage() {
     <div>
       <PageHeader
         title="Data Member"
-        description={`Daftar platform / pialang yang menjadi anggota di bawah naungan Ekosistem Active — konteks saat ini: ${roleType}.`}
+        description={`Daftar pialang yang menjadi anggota di bawah naungan Ekosistem Active — konteks saat ini: ${roleType}.`}
       />
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Kode Anggota Platform</TableHead>
-            <TableHead>Nama Perusahaan / Platform</TableHead>
+            <TableHead>Kode Anggota Pialang</TableHead>
+            <TableHead>Nama Perusahaan / Pialang</TableHead>
             <TableHead>Kategori Entitas</TableHead>
             <TableHead>No. Izin Bappebti</TableHead>
             <TableHead>Terdaftar</TableHead>
-            <TableHead>PIC Platform & Kontak</TableHead>
+            <TableHead>PIC Pialang & Kontak</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Aksi</TableHead>
           </TableRow>
@@ -78,7 +78,7 @@ export default function EkosistemActiveMemberPage() {
           {members.length === 0 && (
             <TableRow>
               <TableCell colSpan={8} className="text-center text-muted py-6">
-                Belum ada platform/pialang yang terdaftar sebagai anggota ({roleType}).
+                Belum ada pialang yang terdaftar sebagai anggota ({roleType}).
               </TableCell>
             </TableRow>
           )}
@@ -110,7 +110,7 @@ export default function EkosistemActiveMemberPage() {
                 <dd className="font-medium mt-0.5">{viewing.registeredAt}</dd>
               </div>
               <div className="col-span-2">
-                <dt className="text-muted">PIC Platform & Kontak Aduan</dt>
+                <dt className="text-muted">PIC Pialang & Kontak Aduan</dt>
                 <dd className="font-medium mt-0.5">{viewing.picName} &middot; {viewing.picContact}</dd>
               </div>
             </dl>

@@ -26,7 +26,7 @@ import {
   useNow,
 } from "@/lib/meeting";
 import { addMeeting, editMeeting, recordMeetingOutcome, useMeetings } from "@/lib/mock-service/meeting-store";
-import { markMusyawarahFailed } from "@/lib/lifecycle-actions";
+import { markMusyawarahFailed, startMediation } from "@/lib/lifecycle-actions";
 import { useLifecycleActor } from "@/components/shared/ticket-lifecycle";
 import { getViewerGroup } from "@/lib/permissions";
 import { addTimelineEvent } from "@/lib/mock-service/store";
@@ -37,7 +37,12 @@ import { CASES } from "@/lib/mock-data";
 import { Ban, CalendarPlus, ClipboardEdit, Eye, MapPin, Pencil, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DECISIONS: MeetingDecision[] = ["Selesai (Damai / Kesepakatan Tercapai)", "Diundang ke Musyawarah Berikutnya", "Tidak Sepakat (Musyawarah Berakhir)"];
+const DECISIONS: MeetingDecision[] = [
+  "Selesai (Damai / Kesepakatan Tercapai)",
+  "Diundang ke Musyawarah Berikutnya",
+  "Tidak Sepakat — Lanjut Mediasi Bursa",
+  "Tidak Sepakat (Musyawarah Berakhir)",
+];
 const STATUSES: MeetingStatus[] = ["Dijadwalkan", "Berlangsung", "Selesai", "Lanjut Musyawarah Berikutnya", "Tidak Sepakat", "Dibatalkan"];
 
 /**
@@ -50,7 +55,7 @@ function useCanManageMeeting(): (m: MusyawarahMeeting) => boolean {
   return (m) =>
     !m.outcome &&
     !m.cancellation &&
-    (group === "Bappebti" || group === "Platform" || (group === "EkosistemActive" && m.proposedBy.name === user.name));
+    (group === "Bappebti" || group === "Pialang" || (group === "EkosistemActive" && m.proposedBy.name === user.name));
 }
 
 function StatusBadge({ status }: { status: MeetingStatus }) {
@@ -419,11 +424,16 @@ function OutcomeDialog({ meeting: m, onClose }: { meeting: MusyawarahMeeting; on
     logAudit({ activity: "Catat Hasil Musyawarah", ticket: m.ticket, detail: `"${m.title}" → ${decision}.` });
     if (decision === "Tidak Sepakat (Musyawarah Berakhir)") {
       markMusyawarahFailed(m.ticket, actor, meetingEndIso(m));
+    } else if (decision === "Tidak Sepakat — Lanjut Mediasi Bursa") {
+      const c = CASES.find((x) => x.ticket === m.ticket);
+      startMediation(m.ticket, actor, c?.institution?.bursa ?? c?.bursaEntity ?? "Bursa Berjangka");
     }
     showToast(
       decision.startsWith("Selesai")
         ? "Hasil musyawarah tersimpan: kesepakatan tercapai."
-        : decision.startsWith("Tidak Sepakat")
+        : decision === "Tidak Sepakat — Lanjut Mediasi Bursa"
+          ? "Hasil musyawarah tersimpan. Perselisihan diteruskan ke Mediasi Bursa."
+          : decision.startsWith("Tidak Sepakat")
           ? "Hasil musyawarah tersimpan: Tidak Sepakat. Jendela pengajuan arbitrase nasabah dibuka mulai H+1."
           : "Hasil musyawarah tersimpan. Silakan ajukan jadwal musyawarah berikutnya."
     );
@@ -476,7 +486,7 @@ function OutcomeDialog({ meeting: m, onClose }: { meeting: MusyawarahMeeting; on
               Kesepakatan damai dituangkan Pialang melalui tombol Ajukan Resolusi pada tab Resolusi, lalu disetujui nasabah.
             </p>
           )}
-          {decision.startsWith("Tidak Sepakat") && (
+          {decision === "Tidak Sepakat (Musyawarah Berakhir)" && (
             <p className="text-[11px] rounded-md bg-amber-bg/60 px-2 py-1.5">
               Nasabah dapat mengajukan penyelesaian melalui arbitrase BAKTI mulai H+1 selama jendela waktu arbitrase. Tanpa pendaftaran, status menjadi Selesai Non-Arbitrase.
             </p>

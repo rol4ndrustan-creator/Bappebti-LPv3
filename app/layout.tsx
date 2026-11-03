@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Layanan Pengaduan Bappebti",
-  description: "Demo platform pengaduan terintegrasi Bappebti - PT Capio Teknologi Indonesia",
+  description: "Demo pialang pengaduan terintegrasi Bappebti - PT Capio Teknologi Indonesia",
 };
 
 export default function RootLayout({

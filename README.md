@@ -1,7 +1,7 @@
 # Bappebti LPv3 — Layanan Pengaduan
 
 LPv3 is a copy of Bappebti-LPv2 (branch `claude/bappebti-review-redesign`), extended through
-List Revisi 10–12.
+List Revisi 10–13. User-facing text says "Pialang"; routes (`/platform/...`) and internal codes keep their original names.
 
 ## Siklus Tiket (List Revisi 12)
 
@@ -10,9 +10,12 @@ The former "Perselisihan PBK" tab/menus were removed; every ticket now follows o
 
 | Status | Meaning |
 |---|---|
+| Triase Bappebti | Reporter did not know the Pialang; Bappebti assigns it (Revisi 13) |
+| Perlu Perbaikan Berkas | Pialang/Bappebti asked the reporter to fix documents; review SLA restarts after the fix |
 | Menunggu Verifikasi Pialang | New ticket in the Pialang's *Verifikasi Komplain Baru* queue (auto-approved after SLA Review Pialang) |
 | Pengajuan Reject → Rejected | Pialang rejected (reason + PDF); Bappebti *Verifikasi Ditolak Pialang* approves (Rejected) or returns it (forced musyawarah) |
 | Proses Musyawarah | Meetings scheduled/edited/cancelled; outcome *Tidak Sepakat* opens the arbitration window |
+| Proses Mediasi Bursa | Musyawarah failed and was escalated to Bursa mediation; Sepakat → resolution offer, Tidak Sepakat → arbitration window |
 | Diajukan Penyelesaian → Close Resolusi / Close Auto | Pialang resolution offer; nasabah agrees, or no response within the configured deadline |
 | Masa Pengajuan Arbitrase → Proses Arbitrase BAKTI → Close Arbitrase | Nasabah files BAKTI arbitration H+1 … 20 business days; BAKTI verifies, records hearings, issues verdict |
 | Selesai Non-Arbitrase | Window lapsed; Bappebti cover letter for Pengadilan Negeri (PDF) |

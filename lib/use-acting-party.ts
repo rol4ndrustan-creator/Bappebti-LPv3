@@ -20,7 +20,7 @@ export function useActingParty(): (c?: ComplaintCase) => ActingParty {
   return (c) => {
     const group = getViewerGroup(user.role);
     if (group === "Bappebti") return { name: user.name, role: "Bappebti", institution: "Bappebti" };
-    if (group === "Platform") return { name: user.name, role: "Platform", institution: user.institution };
+    if (group === "Pialang") return { name: user.name, role: "Pialang", institution: user.institution };
     if (user.role.startsWith("BURSA_")) return { name: user.name, role: "Bursa", institution: user.institution };
     if (user.role.startsWith("CLEARING_")) return { name: user.name, role: "Kliring", institution: user.institution };
     const type = ekosistemRole?.roleType ?? "Bursa";

@@ -8,8 +8,8 @@ import { FileBarChart, Download } from "lucide-react";
 
 const reports = [
   {
-    title: "Platform SLA Report",
-    description: "Ringkasan kepatuhan SLA seluruh platform yang dipantau oleh Bursa.",
+    title: "Pialang SLA Report",
+    description: "Ringkasan kepatuhan SLA seluruh pialang yang dipantau oleh Bursa.",
   },
   {
     title: "Escalation Report",
@@ -17,15 +17,15 @@ const reports = [
   },
   {
     title: "Supervisory Follow-up Report",
-    description: "Catatan tindak lanjut supervisi yang telah dilakukan terhadap platform.",
+    description: "Catatan tindak lanjut supervisi yang telah dilakukan terhadap pialang.",
   },
   {
     title: "Critical Cases Under Bursa",
     description: "Daftar kasus dengan severitas kritis yang berada dalam pengawasan Bursa.",
   },
   {
-    title: "Platform Performance Trend",
-    description: "Tren kinerja platform dari waktu ke waktu berdasarkan indikator SLA dan volume kasus.",
+    title: "Pialang Performance Trend",
+    description: "Tren kinerja pialang dari waktu ke waktu berdasarkan indikator SLA dan volume kasus.",
   },
 ];
 
@@ -36,7 +36,7 @@ export default function BursaReportingPage() {
     <div>
       <PageHeader
         title="Reporting"
-        description="Unduh laporan terkait pengawasan platform dan eskalasi kasus."
+        description="Unduh laporan terkait pengawasan pialang dan eskalasi kasus."
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

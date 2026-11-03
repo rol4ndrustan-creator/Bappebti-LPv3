@@ -23,7 +23,7 @@ interface ReportItem {
 const REPORTS: ReportItem[] = [
   {
     title: "Assigned Cases Report",
-    description: "Daftar lengkap kasus pengaduan yang saat ini menjadi tanggung jawab Platform / Pialang, termasuk status dan kategori penanganan.",
+    description: "Daftar lengkap kasus pengaduan yang saat ini menjadi tanggung jawab Pialang, termasuk status dan kategori penanganan.",
     icon: ClipboardList,
   },
   {
@@ -55,7 +55,7 @@ export default function PlatformReportingPage() {
     <div>
       <PageHeader
         title="Reporting"
-        description="Unduh atau ekspor laporan operasional terkait penanganan kasus pengaduan oleh Platform / Pialang."
+        description="Unduh atau ekspor laporan operasional terkait penanganan kasus pengaduan oleh Pialang."
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

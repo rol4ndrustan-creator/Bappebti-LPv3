@@ -108,7 +108,7 @@ const PANDUAN_EXAMPLES = [
     channel: "Pengaduan Resmi",
   },
   {
-    case: "Dugaan penipuan atau penawaran investasi ilegal mengatasnamakan platform",
+    case: "Dugaan penipuan atau penawaran investasi ilegal mengatasnamakan pialang",
     channel: "Pengaduan Resmi",
   },
   {
@@ -149,6 +149,8 @@ export default function BuatPengaduanPage() {
   const params = useBusinessParams();
   const now = useClock();
   // Kronologi: ketik narasi atau unggah dokumen (PDF/DOC/JPG maks. 5MB).
+  // Pialang opsional: bila belum diketahui, tiket masuk antrean triase Bappebti (List Revisi 13 #6).
+  const [pialangUnknown, setPialangUnknown] = useState(false);
   const [kronologiMode, setKronologiMode] = useState<"teks" | "file">("teks");
   const [kronologiFile, setKronologiFile] = useState("");
   const [kronologiFileError, setKronologiFileError] = useState("");
@@ -201,6 +203,7 @@ export default function BuatPengaduanPage() {
     setAgree(false);
     setAgreeRegulation(false);
     setAgreeMateriil(false);
+    setPialangUnknown(false);
     setKronologiMode("teks");
     setKronologiFile("");
     setKronologiFileError("");
@@ -220,14 +223,15 @@ export default function BuatPengaduanPage() {
   }
 
   const officials = getPialangOfficials(form.platform);
-  const ktpFile = `KTP_${(form.nama || "Pelapor").replace(/\s+/g, "_")}.jpg`;
+  // KTP dari profil akun (diunggah saat registrasi).
+  const ktpFile = account?.ktpFile?.name ?? `KTP_${(form.nama || "Pelapor").replace(/\s+/g, "_")}.jpg`;
   const incidentAgeDays = form.tanggalKejadian && now
     ? Math.floor((now.getTime() - new Date(`${form.tanggalKejadian}T00:00:00+07:00`).getTime()) / 86_400_000)
     : 0;
   const incidentExpired = !!form.tanggalKejadian && incidentAgeDays > params.kedaluwarsaDays;
   const incidentInFuture = !!form.tanggalKejadian && incidentAgeDays < 0;
   const kronologiOk = kronologiMode === "teks" ? !!form.kronologi.trim() : !!kronologiFile;
-  const step3Valid = !!form.platform && !!form.tanggalKejadian && !incidentExpired && !incidentInFuture && kronologiOk;
+  const step3Valid = !!form.tanggalKejadian && !incidentExpired && !incidentInFuture && kronologiOk;
   const step4Valid = buktiSetor.length > 0 && supportingDocs.every((d) => !d.file || d.label.trim());
   const consentOk = agree && agreeRegulation && agreeMateriil;
   const allEvidence = [`${ktpFile} (KTP)`, ...buktiSetor.map((f) => `${f} (Bukti Setor)`), ...supportingDocs.filter((d) => d.file).map((d) => `${d.file} (${d.label.trim()})`)];
@@ -323,7 +327,7 @@ export default function BuatPengaduanPage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <p className="text-xs text-muted">
-                Nomor tiket, verifikasi, SLA, dan tindak lanjut platform.
+                Nomor tiket, verifikasi, SLA, dan tindak lanjut pialang.
               </p>
               <Button size="sm" onClick={() => handleSelectService("resmi")}>
                 Pilih Layanan
@@ -548,9 +552,10 @@ export default function BuatPengaduanPage() {
                 <Input id="judul" value={form.judul} onChange={(e) => update("judul", e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="platform">Pialang terkait *</Label>
+                <Label htmlFor="pialang">Pialang terkait (opsional)</Label>
                 <Select
-                  id="platform"
+                  id="pialang"
+                  disabled={pialangUnknown}
                   value={form.platform}
                   onChange={(e) => setForm((prev) => ({ ...prev, platform: e.target.value, terlaporJabatan: "", terlaporNama: "" }))}
                 >
@@ -561,6 +566,21 @@ export default function BuatPengaduanPage() {
                     </option>
                   ))}
                 </Select>
+                <label className="mt-1.5 flex items-center gap-2 text-xs cursor-pointer">
+                  <Checkbox
+                    id="pialang-unknown"
+                    checked={pialangUnknown}
+                    onCheckedChange={(v) => {
+                      const on = v === true;
+                      setPialangUnknown(on);
+                      if (on) setForm((prev) => ({ ...prev, platform: "", terlaporJabatan: "", terlaporNama: "" }));
+                    }}
+                  />
+                  Belum mengetahui nama Pialang
+                </label>
+                {pialangUnknown && (
+                  <p className="text-[11px] text-muted mt-1">Pengaduan akan masuk antrean triase Bappebti untuk dianalisis dan diteruskan ke Pialang terkait.</p>
+                )}
               </div>
               {form.platform && (
                 <div className="sm:col-span-2 rounded-md border border-border bg-muted-bg/40 p-3">
@@ -728,7 +748,7 @@ export default function BuatPengaduanPage() {
               <div className="rounded-md border border-border p-2.5 text-xs flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-green shrink-0" />
                 <span className="font-medium">KTP</span>
-                <span className="text-muted">— {ktpFile} (terisi otomatis dari akun pelapor)</span>
+                <span className="text-muted">— {ktpFile} (terisi otomatis dari profil akun — diunggah saat registrasi)</span>
               </div>
             </div>
             <div>
@@ -809,7 +829,7 @@ export default function BuatPengaduanPage() {
                 </div>
                 <div>
                   <dt className="text-muted">Pialang terkait</dt>
-                  <dd className="font-medium">{form.platform || "-"}</dd>
+                  <dd className="font-medium">{form.platform || (pialangUnknown ? "Belum diketahui — triase Bappebti" : "-")}</dd>
                 </div>
                 <div>
                   <dt className="text-muted">Pihak yang diadukan</dt>
@@ -906,7 +926,7 @@ export default function BuatPengaduanPage() {
               <div>
                 <p className="text-muted mb-2">Potensi routing</p>
                 <div className="flex items-center gap-2 flex-wrap text-xs font-medium">
-                  <span className="rounded-md border border-border bg-muted-bg px-2.5 py-1.5">Platform</span>
+                  <span className="rounded-md border border-border bg-muted-bg px-2.5 py-1.5">Pialang</span>
                   <ChevronRight className="size-4 text-muted" />
                   <span className="rounded-md border border-border bg-muted-bg px-2.5 py-1.5">Bursa / Kliring</span>
                   <ChevronRight className="size-4 text-muted" />
@@ -954,6 +974,9 @@ export default function BuatPengaduanPage() {
               <p className="text-xs text-muted mt-1">
                 Simpan nomor tiket ini untuk melacak status pengaduan Anda.
               </p>
+              {!form.platform && (
+                <p className="text-xs text-navy mt-1">Pialang belum diisi — tiket masuk antrean triase Bappebti untuk diteruskan ke Pialang terkait.</p>
+              )}
             </div>
 
             <div className="text-2xl font-bold text-navy tracking-wide">BPP-2026-000201</div>

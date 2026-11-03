@@ -44,7 +44,7 @@ export default function DaftarPlatformPage() {
   const categories = useEcosystemCategoryConfig(ECOSYSTEM_CATEGORY_CONFIG);
   const { showToast } = useToast();
 
-  const platforms = React.useMemo(() => allEntities.filter((e) => e.category === "Platform/Pialang"), [allEntities]);
+  const platforms = React.useMemo(() => allEntities.filter((e) => e.category === "Pialang"), [allEntities]);
   const bursaOptions = React.useMemo(() => Array.from(new Set(platforms.map((p) => p.bursa).filter((b): b is string => !!b))).sort(), [platforms]);
 
   const [search, setSearch] = React.useState("");
@@ -81,13 +81,13 @@ export default function DaftarPlatformPage() {
         ...values,
         id: `ECO-${Date.now().toString(36).toUpperCase()}`,
         name: values.name || "(Draft tanpa nama)",
-        category: "Platform/Pialang",
+        category: "Pialang",
         ecosystemType: "Ecosystem Aktif",
         status: "Draft",
         registeredAt: today,
       } as EcosystemEntity);
     }
-    showToast("Draft pendaftaran platform telah disimpan.");
+    showToast("Draft pendaftaran pialang telah disimpan.");
     setWizardOpen(false);
   }
 
@@ -104,14 +104,14 @@ export default function DaftarPlatformPage() {
         after,
         requestedBy: values.submitterName || "Anda",
       });
-      showToast("Permohonan perubahan data platform telah diajukan untuk persetujuan.");
+      showToast("Permohonan perubahan data pialang telah diajukan untuk persetujuan.");
     } else {
       const id = `ECO-${Date.now().toString(36).toUpperCase()}`;
       const entity: EcosystemEntity = {
         ...values,
         id,
         name: values.name || "(Tanpa nama)",
-        category: "Platform/Pialang",
+        category: "Pialang",
         ecosystemType: "Ecosystem Aktif",
         status: "Menunggu Verifikasi",
         registeredAt: today,
@@ -125,7 +125,7 @@ export default function DaftarPlatformPage() {
         after: entity,
         requestedBy: values.submitterName || "Anda",
       });
-      showToast("Registrasi platform telah diajukan untuk persetujuan.");
+      showToast("Registrasi pialang telah diajukan untuk persetujuan.");
       if (values.administratorEmail) {
         setActivationReminder(values.administratorEmail);
       }
@@ -148,11 +148,11 @@ export default function DaftarPlatformPage() {
   return (
     <div>
       <PageHeader
-        title="Daftar Platform"
-        description="Registrasi dan daftar seluruh platform/pialang berjangka terdaftar, lengkap dengan data administrator, direksi, komisaris, dan surat keanggotaan bursa."
+        title="Daftar Pialang"
+        description="Registrasi dan daftar seluruh pialang berjangka terdaftar, lengkap dengan data administrator, direksi, komisaris, dan surat keanggotaan bursa."
         actions={
           <Button size="sm" onClick={openNew}>
-            <Plus className="size-3.5" /> Tambah Platform
+            <Plus className="size-3.5" /> Tambah Pialang
           </Button>
         }
       />
@@ -160,7 +160,7 @@ export default function DaftarPlatformPage() {
       <div className="mb-3 flex flex-wrap items-end gap-2">
         <div className="w-full max-w-xs">
           <Label>Cari</Label>
-          <Input placeholder="Nama platform atau nomor izin..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder="Nama pialang atau nomor izin..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="w-48">
           <Label>Status</Label>
@@ -188,7 +188,7 @@ export default function DaftarPlatformPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nama Platform</TableHead>
+            <TableHead>Nama Pialang</TableHead>
             <TableHead>Nomor Izin</TableHead>
             <TableHead>Bursa</TableHead>
             <TableHead>Kliring</TableHead>
@@ -238,7 +238,7 @@ export default function DaftarPlatformPage() {
           {filtered.length === 0 && (
             <TableRow>
               <TableCell colSpan={9} className="text-center text-muted py-6">
-                Tidak ada platform yang sesuai dengan filter.
+                Tidak ada pialang yang sesuai dengan filter.
               </TableCell>
             </TableRow>
           )}
@@ -260,7 +260,7 @@ export default function DaftarPlatformPage() {
         <DisableConfirmDialog
           open={!!disabling}
           onOpenChange={(v) => !v && setDisabling(null)}
-          categoryLabel="Platform"
+          categoryLabel="Pialang"
           itemName={disabling.name}
           onConfirm={confirmDisable}
           requiresApproval={false}
@@ -274,7 +274,7 @@ export default function DaftarPlatformPage() {
               <MailCheck className="size-4 text-green" /> Email Aktivasi Terkirim
             </DialogTitle>
             <DialogDescription>
-              Registrasi platform telah diajukan untuk persetujuan. Email aktivasi telah dikirim ke email administrator: <span className="font-medium text-navy">{activationReminder}</span>.
+              Registrasi pialang telah diajukan untuk persetujuan. Email aktivasi telah dikirim ke email administrator: <span className="font-medium text-navy">{activationReminder}</span>.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

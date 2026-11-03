@@ -37,7 +37,7 @@ function currentUser() {
 const GROUP_TO_PORTAL: Record<ReturnType<typeof getViewerGroup>, AuditPortal> = {
   User: "Publik",
   Bappebti: "Bappebti",
-  Platform: "Platform",
+  Pialang: "Pialang",
   EkosistemActive: "EkosistemActive",
   EkosistemPengawas: "EkosistemPengawas",
 };

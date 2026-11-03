@@ -17,7 +17,7 @@ export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
           <TableHead>Pengaduan</TableHead>
           <TableHead>Nama Pelapor</TableHead>
           <TableHead>Email Pelapor</TableHead>
-          <TableHead>Platform</TableHead>
+          <TableHead>Pialang</TableHead>
           <TableHead>Kategori</TableHead>
           <TableHead>Prioritas</TableHead>
           <TableHead>Status Tiket</TableHead>

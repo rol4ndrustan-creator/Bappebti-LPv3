@@ -88,7 +88,7 @@ export const CLARIFICATION_PRIORITY_LABEL: Record<ClarificationPriority, string>
 
 export const CLARIFICATION_PARTY_LABEL: Record<ClarificationPartyType, string> = {
   REPORTER: "Pelapor",
-  PLATFORM: "Platform",
+  PLATFORM: "Pialang",
   BURSA: "Bursa",
   CLEARING: "Kliring",
   BAPPEBTI: "Bappebti",
@@ -198,7 +198,7 @@ export function getClarificationActionOwnerParty(cl: ClarificationRequest): Clar
 export function getMaxHistoryVisibility(role: Role): "public" | "member" | "internal" {
   const group = ROLE_GROUP[role];
   if (group === "Bappebti" || group === "Administrasi") return "internal";
-  if (group === "Platform" || group === "Ekosistem") return "member";
+  if (group === "Pialang" || group === "Ekosistem") return "member";
   return "public";
 }
 

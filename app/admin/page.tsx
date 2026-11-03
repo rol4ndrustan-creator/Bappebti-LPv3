@@ -81,7 +81,7 @@ export default function AdminDashboardPage() {
     <div>
       <PageHeader
         title="Dashboard Admin"
-        description="Jumlah pengaduan dibandingkan dengan platform (termasuk pengaduan tanpa ID platform), beserta status penyelesaian dan kepatuhan SLA."
+        description="Jumlah pengaduan dibandingkan dengan pialang (termasuk pengaduan tanpa ID pialang), beserta status penyelesaian dan kepatuhan SLA."
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -93,7 +93,7 @@ export default function AdminDashboardPage() {
 
       <div className="rounded-lg border border-border bg-card">
         <div className="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-navy">Pengaduan per Platform</h2>
+          <h2 className="text-sm font-semibold text-navy">Pengaduan per Pialang</h2>
           <div className="flex items-center gap-3 text-[11px] text-muted">
             <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-green inline-block" /> Selesai</span>
             <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-amber inline-block" /> Dalam SLA</span>

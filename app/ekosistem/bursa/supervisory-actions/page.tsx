@@ -62,7 +62,7 @@ export default function SupervisoryActionsPage() {
     <div>
       <PageHeader
         title="Supervisory Actions"
-        description="Log tindakan supervisi yang dilakukan Bursa terhadap platform yang dipantau."
+        description="Log tindakan supervisi yang dilakukan Bursa terhadap pialang yang dipantau."
       />
 
       <Card className="mb-4">
@@ -70,7 +70,7 @@ export default function SupervisoryActionsPage() {
           <p className="text-xs font-medium text-navy mb-3">Tambah Catatan Tindakan Supervisi</p>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
             <div className="space-y-1">
-              <Label>Platform</Label>
+              <Label>Pialang</Label>
               <Select value={platform} onChange={(e) => setPlatform(e.target.value)}>
                 {platforms.map((p) => (
                   <option key={p} value={p}>{p}</option>
@@ -104,7 +104,7 @@ export default function SupervisoryActionsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tanggal</TableHead>
-                <TableHead>Platform</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Tindakan</TableHead>
                 <TableHead>Tiket</TableHead>
                 <TableHead>Jatuh Tempo</TableHead>

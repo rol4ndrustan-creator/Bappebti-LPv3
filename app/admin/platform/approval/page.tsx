@@ -19,7 +19,7 @@ import type { VariantProps } from "class-variance-authority";
 type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
 
 const FIELD_LABELS: Partial<Record<keyof EcosystemEntity, string>> = {
-  name: "Nama Platform",
+  name: "Nama Pialang",
   license: "Nomor Izin / NIB",
   npwp: "NPWP Badan",
   address: "Alamat Kantor",
@@ -60,7 +60,7 @@ function ChangeDetail({ request }: { request: EcosystemChangeRequest }) {
     const a = request.after as EcosystemEntity;
     return (
       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
-        <div><dt className="text-muted">Nama Platform</dt><dd className="font-medium">{a.name}</dd></div>
+        <div><dt className="text-muted">Nama Pialang</dt><dd className="font-medium">{a.name}</dd></div>
         <div><dt className="text-muted">Nomor Izin</dt><dd className="font-medium">{a.license || "-"}</dd></div>
         <div><dt className="text-muted">Bursa / Kliring</dt><dd className="font-medium">{a.bursa || "-"} / {a.kliring || "-"}</dd></div>
         <div><dt className="text-muted">Administrator</dt><dd className="font-medium">{a.administratorName || "-"} ({a.administratorEmail || "-"})</dd></div>
@@ -119,7 +119,7 @@ function RequestTable({
         <TableRow>
           <TableHead>ID</TableHead>
           <TableHead>Jenis Perubahan</TableHead>
-          <TableHead>Nama Platform</TableHead>
+          <TableHead>Nama Pialang</TableHead>
           <TableHead>Diajukan Oleh</TableHead>
           <TableHead>Tanggal</TableHead>
           <TableHead>Status</TableHead>
@@ -184,7 +184,7 @@ export default function ApprovalDataPlatformPage() {
   const requests = React.useMemo(
     () =>
       allRequests.filter(
-        (r) => r.targetType === "Entitas Ekosistem" && (r.after as EcosystemEntity).category === "Platform/Pialang"
+        (r) => r.targetType === "Entitas Ekosistem" && (r.after as EcosystemEntity).category === "Pialang"
       ),
     [allRequests]
   );
@@ -211,8 +211,8 @@ export default function ApprovalDataPlatformPage() {
   return (
     <div>
       <PageHeader
-        title="Approval Data Platform"
-        description="Semua pengajuan pendaftaran platform baru dan perubahan data platform wajib melalui persetujuan di sini."
+        title="Approval Data Pialang"
+        description="Semua pengajuan pendaftaran pialang baru dan perubahan data pialang wajib melalui persetujuan di sini."
       />
 
       <Tabs defaultValue="perlu-tindakan">

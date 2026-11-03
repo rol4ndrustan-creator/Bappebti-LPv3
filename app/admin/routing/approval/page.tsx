@@ -91,7 +91,7 @@ export default function ApprovalRoutingPage() {
     <div>
       <PageHeader
         title="Approval Routing"
-        description="Setiap routing baru atau perubahan routing platform wajib melalui persetujuan di sini sebelum berlaku."
+        description="Setiap routing baru atau perubahan routing pialang wajib melalui persetujuan di sini sebelum berlaku."
       />
 
       <Tabs defaultValue="request">
@@ -135,7 +135,7 @@ export default function ApprovalRoutingPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Platform</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Diajukan Oleh</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Status</TableHead>

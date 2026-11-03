@@ -150,8 +150,8 @@ export const WORKFLOW_STATES: Record<InternalWorkflowState, WorkflowStateConfig>
   ASSIGNED_TO_PLATFORM: {
     code: "ASSIGNED_TO_PLATFORM",
     publicLabel: "Diteruskan ke Pihak Terkait",
-    internalLabel: "Ditugaskan ke platform",
-    description: "Kasus diteruskan ke pelaku usaha (platform) untuk ditindaklanjuti.",
+    internalLabel: "Ditugaskan ke pialang",
+    description: "Kasus diteruskan ke Pialang Berjangka untuk ditindaklanjuti.",
     allowedNext: ["MEMBER_ACKNOWLEDGED", "BAPPEBTI_OPERATIONAL_REVIEW"],
     rolesAllowed: BAPPEBTI_ROLES,
     reporterActionRequired: false,

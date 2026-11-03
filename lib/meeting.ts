@@ -27,7 +27,7 @@ export function getMeetingStatus(m: MusyawarahMeeting, now: Date | null): Meetin
   if (m.cancellation) return "Dibatalkan";
   if (m.outcome) {
     if (m.outcome.decision === "Selesai (Damai / Kesepakatan Tercapai)") return "Selesai";
-    if (m.outcome.decision === "Tidak Sepakat (Musyawarah Berakhir)") return "Tidak Sepakat";
+    if (m.outcome.decision.startsWith("Tidak Sepakat")) return "Tidak Sepakat";
     return "Lanjut Musyawarah Berikutnya";
   }
   if (!now) return "Dijadwalkan";
@@ -100,7 +100,7 @@ export const MEETING_SEED: MusyawarahMeeting[] = [
     locationType: "Kantor Pialang",
     locationDetail: "Kantor PT Monex Investindo Futures, Jakarta Selatan",
     agenda: "Penjelasan penyebab keterlambatan penyelesaian dan usulan kompensasi.",
-    proposedBy: { name: "Tim Kepatuhan Monex", institution: "PT Monex Investindo Futures", role: "Platform" },
+    proposedBy: { name: "Tim Kepatuhan Monex", institution: "PT Monex Investindo Futures", role: "Pialang" },
     createdAt: "2026-06-08T09:00:00.000Z",
     outcome: {
       decision: "Diundang ke Musyawarah Berikutnya",
@@ -114,14 +114,14 @@ export const MEETING_SEED: MusyawarahMeeting[] = [
   {
     id: "MSY-SEED-187-1",
     ticket: "BPP-2026-000187",
-    title: "Musyawarah Mediasi Kendala Respons Platform #BPP-2026-000187",
+    title: "Musyawarah Mediasi Kendala Respons Pialang #BPP-2026-000187",
     date: "2026-06-12",
     startTime: "10:00",
     endTime: "12:00",
     locationType: "Tautan Video Conference",
     locationDetail: "https://meet.bappebti.go.id/msy-187-1",
     agenda: "Pialang tidak merespons pengaduan selama 3 hari; pembahasan tindak lanjut atas permintaan nasabah.",
-    proposedBy: { name: "Ferry Hartono", institution: "PT Monex Investindo Futures", role: "Platform" },
+    proposedBy: { name: "Ferry Hartono", institution: "PT Monex Investindo Futures", role: "Pialang" },
     createdAt: "2026-06-10T03:00:00.000Z",
     outcome: {
       decision: "Diundang ke Musyawarah Berikutnya",
@@ -135,8 +135,8 @@ export const MEETING_SEED: MusyawarahMeeting[] = [
   {
     id: "MSY-SEED-187-2",
     ticket: "BPP-2026-000187",
-    title: "Musyawarah Lanjutan Kendala Respons Platform #BPP-2026-000187",
-    date: "2026-11-04",
+    title: "Musyawarah Lanjutan Kendala Respons Pialang #BPP-2026-000187",
+    date: "2026-12-08",
     startTime: "10:00",
     endTime: "12:00",
     locationType: "Tautan Video Conference",
@@ -149,13 +149,13 @@ export const MEETING_SEED: MusyawarahMeeting[] = [
     id: "MSY-SEED-184-1",
     ticket: "BPP-2026-000184",
     title: "Musyawarah Mediasi Kendala Transaksi #BPP-2026-000184",
-    date: "2026-11-03",
+    date: "2026-12-03",
     startTime: "14:00",
     endTime: "15:30",
     locationType: "Kantor Pialang",
     locationDetail: "Kantor PT Bursa Digital Nusantara, Jakarta",
     agenda: "Status penarikan dana WD-88213471 yang tertahan dan jadwal pencairan.",
-    proposedBy: { name: "Rina Kusuma", institution: "PT Bursa Digital Nusantara", role: "Platform" },
+    proposedBy: { name: "Rina Kusuma", institution: "PT Bursa Digital Nusantara", role: "Pialang" },
     createdAt: "2026-10-22T03:00:00.000Z",
   },
 ];

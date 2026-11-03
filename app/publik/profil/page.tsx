@@ -9,9 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/shared/toast-provider";
+import { usePublikAuth } from "@/lib/publik-auth";
 
 export default function ProfilPage() {
   const { showToast } = useToast();
+  const { account } = usePublikAuth();
 
   const profile = {
     nama: "Andra Wicaksono",
@@ -65,6 +67,14 @@ export default function ProfilPage() {
             <div>
               <Label>Nomor identitas (KTP)</Label>
               <Input value={profile.nomorIdentitas} readOnly />
+            </div>
+            <div>
+              <Label>Berkas KTP</Label>
+              <Input
+                value={account?.ktpFile ? `${account.ktpFile.name} (${(account.ktpFile.sizeBytes / 1024 / 1024).toFixed(2)} MB)` : "Belum diunggah"}
+                readOnly
+              />
+              <p className="text-[11px] text-muted mt-1">Diunggah saat registrasi; otomatis dilampirkan pada setiap pengaduan baru.</p>
             </div>
             <div>
               <Label>Email</Label>

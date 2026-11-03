@@ -5,7 +5,7 @@
 
 import { ArbitrationVerdict, PialangRejectReason, TicketLifecycle } from "./types";
 import { updateLifecycle } from "./mock-service/lifecycle-store";
-import { addClarificationReply, addEvidence, addTimelineEvent } from "./mock-service/store";
+import { addClarificationReply, addEvidence, addTimelineEvent, setCasePlatform } from "./mock-service/store";
 import { logAudit } from "./mock-service/audit-store";
 
 export interface Actor {
@@ -51,6 +51,64 @@ export function setLegalProceeding(ticket: string, a: Actor, answer: "Ya" | "Tid
     answer === "Ya" ? `Sengketa telah diproses di pengadilan/kepolisian. Salinan: ${document}.` : "Sengketa belum pernah diproses di pengadilan/kepolisian.",
     "info",
     "internal"
+  );
+}
+
+// --- Revisi 13: triase, perbaikan berkas, penolakan Bappebti, mediasi --------
+
+export function assignPialangFromTriage(ticket: string, a: Actor, pialang: string) {
+  setCasePlatform(ticket, pialang);
+  updateLifecycle(ticket, (lc) => ({ ...lc, triage: { assignedPialang: pialang, ...stamp(a) } }));
+  record(ticket, a, "Triase Bappebti — diteruskan ke Pialang", `Pengaduan dianalisis dan ditugaskan ke ${pialang} untuk verifikasi komplain.`, "info");
+}
+
+export function requestRevision(ticket: string, a: Actor, note: string) {
+  updateLifecycle(ticket, (lc) => ({ ...lc, revisionRequest: { note, ...stamp(a) } }));
+  record(ticket, a, "Permintaan perbaikan berkas", note, "warning");
+}
+
+export function submitRevision(ticket: string, a: Actor, response: string, files: string[]) {
+  updateLifecycle(ticket, (lc) =>
+    lc.revisionRequest ? { ...lc, revisionRequest: { ...lc.revisionRequest, resolvedAt: iso(), response, files } } : lc
+  );
+  if (files.length) addEvidence(ticket, files);
+  record(ticket, a, "Perbaikan berkas dikirim nasabah", `${response}${files.length ? ` Berkas: ${files.join(", ")}.` : ""}`, "info");
+}
+
+export function bappebtiReject(ticket: string, a: Actor, reason: PialangRejectReason, document: string, note: string) {
+  updateLifecycle(ticket, (lc) => ({ ...lc, bappebtiRejection: { reason, document, note, ...stamp(a) } }));
+  addEvidence(ticket, [document]);
+  addClarificationReply(
+    ticket,
+    a.name,
+    "Bappebti",
+    `Pemberitahuan resmi: pengaduan Anda ditolak dengan alasan "${reason}". ${note ? `${note} ` : ""}` +
+      "Apabila terdapat fakta atau bukti baru, Anda dapat mengajukan komplain baru melalui menu Buat Pengaduan.",
+    { institution: "Bappebti", emailSent: true }
+  );
+  record(ticket, a, "Pengaduan ditolak Bappebti — Rejected", `Alasan: ${reason}. Bukti: ${document}.${note ? ` ${note}` : ""}`, "danger");
+}
+
+export function startMediation(ticket: string, a: Actor, bursa: string) {
+  updateLifecycle(ticket, (lc) => ({ ...lc, mediation: { bursa, ...stamp(a) } }));
+  record(ticket, a, "Musyawarah tidak sepakat — lanjut Mediasi Bursa", `Perselisihan diteruskan untuk dimediasi oleh ${bursa}.`, "warning");
+}
+
+export function recordMediationOutcome(ticket: string, a: Actor, outcome: "Sepakat" | "Tidak Sepakat", note: string) {
+  const at = iso();
+  updateLifecycle(ticket, (lc) => ({
+    ...lc,
+    mediation: lc.mediation ? { ...lc.mediation, outcome, note, endedAt: at } : lc.mediation,
+    musyawarahFailedAt: outcome === "Tidak Sepakat" ? at : lc.musyawarahFailedAt,
+  }));
+  record(
+    ticket,
+    a,
+    `Hasil Mediasi Bursa: ${outcome}`,
+    outcome === "Sepakat"
+      ? `${note} Pialang menyampaikan tawaran resolusi kepada nasabah.`
+      : `${note} Nasabah dapat mengajukan arbitrase BAKTI mulai H+1.`,
+    outcome === "Sepakat" ? "success" : "warning"
   );
 }
 

@@ -17,7 +17,7 @@ import {
 const REPORTS = [
   {
     title: "Executive Summary Report",
-    description: "Ringkasan eksekutif kondisi penanganan pengaduan lintas platform, bursa, dan kliring.",
+    description: "Ringkasan eksekutif kondisi penanganan pengaduan lintas pialang, bursa, dan kliring.",
     icon: FileBarChart,
   },
   {

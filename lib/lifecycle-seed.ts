@@ -13,13 +13,24 @@ const SPECS: Record<string, SeedSpec> = {
   // Menunggu Verifikasi Pialang
   "BPP-2026-000194": (ago) => ({ submittedAt: ago(0, 3) }),
   "BPP-2026-000198": (ago) => ({ submittedAt: ago(0, 5) }),
-  "BPP-2026-000199": (ago) => ({ submittedAt: ago(0, 2) }),
+  // Perlu Perbaikan Berkas (Need Revision)
+  "BPP-2026-000199": (ago) => ({
+    submittedAt: ago(1),
+    revisionRequest: {
+      note: "Lengkapi Pialang User ID dan unggah ulang bukti transfer yang terbaca jelas (nomor rekening tujuan terlihat).",
+      by: "Dewi Anjani",
+      institution: BAPPEBTI,
+      at: ago(0, 20),
+    },
+  }),
+  // Triase Bappebti — pelapor belum mengetahui nama Pialang
+  "BPP-2026-000200": (ago) => ({ submittedAt: ago(0, 4), triage: {} }),
   // Pengajuan Reject — menunggu review Bappebti
   "BPP-2026-000191": (ago) => ({
     submittedAt: ago(2),
     pialangReview: {
       decision: "Ditolak",
-      reason: "Pengaduan sedang aktif diproses di kanal lain",
+      reason: "Isu sedang aktif (sedang diproses)",
       document: "Bukti proses kanal lain - BPP-2026-000191.pdf",
       note: "Nasabah telah mengajukan keluhan yang sama melalui layanan pengaduan internal dan sedang ditangani.",
       by: "Rina Kusuma",
@@ -32,7 +43,7 @@ const SPECS: Record<string, SeedSpec> = {
     submittedAt: ago(7),
     pialangReview: {
       decision: "Ditolak",
-      reason: "Pengaduan sudah pernah diproses",
+      reason: "Isu sudah selesai",
       document: "Berita acara penyelesaian sebelumnya.pdf",
       note: "Kasus deposit yang sama telah diselesaikan pada pengaduan sebelumnya.",
       by: "Indra Kusnadi",
@@ -61,7 +72,7 @@ const SPECS: Record<string, SeedSpec> = {
     submittedAt: ago(14),
     pialangReview: {
       decision: "Ditolak",
-      reason: "Pengaduan sudah pernah diproses",
+      reason: "Isu sudah selesai",
       document: "Surat tanggapan sebelumnya.pdf",
       by: "Tim Kepatuhan Monex",
       institution: "PT Monex Investindo Futures",
@@ -74,6 +85,8 @@ const SPECS: Record<string, SeedSpec> = {
       institution: BAPPEBTI,
       at: ago(11),
     },
+    // Proses Mediasi Bursa (musyawarah tidak sepakat)
+    mediation: { bursa: "Bursa Berjangka Jakarta", by: "Ahmad Pratama", institution: "Bursa Berjangka Jakarta", at: ago(3) },
   }),
   // Diajukan Penyelesaian
   "BPP-2026-000188": (ago) => ({

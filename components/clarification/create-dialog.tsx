@@ -233,7 +233,7 @@ function buildTargetParty(target: ClarificationPartyType, selectedCase: Complain
     case "BAPPEBTI":
       return { partyType: "BAPPEBTI" as const, institutionName: "Bappebti", roleLabel: "Petugas Kasus Bappebti" };
     case "PLATFORM":
-      return { partyType: "PLATFORM" as const, institutionName: selectedCase.platform, roleLabel: "Tim Operasional Platform" };
+      return { partyType: "PLATFORM" as const, institutionName: selectedCase.platform, roleLabel: "Tim Operasional Pialang" };
     case "BURSA":
       return { partyType: "BURSA" as const, institutionName: selectedCase.bursaEntity, roleLabel: "Petugas Kasus Bursa" };
     case "CLEARING":

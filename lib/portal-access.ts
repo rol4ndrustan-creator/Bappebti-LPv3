@@ -22,13 +22,13 @@ const namesOf = (...categories: string[]) =>
   ECOSYSTEM_ENTITIES.filter((e) => categories.includes(e.category)).map((e) => e.name);
 
 export const PORTAL_ACCESS: Record<PortalKey, PortalAccessConfig> = {
-  Platform: {
-    key: "Platform",
+  Pialang: {
+    key: "Pialang",
     title: "User & Role Management",
     description: "Kelola admin pialang, tim CS, dan tim compliance beserta hak aksesnya.",
-    organizations: namesOf("Platform/Pialang"),
+    organizations: namesOf("Pialang"),
     menus: [
-      "Dashboard Platform",
+      "Dashboard Pialang",
       "Manajemen Pengaduan",
       "Perselisihan Nasabah",
       "Musyawarah",
@@ -73,15 +73,15 @@ const role = (portal: PortalKey, id: string, name: string, description: string, 
 const ALL = (p: PortalKey) => PORTAL_ACCESS[p].menus;
 
 export const PORTAL_ROLE_SEED: RoleDefinition[] = [
-  role("Platform", "admin", "Admin Pialang", "Akses penuh portal pialang termasuk pengelolaan pengguna.", ALL("Platform")),
-  role("Platform", "cs", "Tim Customer Service", "Menangani pengaduan, klarifikasi, dan respon kepada nasabah.", [
+  role("Pialang", "admin", "Admin Pialang", "Akses penuh portal pialang termasuk pengelolaan pengguna.", ALL("Pialang")),
+  role("Pialang", "cs", "Tim Customer Service", "Menangani pengaduan, klarifikasi, dan respon kepada nasabah.", [
     "Manajemen Pengaduan",
     "Musyawarah",
     "Manajemen Tugas",
     "Klarifikasi",
   ]),
-  role("Platform", "compliance", "Tim Compliance", "Memantau kepatuhan penanganan, perselisihan, dan jejak audit.", [
-    "Dashboard Platform",
+  role("Pialang", "compliance", "Tim Compliance", "Memantau kepatuhan penanganan, perselisihan, dan jejak audit.", [
+    "Dashboard Pialang",
     "Manajemen Pengaduan",
     "Perselisihan Nasabah",
     "Musyawarah",

@@ -50,9 +50,9 @@ export function FilterableCaseList({ cases }: { cases: ComplaintCase[] }) {
             <Input placeholder="Tiket, judul, atau pelapor..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <div className="w-56">
-            <Label>Platform</Label>
+            <Label>Pialang</Label>
             <Select value={platform} onChange={(e) => setPlatform(e.target.value)}>
-              <option value="">Semua platform</option>
+              <option value="">Semua pialang</option>
               {platforms.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}

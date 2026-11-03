@@ -80,7 +80,7 @@ function DashboardContent({ cases: CASES, toolbar }: { cases: ComplaintCase[]; t
     <div>
       <PageHeader
         title="Dashboard Eksekutif"
-        description="Ringkasan kondisi penanganan pengaduan lintas platform, bursa, dan kliring untuk pengawasan Bappebti."
+        description="Ringkasan kondisi penanganan pengaduan lintas pialang, bursa, dan kliring untuk pengawasan Bappebti."
       />
       {toolbar}
 
@@ -165,8 +165,8 @@ function DashboardContent({ cases: CASES, toolbar }: { cases: ComplaintCase[]; t
       {/* Per-platform bar chart */}
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>Pengaduan Aktif per Platform</CardTitle>
-          <CardDescription>Jumlah pengaduan yang masih aktif/dalam proses, dikelompokkan per platform.</CardDescription>
+          <CardTitle>Pengaduan Aktif per Pialang</CardTitle>
+          <CardDescription>Jumlah pengaduan yang masih aktif/dalam proses, dikelompokkan per pialang.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-4 overflow-x-auto pb-2" style={{ minHeight: 180 }}>
@@ -258,7 +258,7 @@ function DashboardContent({ cases: CASES, toolbar }: { cases: ComplaintCase[]; t
                 <TableRow>
                   <TableHead>Tiket</TableHead>
                   <TableHead>Pengaduan</TableHead>
-                  <TableHead>Platform</TableHead>
+                  <TableHead>Pialang</TableHead>
                   <TableHead>Tingkat</TableHead>
                   <TableHead>Aksi</TableHead>
                 </TableRow>
@@ -295,7 +295,7 @@ function DashboardContent({ cases: CASES, toolbar }: { cases: ComplaintCase[]; t
                 <TableRow>
                   <TableHead>Tiket</TableHead>
                   <TableHead>Pengaduan</TableHead>
-                  <TableHead>Platform</TableHead>
+                  <TableHead>Pialang</TableHead>
                   <TableHead>SLA</TableHead>
                   <TableHead>Aksi</TableHead>
                 </TableRow>

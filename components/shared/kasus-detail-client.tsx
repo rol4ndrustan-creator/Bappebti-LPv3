@@ -26,6 +26,7 @@ import { CaseActionDialog, TONE_TO_BUTTON_VARIANT } from "@/components/shared/ca
 import { useActingParty } from "@/lib/use-acting-party";
 import { DownloadCaseButton } from "@/components/shared/download-case-button";
 import { MusyawarahTab } from "@/components/shared/musyawarah";
+import { ChronologyBlock, ReportedPartyValue } from "@/components/shared/case-identity";
 import { logAudit } from "@/lib/mock-service/audit-store";
 import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
@@ -48,13 +49,13 @@ import { CaseTask, InternalNoteTargetType, Severity, TaskDelegationType, TaskPri
 import { Plus, Trash2, Lock, FileText } from "lucide-react";
 
 const NOTE_TARGET_TYPES: InternalNoteTargetType[] = ["Semua Pihak Tertutup", "Bursa", "Kliring", "Custody", "Bappebti"];
-const DELEGATION_TYPES: TaskDelegationType[] = ["Internal Platform", "Bursa", "Kliring", "Custody"];
+const DELEGATION_TYPES: TaskDelegationType[] = ["Internal Pialang", "Bursa", "Kliring", "Custody"];
 const TASK_PRIORITIES: TaskPriority[] = ["Rendah", "Sedang", "Tinggi"];
 /** Bursa/Kliring/Custody institutions (Manajemen Ekosistem master data) used by both the Catatan Internal sasaran-entitas picker and the Tugas Internal delegation picker. */
 const BACK_HREF: Record<ViewerGroup, string> = {
   User: "/bappebti/antrean",
   Bappebti: "/bappebti/antrean",
-  Platform: "/platform/case-queue",
+  Pialang: "/platform/case-queue",
   EkosistemActive: "/ekosistem/active/pengaduan",
   EkosistemPengawas: "/ekosistem/pengawas/pengaduan",
 };
@@ -84,7 +85,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   const [escalating, setEscalating] = useState(false);
   const [newEvidenceFiles, setNewEvidenceFiles] = useState<string[]>([]);
   const [taskDesc, setTaskDesc] = useState("");
-  const [delegationType, setDelegationType] = useState<TaskDelegationType>("Internal Platform");
+  const [delegationType, setDelegationType] = useState<TaskDelegationType>("Internal Pialang");
   const [delegationEntity, setDelegationEntity] = useState("");
   const [taskAssignee, setTaskAssignee] = useState(ASSIGNABLE_NAMES[0] ?? "");
   const [taskDoc, setTaskDoc] = useState("");
@@ -115,7 +116,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   const viewerGroup: ViewerGroup = getViewerGroup(user.role);
   const isBappebti = viewerGroup === "Bappebti";
   const isInternal = viewerGroup !== "User";
-  const isPlatform = viewerGroup === "Platform";
+  const isPlatform = viewerGroup === "Pialang";
 
   // Role Restriction Rule (Bab II): a Platform CS/PIC may only open tickets
   // assigned to them; direct-URL access to another ticket is blocked.
@@ -158,7 +159,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
     setCurrentOwner(ticket, "Bappebti");
     addTimelineEvent(ticket, {
       actor: user.name,
-      role: viewerGroup === "Platform" ? "Platform" : "Ekosistem",
+      role: viewerGroup === "Pialang" ? "Pialang" : "Ekosistem",
       action: "Kasus dieskalasi ke Bappebti",
       note: `Kasus dieskalasi oleh ${user.name} (${c?.platform ?? user.institution}) ke Bappebti untuk supervisi lebih lanjut.`,
       status: "warning",
@@ -170,7 +171,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
 
   function submitTask() {
     if (!taskDesc.trim() || !taskAssignee) return;
-    if (delegationType !== "Internal Platform" && !delegationEntity) return;
+    if (delegationType !== "Internal Pialang" && !delegationEntity) return;
     addTask({
       ticket,
       description: taskDesc.trim(),
@@ -178,15 +179,15 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
       createdByRole: ROLE_LABEL[user.role],
       assignee: taskAssignee,
       document: taskDoc || undefined,
-      delegationType: delegationType === "Internal Platform" ? undefined : delegationType,
-      delegationEntity: delegationType === "Internal Platform" ? undefined : delegationEntity,
+      delegationType: delegationType === "Internal Pialang" ? undefined : delegationType,
+      delegationEntity: delegationType === "Internal Pialang" ? undefined : delegationEntity,
       priority: taskPriority,
       dueDate: taskDueDate ? formatDueDateID(taskDueDate) : undefined,
     });
     showToast("Tugas internal berhasil ditambahkan.");
     setTaskDesc("");
     setTaskDoc("");
-    setDelegationType("Internal Platform");
+    setDelegationType("Internal Pialang");
     setDelegationEntity("");
     setTaskAssignee(ASSIGNABLE_NAMES[0] ?? "");
     setTaskPriority("Sedang");
@@ -194,7 +195,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   }
 
   // Respon ke Public: Bappebti, Platform, dan Ekosistem Active dapat membalas; Ekosistem Pengawas read-only.
-  const canReplyPublic = viewerGroup === "Bappebti" || viewerGroup === "Platform" || viewerGroup === "EkosistemActive";
+  const canReplyPublic = viewerGroup === "Bappebti" || viewerGroup === "Pialang" || viewerGroup === "EkosistemActive";
 
   function sendPublicResponse(message: string, { sendEmail }: { sendEmail: boolean }) {
     const sender = actingParty(c);
@@ -209,10 +210,10 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
     showToast(sendEmail ? "Respon berhasil dipublikasikan dan telah dikirimkan ke email klien." : "Respon berhasil dipublikasikan.");
   }
 
-  const canManageTasks = viewerGroup === "Bappebti" || viewerGroup === "Platform" || viewerGroup === "EkosistemActive";
+  const canManageTasks = viewerGroup === "Bappebti" || viewerGroup === "Pialang" || viewerGroup === "EkosistemActive";
   const canUploadEvidence = isBappebti || isPlatform;
   const canEscalateToBappebti =
-    (viewerGroup === "Platform" || viewerGroup === "EkosistemActive") && c.currentOwner !== "Bappebti" && c.status !== "Selesai";
+    (viewerGroup === "Pialang" || viewerGroup === "EkosistemActive") && c.currentOwner !== "Bappebti" && c.status !== "Selesai";
 
   const bannerActions = (
     <>
@@ -273,7 +274,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
           Pelapor: <span className="font-medium text-foreground">{c.reporterName}</span> (identitas
           lengkap disamarkan pada tampilan ringkas ini demi kepatuhan privasi data)
         </span>
-        {viewerGroup === "Platform" && c.platformPic && (
+        {viewerGroup === "Pialang" && c.platformPic && (
           <span className="text-xs text-muted">
             PIC: <span className="font-medium text-foreground">{c.platformPic}</span>
           </span>
@@ -307,6 +308,12 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
         <TabsContent value="ringkasan">
           <Card>
             <CardContent className="py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div className="sm:col-span-2">
+                <p className="text-[11px] uppercase text-muted font-medium mb-1">Pihak yang Dilaporkan</p>
+                <p>
+                  <ReportedPartyValue complaintCase={c} />
+                </p>
+              </div>
               <div>
                 <p className="text-[11px] uppercase text-muted font-medium mb-1">Kategori</p>
                 <p>{c.category}</p>
@@ -329,7 +336,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
               </div>
               <div className="sm:col-span-2">
                 <p className="text-[11px] uppercase text-muted font-medium mb-1">Kronologi</p>
-                <p className="text-foreground/90">{c.chronology}</p>
+                <ChronologyBlock complaintCase={c} />
               </div>
               <div className="sm:col-span-2">
                 <p className="text-[11px] uppercase text-muted font-medium mb-1">Penyelesaian yang Diharapkan</p>
@@ -369,7 +376,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
             <CardHeader>
               <CardTitle>Respon ke Public</CardTitle>
               <p className="text-[11px] text-muted mt-1">
-                Kanal interaksi antara Pelapor, Platform, dan Bappebti. Respon yang dikirim dari sini dapat dibaca langsung oleh pelapor publik.
+                Kanal interaksi antara Pelapor, Pialang, dan Bappebti. Respon yang dikirim dari sini dapat dibaca langsung oleh pelapor publik.
               </p>
             </CardHeader>
             <CardContent className="py-4">
@@ -555,7 +562,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
                           onChange={(e) => {
                             setDelegationType(e.target.value as TaskDelegationType);
                             setDelegationEntity("");
-                            setTaskAssignee(e.target.value === "Internal Platform" ? ASSIGNABLE_NAMES[0] ?? "" : "");
+                            setTaskAssignee(e.target.value === "Internal Pialang" ? ASSIGNABLE_NAMES[0] ?? "" : "");
                           }}
                         >
                           {DELEGATION_TYPES.map((t) => (
@@ -563,7 +570,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
                           ))}
                         </Select>
                       </div>
-                      {delegationType !== "Internal Platform" && (
+                      {delegationType !== "Internal Pialang" && (
                         <div>
                           <Label className="text-[11px]">Perusahaan / Lembaga Tujuan</Label>
                           <SearchableSelect
@@ -577,7 +584,7 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
                     </div>
                     <div>
                       <Label className="text-[11px]">Assignee / Petugas</Label>
-                      {delegationType === "Internal Platform" ? (
+                      {delegationType === "Internal Pialang" ? (
                         <Select className="h-8 text-xs w-48" value={taskAssignee} onChange={(e) => setTaskAssignee(e.target.value)}>
                           {ASSIGNABLE_NAMES.map((n) => (
                             <option key={n} value={n}>{n}</option>

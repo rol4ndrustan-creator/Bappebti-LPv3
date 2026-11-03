@@ -7,6 +7,7 @@ import { useDemoSession } from "@/lib/demo-session";
 import { ROLE_LABEL } from "@/lib/permissions";
 import { addTimelineEvent } from "@/lib/mock-service/store";
 import { logAudit } from "@/lib/mock-service/audit-store";
+import { useLifecycleView } from "@/lib/mock-service/lifecycle-store";
 import { ComplaintCase } from "@/lib/types";
 import { Download } from "lucide-react";
 
@@ -18,13 +19,17 @@ export function DownloadCaseButton({ complaintCase }: { complaintCase: Complaint
   const { user } = useDemoSession();
   const { showToast } = useToast();
   const [busy, setBusy] = React.useState(false);
+  const lifecycle = useLifecycleView(complaintCase);
+  const r = lifecycle?.lc.respondent;
 
   async function handleDownload() {
     setBusy(true);
     try {
       const { downloadCasePdf, formatWIB } = await import("@/lib/case-pdf");
       const downloader = { name: user.name, institution: user.institution, roleLabel: ROLE_LABEL[user.role] };
-      const filename = await downloadCasePdf(complaintCase, downloader);
+      const filename = await downloadCasePdf(complaintCase, downloader, {
+        reportedParty: !complaintCase.platform ? "Belum diketahui" : r ? `${r.name} — ${r.position}` : `Tidak spesifik — lembaga ${complaintCase.platform}`,
+      });
       addTimelineEvent(complaintCase.ticket, {
         actor: user.name,
         role: ROLE_LABEL[user.role],

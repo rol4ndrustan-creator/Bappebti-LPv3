@@ -10,7 +10,7 @@ import { InternalAuthIndicator } from "@/components/shared/internal-auth-indicat
 const PORTALS = [
   { label: "Publik", href: "/publik" },
   { label: "Bappebti", href: "/bappebti" },
-  { label: "Platform", href: "/platform" },
+  { label: "Pialang", href: "/platform" },
   { label: "Ekosistem Active", href: "/ekosistem/active" },
   { label: "Ekosistem Pengawas", href: "/ekosistem/pengawas" },
   { label: "Bursa", href: "/ekosistem/bursa" },

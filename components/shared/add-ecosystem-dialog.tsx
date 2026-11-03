@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { EcosystemCategory } from "@/lib/types";
 
-const CATEGORIES: EcosystemCategory[] = ["Platform/Pialang", "Bursa", "Kliring", "Asosiasi"];
+const CATEGORIES: EcosystemCategory[] = ["Pialang", "Bursa", "Kliring", "Asosiasi"];
 
 export interface NewEcosystemValues {
   name: string;
@@ -46,7 +46,7 @@ export function AddEcosystemDialog({
     setKliring(kliringOptions[0] ?? "");
   }
 
-  const needsRouting = category === "Platform/Pialang";
+  const needsRouting = category === "Pialang";
   const canConfirm = name.trim() && license.trim() && (!needsRouting || (bursa && kliring));
 
   return (

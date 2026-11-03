@@ -30,6 +30,24 @@ export default function RegisterPage() {
     konfirmasiPassword: "",
   });
   const [formError, setFormError] = useState("");
+  const [ktpFile, setKtpFile] = useState<{ name: string; sizeBytes: number } | null>(null);
+  const [ktpError, setKtpError] = useState("");
+
+  function handleKtp(file: File | undefined) {
+    if (!file) return;
+    if (!/\.(jpe?g|png|pdf)$/i.test(file.name)) {
+      setKtpFile(null);
+      setKtpError("Format harus JPG, PNG, atau PDF.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setKtpFile(null);
+      setKtpError("Ukuran berkas melebihi 5MB.");
+      return;
+    }
+    setKtpError("");
+    setKtpFile({ name: file.name, sizeBytes: file.size });
+  }
 
   const kotaOptions = getRegenciesForProvince(form.provinsi);
   const ktpInvalid = form.nomorIdentitas.length > 0 && form.nomorIdentitas.length < 16;
@@ -56,6 +74,10 @@ export default function RegisterPage() {
       setFormError("Format email tidak valid.");
       return;
     }
+    if (!ktpFile) {
+      setFormError("Foto KTP wajib diunggah.");
+      return;
+    }
     register({
       nama: form.nama,
       nomorIdentitas: form.nomorIdentitas,
@@ -65,6 +87,7 @@ export default function RegisterPage() {
       kota: form.kota,
       platformUserId: form.platformUserId,
       password: form.password,
+      ktpFile,
     });
     router.push("/publik/dashboard");
   }
@@ -187,10 +210,34 @@ export default function RegisterPage() {
                   <Label htmlFor="platformUserId">Pialang User ID (Opsional)</Label>
                   <Input
                     id="platformUserId"
-                    placeholder="ID akun Anda pada platform terkait"
+                    placeholder="ID akun Anda pada pialang terkait"
                     value={form.platformUserId}
                     onChange={(e) => update("platformUserId", e.target.value)}
                   />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label htmlFor="ktpFile">Unggah Foto KTP *</Label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      id="ktpFile"
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      className="hidden"
+                      onChange={(e) => handleKtp(e.target.files?.[0])}
+                    />
+                    <Button type="button" size="sm" variant="outline" onClick={() => document.getElementById("ktpFile")?.click()}>
+                      {ktpFile ? "Ganti Foto KTP" : "Pilih Foto KTP"}
+                    </Button>
+                    {ktpFile && (
+                      <span className="text-xs text-foreground/80">
+                        {ktpFile.name} ({(ktpFile.sizeBytes / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    )}
+                    {ktpError && <span className="text-xs text-red">{ktpError}</span>}
+                  </div>
+                  <p className="text-[11px] text-muted mt-1">
+                    JPG/PNG/PDF, maks. 5MB. Tersimpan di profil Anda dan otomatis terlampir sebagai berkas identitas wajib pada setiap pengaduan.
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="password">Password</Label>

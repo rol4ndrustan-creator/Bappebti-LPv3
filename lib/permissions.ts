@@ -49,11 +49,11 @@ export type Ability =
   | "create_incident"
   | "merge_duplicate_cases";
 
-export const ROLE_GROUP: Record<Role, "Publik" | "Platform" | "Ekosistem" | "EkosistemPengawas" | "Bappebti" | "Administrasi"> = {
+export const ROLE_GROUP: Record<Role, "Publik" | "Pialang" | "Ekosistem" | "EkosistemPengawas" | "Bappebti" | "Administrasi"> = {
   PUBLIC_REPORTER: "Publik",
   PUBLIC_REPRESENTATIVE: "Publik",
-  PLATFORM_CASE_OFFICER: "Platform",
-  PLATFORM_SUPERVISOR: "Platform",
+  PLATFORM_CASE_OFFICER: "Pialang",
+  PLATFORM_SUPERVISOR: "Pialang",
   BURSA_CASE_OFFICER: "Ekosistem",
   BURSA_SUPERVISOR: "Ekosistem",
   CLEARING_CASE_OFFICER: "Ekosistem",
@@ -73,8 +73,8 @@ export const ROLE_GROUP: Record<Role, "Publik" | "Platform" | "Ekosistem" | "Eko
 export const ROLE_LABEL: Record<Role, string> = {
   PUBLIC_REPORTER: "Pelapor Publik",
   PUBLIC_REPRESENTATIVE: "Perwakilan/Kuasa Pelapor",
-  PLATFORM_CASE_OFFICER: "Petugas Kasus Platform",
-  PLATFORM_SUPERVISOR: "Supervisor Platform",
+  PLATFORM_CASE_OFFICER: "Petugas Kasus Pialang",
+  PLATFORM_SUPERVISOR: "Supervisor Pialang",
   BURSA_CASE_OFFICER: "Petugas Kasus Bursa",
   BURSA_SUPERVISOR: "Supervisor Bursa",
   CLEARING_CASE_OFFICER: "Petugas Kasus Kliring",
@@ -177,12 +177,12 @@ export const PLATFORM_STAFF = DEMO_USERS.filter((u) => u.role === "PLATFORM_CASE
 // (Bab III "List Akses Management Pengaduan"): User (public reporter),
 // Bappebti, Platform, Ekosistem Active (bursa/kliring — operationally
 // involved), Ekosistem Pengawas (asosiasi — oversight-only, read-mostly).
-export type ViewerGroup = "User" | "Bappebti" | "Platform" | "EkosistemActive" | "EkosistemPengawas";
+export type ViewerGroup = "User" | "Bappebti" | "Pialang" | "EkosistemActive" | "EkosistemPengawas";
 
 export function getViewerGroup(role: Role): ViewerGroup {
   const group = ROLE_GROUP[role];
   if (group === "Publik") return "User";
-  if (group === "Platform") return "Platform";
+  if (group === "Pialang") return "Pialang";
   if (group === "EkosistemPengawas") return "EkosistemPengawas";
   if (group === "Ekosistem") return "EkosistemActive";
   return "Bappebti"; // Bappebti + Administrasi (SYSTEM_ADMIN/AUDITOR_READ_ONLY) share the regulator view

@@ -26,8 +26,8 @@ const ECOSYSTEM_CATEGORY_TYPE: Record<string, LinkedEcosystemEntity["type"]> = {
 export default function CaseQueuePage() {
   const { user } = useDemoSession();
   const isSupervisor = user.role === "PLATFORM_SUPERVISOR";
-  const baseCases = useMemo(() => CASES.filter((c) => c.currentOwner === "Platform"), []);
-  const allCases = useCasesData(baseCases).filter((c) => c.currentOwner === "Platform");
+  const baseCases = useMemo(() => CASES.filter((c) => c.currentOwner === "Pialang"), []);
+  const allCases = useCasesData(baseCases).filter((c) => c.currentOwner === "Pialang");
 
   // Data scoping (Bab II): a CS/PIC only ever sees tickets assigned to them.
   const scopedCases = isSupervisor ? allCases : allCases.filter((c) => c.platformPic === user.name);
@@ -55,7 +55,7 @@ export default function CaseQueuePage() {
     <div>
       <PageHeader
         title="Manajemen Pengaduan"
-        description="Daftar kasus pengaduan yang saat ini menjadi tanggung jawab Platform / Pialang untuk ditangani."
+        description="Daftar kasus pengaduan yang saat ini menjadi tanggung jawab Pialang untuk ditangani."
       />
 
       <div className="mb-3 flex flex-wrap items-end gap-2">

@@ -21,8 +21,13 @@ import {
   bappebtiApproveRejection,
   bappebtiReturnToPialang,
   editIncidentDate,
+  assignPialangFromTriage,
+  bappebtiReject,
   pialangApprove,
   pialangReject,
+  recordMediationOutcome,
+  requestRevision,
+  submitRevision,
   proposeResolutionOffer,
   respondResolutionOffer,
   setLegalProceeding,
@@ -30,11 +35,13 @@ import {
 } from "@/lib/lifecycle-actions";
 import { formatWIB } from "@/lib/case-pdf";
 import { formatCurrencyIDR } from "@/lib/format";
+import { PLATFORM_LIST } from "@/lib/mock-data";
+import { Select } from "@/components/ui/select";
 import { downloadBaktiRegistrationForm, downloadCourtCoverLetter } from "@/lib/lifecycle-pdf";
 import { CalendarClock, Check, Download, FileText, Gavel, Handshake, Pencil, Scale, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const REJECT_REASONS: PialangRejectReason[] = ["Pengaduan sudah pernah diproses", "Pengaduan sedang aktif diproses di kanal lain"];
+const REJECT_REASONS: PialangRejectReason[] = ["Isu sudah selesai", "Isu sedang aktif (sedang diproses)", "Isu sudah masuk ke proses pengadilan / arbitrase"];
 
 /** Pihak yang sedang bertindak, untuk kronologi & audit. */
 export function useLifecycleActor(c?: ComplaintCase): Actor {
@@ -42,7 +49,7 @@ export function useLifecycleActor(c?: ComplaintCase): Actor {
   const group = getViewerGroup(user.role);
   if (group === "User") return { name: c?.reporterName ?? user.name, institution: "Pelapor", role: "Pelapor" };
   if (group === "Bappebti") return { name: user.name, institution: "Bappebti", role: "Bappebti" };
-  if (group === "Platform") return { name: user.name, institution: user.institution, role: "Platform" };
+  if (group === "Pialang") return { name: user.name, institution: user.institution, role: "Pialang" };
   if (group === "EkosistemPengawas") return { name: user.name, institution: "BAKTI", role: "BAKTI" };
   return { name: user.name, institution: user.institution, role: "Ekosistem" };
 }
@@ -84,13 +91,16 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
   const params = useBusinessParams();
   const actor = useLifecycleActor(c);
   const { showToast } = useToast();
-  const [dialog, setDialog] = React.useState<null | "reject" | "edit-date" | "return" | "approve-reject">(null);
+  const [dialog, setDialog] = React.useState<null | "reject" | "bappebti-reject" | "edit-date" | "return" | "approve-reject" | "revision" | "mediation">(null);
+  const [assignTo, setAssignTo] = React.useState("");
 
   if (!v) return <div className="h-24 rounded-lg border border-border bg-card animate-pulse" />;
   const { lc, status } = v;
-  const isPlatform = viewerGroup === "Platform";
+  const isPlatform = viewerGroup === "Pialang";
   const isBappebti = viewerGroup === "Bappebti";
   const canEditDate = (isPlatform || isBappebti) && !v.isClosed;
+  const isBursa = viewerGroup === "EkosistemActive";
+  const canPreReview = status === "Triase Bappebti" || status === "Menunggu Verifikasi Pialang";
 
   return (
     <Card>
@@ -112,10 +122,10 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
           <div>
             <dt className="text-muted">Pihak terlapor</dt>
             <dd className="font-medium">
-              {c.platform}
-              {lc.respondent && (
+              {c.platform || "Belum diketahui (triase Bappebti)"}
+              {lc.respondent && c.platform && (
                 <span className="block text-muted font-normal">
-                  {lc.respondent.position}: {lc.respondent.name}
+                  {lc.respondent.name} — {lc.respondent.position}
                 </span>
               )}
             </dd>
@@ -144,6 +154,96 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Revisi 13 #6: triase Bappebti bila pelapor belum mengetahui nama Pialang */}
+        {status === "Triase Bappebti" && (
+          <div className="rounded-md border border-navy/30 bg-navy/5 p-3 space-y-2">
+            <p className="font-semibold text-navy">Triase Bappebti — Pialang belum diketahui pelapor</p>
+            {isBappebti ? (
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="w-72">
+                  <Label className="text-[11px]">Teruskan ke Pialang</Label>
+                  <Select value={assignTo} onChange={(e) => setAssignTo(e.target.value)}>
+                    <option value="">Pilih Pialang hasil analisis...</option>
+                    {PLATFORM_LIST.filter((p) => p !== "Tidak tahu / belum terdaftar").map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <Button
+                  size="sm"
+                  disabled={!assignTo}
+                  onClick={() => {
+                    assignPialangFromTriage(c.ticket, actor, assignTo);
+                    showToast(`Pengaduan diteruskan ke ${assignTo} untuk verifikasi.`);
+                    setAssignTo("");
+                  }}
+                >
+                  Assign ke Pialang
+                </Button>
+              </div>
+            ) : (
+              <p className="text-muted">Menunggu analisis dan penugasan oleh Bappebti.</p>
+            )}
+          </div>
+        )}
+        {lc.triage?.assignedPialang && (
+          <p className="text-muted">
+            Hasil triase: diteruskan ke {lc.triage.assignedPialang} oleh {lc.triage.by} pada {fmt(lc.triage.at)}.
+          </p>
+        )}
+
+        {/* Revisi 13 #8: perbaikan berkas (Need Revision) */}
+        {lc.revisionRequest && (
+          <div className={cn("rounded-md border p-3 space-y-1", status === "Perlu Perbaikan Berkas" ? "border-amber/40 bg-amber-bg/40" : "border-border")}>
+            <p className="font-semibold">Permintaan Perbaikan Berkas</p>
+            <p>{lc.revisionRequest.note}</p>
+            <p className="text-muted">
+              Diminta {lc.revisionRequest.by} ({lc.revisionRequest.institution}), {fmt(lc.revisionRequest.at)}
+              {lc.revisionRequest.resolvedAt ? ` · Perbaikan diterima ${fmt(lc.revisionRequest.resolvedAt)}: ${lc.revisionRequest.response ?? ""}` : " · Menunggu perbaikan nasabah"}
+            </p>
+          </div>
+        )}
+        {(isPlatform || isBappebti) && canPreReview && (
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setDialog("revision")}>
+              Minta Perbaikan Berkas
+            </Button>
+            {isBappebti && (
+              <Button size="sm" variant="destructive" onClick={() => setDialog("bappebti-reject")}>
+                <X className="size-3.5" /> Tolak Pengaduan
+              </Button>
+            )}
+          </div>
+        )}
+        {lc.bappebtiRejection && (
+          <p className="rounded px-2 py-1.5 bg-red-bg text-red">
+            Ditolak Bappebti — {lc.bappebtiRejection.reason}. Bukti: {lc.bappebtiRejection.document}
+            {lc.bappebtiRejection.note && `. ${lc.bappebtiRejection.note}`} ({lc.bappebtiRejection.by}, {fmt(lc.bappebtiRejection.at)})
+          </p>
+        )}
+
+        {/* Revisi 13 #8: mediasi Bursa */}
+        {lc.mediation && (
+          <div className={cn("rounded-md border p-3 space-y-1.5", status === "Proses Mediasi Bursa" ? "border-amber/40 bg-amber-bg/40" : "border-border")}>
+            <p className="font-semibold">Mediasi Bursa — {lc.mediation.bursa}</p>
+            <p className="text-muted">Dimulai {fmt(lc.mediation.at)} oleh {lc.mediation.by}.</p>
+            {lc.mediation.outcome ? (
+              <p>
+                Hasil: <span className="font-semibold">{lc.mediation.outcome}</span>
+                {lc.mediation.note && ` — ${lc.mediation.note}`} ({fmt(lc.mediation.endedAt)})
+              </p>
+            ) : isBursa || isBappebti ? (
+              <Button size="sm" onClick={() => setDialog("mediation")}>
+                Catat Hasil Mediasi
+              </Button>
+            ) : (
+              <p className="text-muted">Menunggu hasil mediasi dari Bursa.</p>
+            )}
           </div>
         )}
 
@@ -235,7 +335,22 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
         )}
       </CardContent>
 
-      {dialog === "reject" && <RejectDialog complaintCase={c} actor={actor} onClose={() => setDialog(null)} />}
+      {dialog === "reject" && <RejectDialog complaintCase={c} actor={actor} mode="pialang" onClose={() => setDialog(null)} />}
+      {dialog === "bappebti-reject" && <RejectDialog complaintCase={c} actor={actor} mode="bappebti" onClose={() => setDialog(null)} />}
+      {dialog === "revision" && (
+        <NoteDialog
+          title="Minta Perbaikan Berkas"
+          description="Status tiket menjadi Perlu Perbaikan Berkas. Nasabah diminta melengkapi/memperbaiki berkas; SLA review Pialang dihitung ulang setelah perbaikan diterima."
+          confirmLabel="Kirim Permintaan"
+          onClose={() => setDialog(null)}
+          onConfirm={(note) => {
+            requestRevision(c.ticket, actor, note);
+            showToast("Permintaan perbaikan berkas dikirim ke nasabah.");
+            setDialog(null);
+          }}
+        />
+      )}
+      {dialog === "mediation" && <MediationOutcomeDialog ticket={c.ticket} actor={actor} onClose={() => setDialog(null)} />}
       {dialog === "edit-date" && (
         <EditIncidentDateDialog
           current={lc.incidentDate ?? ""}
@@ -321,7 +436,18 @@ function PialangVerification({ complaintCase: c, view, actor, onReject }: { comp
   );
 }
 
-function RejectDialog({ complaintCase: c, actor, onClose }: { complaintCase: ComplaintCase; actor: Actor; onClose: () => void }) {
+function RejectDialog({
+  complaintCase: c,
+  actor,
+  mode,
+  onClose,
+}: {
+  complaintCase: ComplaintCase;
+  actor: Actor;
+  /** pialang → Pengajuan Reject (ditinjau Bappebti); bappebti → langsung Rejected. */
+  mode: "pialang" | "bappebti";
+  onClose: () => void;
+}) {
   const { showToast } = useToast();
   const [reason, setReason] = React.useState<PialangRejectReason | "">("");
   const [files, setFiles] = React.useState<string[]>([]);
@@ -331,8 +457,11 @@ function RejectDialog({ complaintCase: c, actor, onClose }: { complaintCase: Com
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Tolak Komplain</DialogTitle>
-          <DialogDescription>Pilih alasan penolakan dan lampirkan bukti dalam format PDF. Status tiket menjadi Pengajuan Reject dan ditinjau Bappebti.</DialogDescription>
+          <DialogTitle>{mode === "pialang" ? "Tolak Komplain" : "Tolak Pengaduan"}</DialogTitle>
+          <DialogDescription>
+            Pilih alasan penolakan sesuai verifikasi syarat materiil dan lampirkan bukti dalam format PDF.{" "}
+            {mode === "pialang" ? "Status tiket menjadi Pengajuan Reject dan ditinjau Bappebti." : "Status tiket menjadi Rejected dan nasabah menerima pemberitahuan resmi."}
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 text-sm">
           <div className="space-y-1.5">
@@ -362,12 +491,58 @@ function RejectDialog({ complaintCase: c, actor, onClose }: { complaintCase: Com
             variant="destructive"
             disabled={!reason || !pdfOk}
             onClick={() => {
-              pialangReject(c.ticket, actor, reason as PialangRejectReason, files[0], note.trim());
-              showToast("Komplain ditolak. Status tiket: Pengajuan Reject (menunggu review Bappebti).");
+              if (mode === "pialang") {
+                pialangReject(c.ticket, actor, reason as PialangRejectReason, files[0], note.trim());
+                showToast("Komplain ditolak. Status tiket: Pengajuan Reject (menunggu review Bappebti).");
+              } else {
+                bappebtiReject(c.ticket, actor, reason as PialangRejectReason, files[0], note.trim());
+                showToast("Pengaduan ditolak. Pemberitahuan resmi telah dikirim ke nasabah.");
+              }
               onClose();
             }}
           >
-            Tolak Komplain
+            {mode === "pialang" ? "Tolak Komplain" : "Tolak Pengaduan"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function MediationOutcomeDialog({ ticket, actor, onClose }: { ticket: string; actor: Actor; onClose: () => void }) {
+  const { showToast } = useToast();
+  const [outcome, setOutcome] = React.useState<"Sepakat" | "Tidak Sepakat" | "">("");
+  const [note, setNote] = React.useState("");
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Catat Hasil Mediasi Bursa</DialogTitle>
+          <DialogDescription>Sepakat → Pialang menyampaikan tawaran resolusi. Tidak Sepakat → nasabah dapat mengajukan arbitrase BAKTI mulai H+1.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2 text-sm">
+          {(["Sepakat", "Tidak Sepakat"] as const).map((o) => (
+            <label key={o} className={cn("flex items-center gap-2 rounded-md border px-3 py-2 text-xs cursor-pointer", outcome === o ? "border-navy bg-navy/5" : "border-border")}>
+              <input type="radio" name="mediation-outcome" checked={outcome === o} onChange={() => setOutcome(o)} /> {o}
+            </label>
+          ))}
+          <Label>Ringkasan hasil mediasi (wajib)</Label>
+          <Textarea value={note} onChange={(e) => setNote(e.target.value)} className="min-h-[70px] text-sm" />
+        </div>
+        <DialogFooter>
+          <Button size="sm" variant="secondary" onClick={onClose}>
+            Batal
+          </Button>
+          <Button
+            size="sm"
+            disabled={!outcome || !note.trim()}
+            onClick={() => {
+              recordMediationOutcome(ticket, actor, outcome as "Sepakat" | "Tidak Sepakat", note.trim());
+              showToast(`Hasil mediasi (${outcome}) tersimpan.`);
+              onClose();
+            }}
+          >
+            Simpan Hasil
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -482,7 +657,11 @@ export function ResolutionOffersSection({
 
   if (!v) return <div className="h-24 rounded-lg border border-border bg-card animate-pulse" />;
   const offers = v.lc.resolutionOffers;
-  const canSubmitNew = canPropose && (v.status === "Proses Musyawarah" || v.status === "Masa Pengajuan Arbitrase");
+  const canSubmitNew =
+    canPropose &&
+    (v.status === "Proses Musyawarah" ||
+      v.status === "Masa Pengajuan Arbitrase" ||
+      (v.status === "Proses Mediasi Bursa" && v.lc.mediation?.outcome === "Sepakat"));
 
   return (
     <div className="space-y-4">
@@ -727,14 +906,17 @@ export function ArbitrationPublicCard({ complaintCase: c }: { complaintCase: Com
 // Penanda kemajuan siklus tiket (portal publik)
 // ---------------------------------------------------------------------------
 
-const TRACK = ["Tiket Terbit", "Verifikasi Pialang", "Musyawarah", "Resolusi / Arbitrase", "Selesai"] as const;
+const TRACK = ["Tiket Terbit", "Verifikasi Pialang", "Musyawarah / Mediasi", "Resolusi / Arbitrase", "Selesai"] as const;
 
 function trackIndex(v: LifecycleView): number {
   switch (v.status) {
+    case "Triase Bappebti":
+    case "Perlu Perbaikan Berkas":
     case "Menunggu Verifikasi Pialang":
     case "Pengajuan Reject":
       return 1;
     case "Proses Musyawarah":
+    case "Proses Mediasi Bursa":
       return 2;
     case "Diajukan Penyelesaian":
     case "Masa Pengajuan Arbitrase":
@@ -780,5 +962,46 @@ export function LifecycleTracker({ complaintCase }: { complaintCase: ComplaintCa
         </p>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Revisi 13 #8: Perbaikan berkas oleh nasabah (portal publik)
+// ---------------------------------------------------------------------------
+
+export function RevisionPublicCard({ complaintCase: c }: { complaintCase: ComplaintCase }) {
+  const v = useLifecycleView(c);
+  const actor = useLifecycleActor(c);
+  const { showToast } = useToast();
+  const [response, setResponse] = React.useState("");
+  const [files, setFiles] = React.useState<string[]>([]);
+  if (!v || v.status !== "Perlu Perbaikan Berkas" || !v.lc.revisionRequest) return null;
+  return (
+    <Card className="mb-4 border-amber/40">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="size-4" /> Perbaikan Berkas Diperlukan
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="py-3 space-y-2 text-xs">
+        <p>
+          <span className="font-semibold">{v.lc.revisionRequest.institution}</span> meminta perbaikan: {v.lc.revisionRequest.note}
+        </p>
+        <Textarea placeholder="Keterangan perbaikan / data yang dilengkapi..." value={response} onChange={(e) => setResponse(e.target.value)} className="min-h-[60px] text-sm" />
+        <FileUploader files={files} onChange={setFiles} label="Unggah berkas perbaikan (opsional)" />
+        <Button
+          size="sm"
+          disabled={!response.trim()}
+          onClick={() => {
+            submitRevision(c.ticket, actor, response.trim(), files);
+            showToast("Perbaikan berkas terkirim. Pengaduan kembali ke tahap verifikasi.");
+            setResponse("");
+            setFiles([]);
+          }}
+        >
+          Kirim Perbaikan Berkas
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

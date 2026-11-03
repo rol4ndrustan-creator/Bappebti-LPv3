@@ -28,7 +28,7 @@ const initialRows: ReconciliationRow[] = [
     transactionRef: "STL-2026-06-330217",
     amount: 4200000,
     issueType: "Mismatch",
-    requiredAction: "Rekonsiliasi ulang nilai settlement batch dengan data transaksi platform dan sesuaikan saldo akun pelapor.",
+    requiredAction: "Rekonsiliasi ulang nilai settlement batch dengan data transaksi pialang dan sesuaikan saldo akun pelapor.",
     status: "Dalam Proses",
   },
   {
@@ -46,7 +46,7 @@ const initialRows: ReconciliationRow[] = [
     transactionRef: "STL-2026-06-330510",
     amount: 15600000,
     issueType: "Missing settlement proof",
-    requiredAction: "Minta bukti konfirmasi bank dari platform sebelum batch dapat ditutup.",
+    requiredAction: "Minta bukti konfirmasi bank dari pialang sebelum batch dapat ditutup.",
     status: "Terbuka",
   },
   {
@@ -64,7 +64,7 @@ const initialRows: ReconciliationRow[] = [
     transactionRef: "STL-2026-06-330602",
     amount: 2150000,
     issueType: "Amount discrepancy",
-    requiredAction: "Bandingkan nominal pada laporan platform dengan data kliring dan sesuaikan selisih nominal.",
+    requiredAction: "Bandingkan nominal pada laporan pialang dengan data kliring dan sesuaikan selisih nominal.",
     status: "Terbuka",
   },
   {
@@ -100,7 +100,7 @@ export default function ReconciliationReviewPage() {
     <div>
       <PageHeader
         title="Reconciliation Review"
-        description="Tinjauan batch / referensi settlement untuk proses pencocokan transaksi dan rekonsiliasi data antara platform dan kliring."
+        description="Tinjauan batch / referensi settlement untuk proses pencocokan transaksi dan rekonsiliasi data antara pialang dan kliring."
       />
 
       <Card>
@@ -109,7 +109,7 @@ export default function ReconciliationReviewPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Batch / Referensi</TableHead>
-                <TableHead>Platform</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Transaction Ref</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Jenis Isu</TableHead>

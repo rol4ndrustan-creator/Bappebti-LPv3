@@ -12,7 +12,7 @@ export default function SemuaPengaduanPage() {
     <div>
       <PageHeader
         title="Semua Pengaduan"
-        description="Daftar seluruh kasus pengaduan yang dapat difilter berdasarkan platform, kategori, prioritas, dan pelapor."
+        description="Daftar seluruh kasus pengaduan yang dapat difilter berdasarkan pialang, kategori, prioritas, dan pelapor."
       />
       <FilterableCaseList cases={cases} />
     </div>

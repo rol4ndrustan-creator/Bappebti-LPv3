@@ -53,7 +53,11 @@ const MARGIN = 16;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 const BOTTOM = PAGE_H - 18;
 
-export async function downloadCasePdf(c: ComplaintCase, downloader: Downloader): Promise<string> {
+export async function downloadCasePdf(
+  c: ComplaintCase,
+  downloader: Downloader,
+  extra: { reportedParty?: string } = {}
+): Promise<string> {
   const { jsPDF } = await import("jspdf");
   const doc: JsPDF = new jsPDF({ unit: "mm", format: "a4" });
   const at = new Date();
@@ -157,7 +161,8 @@ export async function downloadCasePdf(c: ComplaintCase, downloader: Downloader):
   field("Pialang User ID", c.platformUserId);
 
   section("Data Terlapor");
-  field("Pialang / Platform", c.platform);
+  field("Pihak yang Dilaporkan", extra.reportedParty);
+  field("Pialang Berjangka", c.platform || "Belum diketahui (triase Bappebti)");
   field("Bursa", c.institution?.bursa ?? c.bursaEntity);
   field("Lembaga Kliring", c.institution?.clearing ?? c.kliringEntity);
   if (c.linkedEcosystemEntities?.length) {
@@ -169,6 +174,7 @@ export async function downloadCasePdf(c: ComplaintCase, downloader: Downloader):
   field("Nomor Akun Transaksi", c.transactionRef);
   y += 1;
   paragraph("Kronologi", { bold: true });
+  if (c.chronologyDocument) paragraph(`[Diunggah sebagai berkas: ${c.chronologyDocument.name}]`);
   paragraph(c.chronology);
   y += 2;
   paragraph("Penyelesaian yang Diharapkan", { bold: true });

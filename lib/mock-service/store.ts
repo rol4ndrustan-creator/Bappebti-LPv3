@@ -55,6 +55,8 @@ interface CaseOverride {
   platformPicOverride?: string;
   evidenceAdditions?: string[];
   linkedEcosystemEntitiesOverride?: LinkedEcosystemEntity[];
+  /** Pialang hasil triase Bappebti (pelapor belum mengetahui nama Pialang). */
+  platformOverride?: string;
 }
 
 /** Same fallback formula as getInstitution() in workflow-config.ts, kept in sync so a live owner/severity change is reflected immediately even on cases whose institution structure was pre-authored in the seed data. */
@@ -114,6 +116,7 @@ export function getMergedCase(base: ComplaintCase | undefined): ComplaintCase | 
     platformPic: o.platformPicOverride ?? base.platformPic,
     evidences: [...base.evidences, ...(o.evidenceAdditions ?? [])],
     linkedEcosystemEntities: o.linkedEcosystemEntitiesOverride ?? base.linkedEcosystemEntities ?? [],
+    platform: o.platformOverride ?? base.platform,
     institution:
       o.caseOfficerOverride || o.escalationLevelOverride !== undefined
         ? {
@@ -302,6 +305,12 @@ export function reopenCase(ticket: string, reason: string, actor = "Bappebti") {
       status: "warning",
       visibility: "public",
     });
+  });
+}
+
+export function setCasePlatform(ticket: string, platform: string) {
+  mutate(ticket, (o) => {
+    o.platformOverride = platform;
   });
 }
 

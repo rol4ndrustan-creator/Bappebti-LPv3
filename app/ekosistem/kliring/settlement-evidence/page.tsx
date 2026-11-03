@@ -29,14 +29,14 @@ const initialRows: EvidenceRow[] = [
   {
     ticket: "BPP-2026-000186",
     evidence: "Rincian transaksi batch settlement",
-    requestedFrom: "Platform",
+    requestedFrom: "Pialang",
     deadline: "16 Jun 2026",
     status: "Terlambat",
   },
   {
     ticket: "BPP-2026-000191",
     evidence: "Salinan instruksi transfer terkait referensi STL-2026-06-330452",
-    requestedFrom: "Platform",
+    requestedFrom: "Pialang",
     deadline: "18 Jun 2026",
     status: "Menunggu",
   },
@@ -50,7 +50,7 @@ const initialRows: EvidenceRow[] = [
   {
     ticket: "BPP-2026-000184",
     evidence: "Rincian mutasi rekening penampungan settlement",
-    requestedFrom: "Platform",
+    requestedFrom: "Pialang",
     deadline: "16 Jun 2026",
     status: "Diterima",
   },
@@ -75,7 +75,7 @@ export default function SettlementEvidencePage() {
     <div>
       <PageHeader
         title="Settlement Evidence"
-        description="Pelacakan kelengkapan bukti settlement yang diperlukan dari platform maupun bank kustodian untuk proses rekonsiliasi."
+        description="Pelacakan kelengkapan bukti settlement yang diperlukan dari pialang maupun bank kustodian untuk proses rekonsiliasi."
       />
 
       <Card>

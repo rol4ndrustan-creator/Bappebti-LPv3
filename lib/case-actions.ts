@@ -66,7 +66,7 @@ export const DEADLINE_OPTIONS = ["1 hari kerja", "3 hari kerja", "5 hari kerja",
 /** PIC candidates for "Tugaskan / Alihkan Penanggung Jawab" / "Buka Kembali Pengaduan": internal Bappebti staff, or hand the case to the platform / bursa / kliring ecosystem. */
 const PIC_OPTION_GROUPS = [
   { label: "Internal Bappebti", options: DEMO_USERS.filter((u) => u.role.startsWith("BAPPEBTI_")).map((u) => u.name) },
-  { label: "Platform", options: PLATFORM_LIST.filter((p) => p !== "Tidak tahu / belum terdaftar") },
+  { label: "Pialang", options: PLATFORM_LIST.filter((p) => p !== "Tidak tahu / belum terdaftar") },
   { label: "Bursa", options: BURSA_LIST },
   { label: "Kliring", options: KLIRING_LIST },
 ];
@@ -87,7 +87,7 @@ export const CASE_ACTIONS: Record<CaseActionId, CaseActionDefinition> = {
     tone: "primary",
     modalTitle: "Tugaskan / Alihkan Penanggung Jawab",
     body: () =>
-      "Pengaduan akan ditugaskan atau dialihkan penanggung jawabnya. Pilih pelaku usaha (platform), unit ekosistem (bursa/kliring), atau staf internal Bappebti yang akan menangani selanjutnya.",
+      "Pengaduan akan ditugaskan atau dialihkan penanggung jawabnya. Pilih Pialang Berjangka, unit ekosistem (bursa/kliring), atau staf internal Bappebti yang akan menangani selanjutnya.",
     impact: (c) => ({ status: "Dalam Tindak Lanjut Pelaku Usaha", owner: c.platform, sla: "3 hari kerja" }),
     fields: [
       { id: "targetInstitution", label: "Tujuan penugasan", type: "select", required: true, optionGroups: PIC_OPTION_GROUPS, defaultValue: (c) => c.platform },
@@ -294,7 +294,7 @@ export function getContextualActions(c: ComplaintCase): ContextualActions {
 /** Infers the case's new owner type from a selected PIC name (Section: Alihkan PIC / Buka Kembali Pengaduan). */
 function resolvePicOwner(name: string): OwnerType | null {
   if (DEMO_USERS.some((u) => u.role.startsWith("BAPPEBTI_") && u.name === name)) return "Bappebti";
-  if (PLATFORM_LIST.includes(name)) return "Platform";
+  if (PLATFORM_LIST.includes(name)) return "Pialang";
   if (BURSA_LIST.includes(name)) return "Bursa";
   if (KLIRING_LIST.includes(name)) return "Kliring";
   return null;
@@ -342,7 +342,7 @@ export function executeCaseAction(actionId: CaseActionId, { ticket, actor, value
           visibility: "internal",
         });
       } else {
-        const owner = newOwner ?? "Platform";
+        const owner = newOwner ?? "Pialang";
         setCurrentOwner(ticket, owner);
         setCaseOfficer(ticket, target);
         const targetState: InternalWorkflowState =

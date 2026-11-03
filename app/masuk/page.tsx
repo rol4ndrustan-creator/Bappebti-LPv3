@@ -63,7 +63,7 @@ export default function MasukInternalPage() {
               Portal Internal Staf &amp; Regulator
             </h1>
             <p className="text-xs text-white/75 mt-2 max-w-xs">
-              Akses khusus untuk staf Bappebti, Platform/Pialang, Bursa, Kliring, dan Asosiasi dalam
+              Akses khusus untuk staf Bappebti, Pialang, Bursa, Kliring, dan Asosiasi dalam
               menangani pengaduan konsumen.
             </p>
           </div>
@@ -110,7 +110,7 @@ export default function MasukInternalPage() {
             <CardContent className="pt-4">
               <h1 className="text-sm font-semibold text-navy mb-1">Masuk ke Portal Internal</h1>
               <p className="text-xs text-muted mb-4">
-                Khusus staf Platform, Bursa, Kliring, Bappebti, dan Admin Sistem.
+                Khusus staf Pialang, Bursa, Kliring, Bappebti, dan Admin Sistem.
               </p>
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 {error && (

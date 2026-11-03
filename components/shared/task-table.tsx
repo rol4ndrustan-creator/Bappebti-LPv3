@@ -17,7 +17,7 @@ import { FileText, Upload, Trash2, Pencil } from "lucide-react";
 
 /** Exported (List Revisi 8) so the case detail page's "Tugas Internal" tab can render the exact same entity badge as this table — same data, same wording, in both places. */
 export function AssigneeBadge({ task }: { task: CaseTask }) {
-  const isDelegated = task.delegationType && task.delegationType !== "Internal Platform";
+  const isDelegated = task.delegationType && task.delegationType !== "Internal Pialang";
   const label = isDelegated ? `${task.delegationType}: ${abbreviateLembaga(task.delegationEntity ?? "")}` : "Internal";
   return (
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap">

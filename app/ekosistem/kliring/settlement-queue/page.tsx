@@ -11,6 +11,7 @@ import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
 import { useCasesData, addTimelineEvent, setCurrentOwner } from "@/lib/mock-service/store";
 import { CASES, formatCurrency } from "@/lib/mock-data";
+import { ChronologyBlock } from "@/components/shared/case-identity";
 
 const initialCases = CASES.filter((c) => c.category === "Settlement / Kliring");
 
@@ -41,7 +42,7 @@ export default function SettlementQueuePage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tiket</TableHead>
-                <TableHead>Platform</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Kategori</TableHead>
                 <TableHead>Transaction Ref</TableHead>
                 <TableHead>Amount</TableHead>
@@ -61,7 +62,7 @@ export default function SettlementQueuePage() {
               {cases.map((c) => {
                 const isExpanded = expanded === c.ticket;
                 const isRequest = requestOpen === c.ticket;
-                const isReturned = c.currentOwner === "Platform";
+                const isReturned = c.currentOwner === "Pialang";
                 return (
                   <>
                     <TableRow key={c.ticket}>
@@ -72,7 +73,7 @@ export default function SettlementQueuePage() {
                       <TableCell>{formatCurrency(c.amount)}</TableCell>
                       <TableCell>
                         {isReturned ? (
-                          <span className="text-[11px] text-muted">Dikembalikan ke Platform</span>
+                          <span className="text-[11px] text-muted">Dikembalikan ke Pialang</span>
                         ) : (
                           <StatusBadge status={c.status} />
                         )}
@@ -108,7 +109,7 @@ export default function SettlementQueuePage() {
                               setExpanded(null);
                             }}
                           >
-                            Minta Data Platform
+                            Minta Data Pialang
                           </Button>
                           <Button
                             variant="secondary"
@@ -131,19 +132,19 @@ export default function SettlementQueuePage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              setCurrentOwner(c.ticket, "Platform");
+                              setCurrentOwner(c.ticket, "Pialang");
                               addTimelineEvent(c.ticket, {
                                 actor: user.name,
                                 role: "Kliring",
-                                action: "Kasus dikembalikan ke Platform",
-                                note: "Kliring mengembalikan kasus ke platform untuk tindak lanjut.",
+                                action: "Kasus dikembalikan ke Pialang",
+                                note: "Kliring mengembalikan kasus ke pialang untuk tindak lanjut.",
                                 status: "warning",
                                 visibility: "internal",
                               });
-                              showToast(`Kasus ${c.ticket} dikembalikan ke Platform`);
+                              showToast(`Kasus ${c.ticket} dikembalikan ke Pialang`);
                             }}
                           >
-                            Kembalikan ke Platform
+                            Kembalikan ke Pialang
                           </Button>
                           <Button
                             variant="destructive"
@@ -172,7 +173,7 @@ export default function SettlementQueuePage() {
                         <TableCell colSpan={8} className="bg-muted-bg/40">
                           <div className="py-2 space-y-2 max-w-2xl text-xs">
                             <p className="font-medium text-navy">{c.title}</p>
-                            <p className="text-muted">{c.chronology}</p>
+                            <ChronologyBlock complaintCase={c} textClassName="text-muted" />
                             {c.reconciliationIssue && (
                               <p>
                                 <span className="text-muted">Isu rekonsiliasi: </span>
@@ -196,7 +197,7 @@ export default function SettlementQueuePage() {
                               Permintaan data ke {c.platform}
                             </p>
                             <Textarea
-                              placeholder="Tuliskan data yang dibutuhkan dari platform untuk proses rekonsiliasi..."
+                              placeholder="Tuliskan data yang dibutuhkan dari pialang untuk proses rekonsiliasi..."
                               value={requestText}
                               onChange={(e) => setRequestText(e.target.value)}
                             />
@@ -211,7 +212,7 @@ export default function SettlementQueuePage() {
                                   addTimelineEvent(c.ticket, {
                                     actor: user.name,
                                     role: "Kliring",
-                                    action: "Permintaan data dikirim ke platform",
+                                    action: "Permintaan data dikirim ke pialang",
                                     note: requestText.trim(),
                                     status: "warning",
                                     visibility: "internal",

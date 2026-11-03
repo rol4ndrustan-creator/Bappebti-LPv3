@@ -13,8 +13,9 @@ import { ResponsibilityPanel } from "@/components/shared/responsibility-panel";
 import { ClarificationThread } from "@/components/shared/clarification-thread";
 import { EvidenceList } from "@/components/shared/evidence-list";
 import { FileUploader } from "@/components/shared/file-uploader";
-import { ArbitrationPublicCard, LifecycleTracker, ResolutionOffersSection } from "@/components/shared/ticket-lifecycle";
+import { ArbitrationPublicCard, LifecycleTracker, ResolutionOffersSection, RevisionPublicCard } from "@/components/shared/ticket-lifecycle";
 import { MusyawarahTab } from "@/components/shared/musyawarah";
+import { ChronologyBlock, ReportedPartyValue } from "@/components/shared/case-identity";
 import { useLifecycleView } from "@/lib/mock-service/lifecycle-store";
 import { PrototypeNotice } from "@/components/shared/prototype-notice";
 import { useToast } from "@/components/shared/toast-provider";
@@ -92,6 +93,7 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
         </CardContent>
       </Card>
 
+      <RevisionPublicCard complaintCase={c} />
       <ArbitrationPublicCard complaintCase={c} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -126,6 +128,16 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
                 <CardContent className="py-4 space-y-3">
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div>
+                      <dt className="text-muted">Pialang Terlapor</dt>
+                      <dd className="font-medium">{c.platform || "Belum diketahui (triase Bappebti)"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted">Pihak yang Dilaporkan</dt>
+                      <dd className="font-medium">
+                        <ReportedPartyValue complaintCase={c} />
+                      </dd>
+                    </div>
+                    <div>
                       <dt className="text-muted">Kategori</dt>
                       <dd className="font-medium">{c.category}</dd>
                     </div>
@@ -153,7 +165,9 @@ export default function PengaduanDetailClient({ ticket }: { ticket: string }) {
                   <Separator />
                   <div>
                     <p className="text-xs font-semibold text-navy mb-1">Kronologi (Data Asli)</p>
-                    <p className="text-xs text-foreground/80">{c.chronology}</p>
+                    <div className="text-xs">
+                      <ChronologyBlock complaintCase={c} textClassName="text-xs text-foreground/80" />
+                    </div>
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-navy mb-1">Solusi yang Diharapkan</p>

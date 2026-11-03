@@ -32,6 +32,7 @@ export const MENU_TREE: MenuTreeItem[] = [
     matchPrefixes: ["/bappebti/kasus"],
     children: [
       { key: "pengaduan.semua", label: "Semua Pengaduan", href: "/bappebti/antrean", iconName: "" },
+      { key: "pengaduan.triase", label: "Triase Pengaduan", href: "/bappebti/pengaduan/triase", iconName: "" },
       { key: "pengaduan.ditolak-pialang", label: "Verifikasi Ditolak Pialang", href: "/bappebti/pengaduan/ditolak-pialang", iconName: "" },
       { key: "pengaduan.bappebti", label: "Penanganan Bappebti", href: "/bappebti/pengaduan/penanganan-bappebti", iconName: "" },
       { key: "pengaduan.tanpa-platform", label: "Tanpa Pialang User ID", href: "/bappebti/pengaduan/tanpa-platform", iconName: "" },
@@ -79,12 +80,12 @@ export const MENU_TREE: MenuTreeItem[] = [
   },
   {
     key: "platform-management",
-    label: "Platform Management",
+    label: "Pialang Management",
     href: "/admin/platform/daftar",
     iconName: "Server",
     children: [
-      { key: "platform-management.daftar", label: "Daftar Platform", href: "/admin/platform/daftar", iconName: "" },
-      { key: "platform-management.approval", label: "Approval Data Platform", href: "/admin/platform/approval", iconName: "" },
+      { key: "platform-management.daftar", label: "Daftar Pialang", href: "/admin/platform/daftar", iconName: "" },
+      { key: "platform-management.approval", label: "Approval Data Pialang", href: "/admin/platform/approval", iconName: "" },
     ],
   },
   { key: "member-management", label: "Management Member", href: "/bappebti/member", iconName: "IdCard" },

@@ -109,9 +109,9 @@ export default function PengaduanListPage() {
             </Select>
           </div>
           <div className="w-52">
-            <Label>Platform</Label>
+            <Label>Pialang</Label>
             <Select value={platform} onChange={(e) => setPlatform(e.target.value)}>
-              <option value="">Semua platform</option>
+              <option value="">Semua pialang</option>
               {PLATFORM_LIST_IN_USE.map((p) => (
                 <option key={p} value={p}>
                   {p}
@@ -163,7 +163,7 @@ export default function PengaduanListPage() {
             <TableHead>Tiket</TableHead>
             <TableHead>Sumber Pengaduan</TableHead>
             <TableHead>Judul</TableHead>
-            <TableHead>Platform</TableHead>
+            <TableHead>Pialang</TableHead>
             <TableHead>Kategori</TableHead>
             <TableHead>Jenis Pengaduan</TableHead>
             <TableHead>Status Tiket</TableHead>

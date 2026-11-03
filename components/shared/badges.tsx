@@ -54,14 +54,14 @@ export function ComplaintTypeBadge({ type }: { type?: ComplaintType }) {
 export function OwnerBadge({ owner }: { owner: OwnerType }) {
   const map: Record<OwnerType, BadgeVariant> = {
     Pelapor: "outline",
-    Platform: "navy",
+    Pialang: "navy",
     Bursa: "navy",
     Kliring: "navy",
     Bappebti: "default",
   };
   const label: Record<OwnerType, string> = {
     Pelapor: "Public User",
-    Platform: "Platform / Pialang",
+    Pialang: "Pialang",
     Bursa: "Bursa",
     Kliring: "Kliring",
     Bappebti: "Bappebti Regulator",

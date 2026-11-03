@@ -18,7 +18,7 @@ export type CaseStatus =
 /** Whether a ticket was filed as a formal complaint or a general critique/suggestion. */
 export type ComplaintType = "Pengaduan" | "Kritik dan Saran";
 
-export type OwnerType = "Pelapor" | "Platform" | "Bursa" | "Kliring" | "Bappebti";
+export type OwnerType = "Pelapor" | "Pialang" | "Bursa" | "Kliring" | "Bappebti";
 
 /** @deprecated superseded by the institution/responsibility structure below */
 export type Responsibility = "BAPPEBTI OWNED" | "MEMBER ASSIGNED" | "WAITING PUBLIC";
@@ -297,20 +297,22 @@ export interface ComplaintCase {
 
   /** Kanal asal pengaduan: kanal resmi Bappebti atau kanal internal Pialang (default Bappebti). */
   source?: ComplaintSource;
+  /** Kronologi yang diunggah sebagai berkas (bukan narasi teks). */
+  chronologyDocument?: { name: string; sizeBytes: number };
   /** Profil demografi pengadu untuk filter dashboard. */
   reporterAge?: number;
 }
 
-export type ComplaintSource = "Bappebti" | "Platform";
+export type ComplaintSource = "Bappebti" | "Pialang";
 
 // ---------------------------------------------------------------------------
 // Pertemuan Musyawarah (List Revisi 11)
 // ---------------------------------------------------------------------------
 
 export type MeetingLocationType = "Tautan Video Conference" | "Kantor Fisik Bappebti" | "Kantor Pialang";
-export type MeetingProposerRole = "Bappebti" | "Platform" | "Bursa" | "Kliring" | "Custody";
+export type MeetingProposerRole = "Bappebti" | "Pialang" | "Bursa" | "Kliring" | "Custody";
 export type MeetingStatus = "Dijadwalkan" | "Berlangsung" | "Selesai" | "Lanjut Musyawarah Berikutnya" | "Tidak Sepakat" | "Dibatalkan";
-export type MeetingDecision = "Selesai (Damai / Kesepakatan Tercapai)" | "Diundang ke Musyawarah Berikutnya" | "Tidak Sepakat (Musyawarah Berakhir)";
+export type MeetingDecision = "Selesai (Damai / Kesepakatan Tercapai)" | "Diundang ke Musyawarah Berikutnya" | "Tidak Sepakat (Musyawarah Berakhir)" | "Tidak Sepakat — Lanjut Mediasi Bursa";
 export type AttendanceStatus = "Hadir" | "Tidak Hadir";
 
 export interface MusyawarahMeeting {
@@ -345,7 +347,7 @@ export interface MusyawarahMeeting {
 // Audit Log operasional (List Revisi 11)
 // ---------------------------------------------------------------------------
 
-export type AuditPortal = "Bappebti" | "Platform" | "EkosistemActive" | "EkosistemPengawas" | "Publik" | "Sistem";
+export type AuditPortal = "Bappebti" | "Pialang" | "EkosistemActive" | "EkosistemPengawas" | "Publik" | "Sistem";
 
 export interface OperationalAuditEvent {
   id: string;
@@ -374,7 +376,7 @@ export interface LinkedEcosystemEntity {
 export type CaseTaskStatus = "Pending" | "In Progress" | "Done";
 
 /** Who a task is delegated to (List Revisi 4) — "Internal Platform" keeps the task inside the platform's own staff; the other three delegate it to an affiliated ecosystem institution. */
-export type TaskDelegationType = "Internal Platform" | "Bursa" | "Kliring" | "Custody";
+export type TaskDelegationType = "Internal Pialang" | "Bursa" | "Kliring" | "Custody";
 
 /** Task urgency (List Revisi 8) — deliberately a 3-level scale distinct from case Severity, since a task reminder never needs "Kritis". */
 export type TaskPriority = "Rendah" | "Sedang" | "Tinggi";
@@ -479,7 +481,7 @@ export interface ApprovalRequest {
 export interface RoleDefinition {
   id: string;
   /** Portal pemilik role; kosong = role portal Bappebti/Admin. */
-  portal?: "Platform" | "EkosistemActive" | "EkosistemPengawas";
+  portal?: "Pialang" | "EkosistemActive" | "EkosistemPengawas";
   name: string;
   description?: string;
   /** Keys referencing MenuTreeItem.key in lib/menu-tree.ts — at least one required. */
@@ -490,7 +492,7 @@ export interface RoleDefinition {
 }
 
 /** @deprecated kept only for the pre-wizard seed shape; entities now carry a free-text `category` referencing EcosystemCategoryConfig plus a fixed `ecosystemType`. */
-export type EcosystemCategory = "Platform/Pialang" | "Bursa" | "Kliring" | "Asosiasi";
+export type EcosystemCategory = "Pialang" | "Bursa" | "Kliring" | "Asosiasi";
 
 // Ecosystem Type is fixed (only these two values ever exist); Ecosystem
 // Category is a manageable list configured in Konfigurasi > Category
@@ -670,7 +672,7 @@ export interface PlatformEcosystemMembership {
 }
 
 export type EcosystemAssociation = "ASPEBTINDO" | "BAKTI";
-export type PelakuUsahaCategory = "Pialang Berjangka" | "CPFAK / PFAK" | "Platform";
+export type PelakuUsahaCategory = "Pialang Berjangka" | "CPFAK / PFAK" | "Pialang Aset Digital";
 export type EcosystemPengawasMembershipStatus = "Aktif" | "Suspended" | "Non-Aktif";
 
 export interface EcosystemPengawasMember {
@@ -910,10 +912,13 @@ export interface ClarificationRequest {
 // ---------------------------------------------------------------------------
 
 export type TicketStatus =
+  | "Triase Bappebti"
+  | "Perlu Perbaikan Berkas"
   | "Menunggu Verifikasi Pialang"
   | "Pengajuan Reject"
   | "Rejected"
   | "Proses Musyawarah"
+  | "Proses Mediasi Bursa"
   | "Diajukan Penyelesaian"
   | "Close Resolusi"
   | "Close Auto"
@@ -922,7 +927,11 @@ export type TicketStatus =
   | "Close Arbitrase"
   | "Selesai Non-Arbitrase";
 
-export type PialangRejectReason = "Pengaduan sudah pernah diproses" | "Pengaduan sedang aktif diproses di kanal lain";
+/** Alasan baku penolakan sesuai verifikasi syarat materiil (List Revisi 13 #5). */
+export type PialangRejectReason =
+  | "Isu sudah selesai"
+  | "Isu sedang aktif (sedang diproses)"
+  | "Isu sudah masuk ke proses pengadilan / arbitrase";
 
 export type ArbitrationVerdict =
   | "Disetujui Sesuai Permintaan"
@@ -966,6 +975,14 @@ export interface TicketLifecycle {
   pialangReview?: ActorStamp & { decision: "Disetujui" | "Ditolak"; reason?: PialangRejectReason; document?: string; note?: string };
   bappebtiReview?: ActorStamp & { decision: "Kembalikan ke Pialang" | "Setujui Penolakan"; note: string };
   resolutionOffers: ResolutionOffer[];
+  /** Pialang tidak diketahui pelapor: tiket masuk antrean triase Bappebti hingga di-assign ke Pialang. */
+  triage?: { assignedPialang?: string; by?: string; institution?: string; at?: string };
+  /** Permintaan perbaikan berkas (Need Revision) kepada pelapor. */
+  revisionRequest?: ActorStamp & { note: string; resolvedAt?: string; response?: string; files?: string[] };
+  /** Penolakan langsung oleh Bappebti (triase / verifikasi). */
+  bappebtiRejection?: ActorStamp & { reason: PialangRejectReason; document: string; note: string };
+  /** Mediasi oleh Bursa setelah musyawarah gagal. */
+  mediation?: ActorStamp & { bursa: string; outcome?: "Sepakat" | "Tidak Sepakat"; note?: string; endedAt?: string };
   /** ISO — musyawarah/mediasi terakhir berakhir Tidak Sepakat; awal jendela arbitrase. */
   musyawarahFailedAt?: string;
   arbitration?: {

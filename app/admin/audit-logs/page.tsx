@@ -8,7 +8,7 @@ export default function AuditLogsPage() {
     <div>
       <PageHeader
         title="Audit Logs"
-        description="Rekam jejak seluruh aktivitas operasional lintas portal (Bappebti, Platform, Ekosistem Active, Ekosistem Pengawas) untuk kepentingan kepatuhan."
+        description="Rekam jejak seluruh aktivitas operasional lintas portal (Bappebti, Pialang, Ekosistem Active, Ekosistem Pengawas) untuk kepentingan kepatuhan."
       />
       <AuditLogView detailHref={(t) => `/bappebti/kasus/${t}`} />
     </div>

@@ -22,7 +22,7 @@ import { formatDueDateID, parseDueDateID } from "@/lib/format";
 import { CaseTask, TaskDelegationType, TaskPriority } from "@/lib/types";
 import { Plus } from "lucide-react";
 
-const DELEGATION_TYPES: TaskDelegationType[] = ["Internal Platform", "Bursa", "Kliring", "Custody"];
+const DELEGATION_TYPES: TaskDelegationType[] = ["Internal Pialang", "Bursa", "Kliring", "Custody"];
 const TASK_PRIORITIES: TaskPriority[] = ["Rendah", "Sedang", "Tinggi"];
 
 export default function ManajemenTugasPage() {
@@ -30,7 +30,7 @@ export default function ManajemenTugasPage() {
   const { showToast } = useToast();
   const isSupervisor = user.role === "PLATFORM_SUPERVISOR";
 
-  const platformCases = useCasesData(useMemo(() => CASES.filter((c) => c.currentOwner === "Platform"), []));
+  const platformCases = useCasesData(useMemo(() => CASES.filter((c) => c.currentOwner === "Pialang"), []));
   const allTasks = useAllTasks(CASE_TASKS);
 
   // Everyone who can create a task from this page (CS + Supervisor) — broader
@@ -45,7 +45,7 @@ export default function ManajemenTugasPage() {
     () =>
       allTasks.filter(
         (t) =>
-          t.createdByRole === "Platform" ||
+          t.createdByRole === "Pialang" ||
           t.createdByRole === ROLE_LABEL.PLATFORM_CASE_OFFICER ||
           t.createdByRole === ROLE_LABEL.PLATFORM_SUPERVISOR ||
           platformPersonaNames.has(t.assignee) ||
@@ -61,7 +61,7 @@ export default function ManajemenTugasPage() {
   const [editingTask, setEditingTask] = useState<CaseTask | "add" | null>(null);
   const [ticket, setTicket] = useState("");
   const [description, setDescription] = useState("");
-  const [delegationType, setDelegationType] = useState<TaskDelegationType>("Internal Platform");
+  const [delegationType, setDelegationType] = useState<TaskDelegationType>("Internal Pialang");
   const [delegationEntity, setDelegationEntity] = useState("");
   const [assignee, setAssignee] = useState(PLATFORM_STAFF[0]?.name ?? "");
   const [document, setDocument] = useState("");
@@ -71,7 +71,7 @@ export default function ManajemenTugasPage() {
   function resetForm() {
     setTicket("");
     setDescription("");
-    setDelegationType("Internal Platform");
+    setDelegationType("Internal Pialang");
     setDelegationEntity("");
     setAssignee(PLATFORM_STAFF[0]?.name ?? "");
     setDocument("");
@@ -87,7 +87,7 @@ export default function ManajemenTugasPage() {
   function openEdit(t: CaseTask) {
     setTicket(t.ticket);
     setDescription(t.description);
-    setDelegationType(t.delegationType ?? "Internal Platform");
+    setDelegationType(t.delegationType ?? "Internal Pialang");
     setDelegationEntity(t.delegationEntity ?? "");
     setAssignee(t.assignee);
     setDocument(t.document ?? "");
@@ -98,13 +98,13 @@ export default function ManajemenTugasPage() {
 
   function submitTask() {
     if (!ticket || !description.trim() || !assignee) return;
-    if (delegationType !== "Internal Platform" && !delegationEntity) return;
+    if (delegationType !== "Internal Pialang" && !delegationEntity) return;
     const payload = {
       description: description.trim(),
       assignee,
       document: document || undefined,
-      delegationType: delegationType === "Internal Platform" ? undefined : delegationType,
-      delegationEntity: delegationType === "Internal Platform" ? undefined : delegationEntity,
+      delegationType: delegationType === "Internal Pialang" ? undefined : delegationType,
+      delegationEntity: delegationType === "Internal Pialang" ? undefined : delegationEntity,
       priority,
       dueDate: dueDate ? formatDueDateID(dueDate) : undefined,
     };
@@ -125,7 +125,7 @@ export default function ManajemenTugasPage() {
         title="Manajemen Tugas"
         description={
           isSupervisor
-            ? "Pantau seluruh tugas internal yang didelegasikan kepada staf platform."
+            ? "Pantau seluruh tugas internal yang didelegasikan kepada staf pialang."
             : "Daftar tugas internal yang didelegasikan kepada Anda."
         }
         actions={
@@ -172,7 +172,7 @@ export default function ManajemenTugasPage() {
                     const next = e.target.value as TaskDelegationType;
                     setDelegationType(next);
                     setDelegationEntity("");
-                    setAssignee(next === "Internal Platform" ? PLATFORM_STAFF[0]?.name ?? "" : "");
+                    setAssignee(next === "Internal Pialang" ? PLATFORM_STAFF[0]?.name ?? "" : "");
                   }}
                 >
                   {DELEGATION_TYPES.map((t) => (
@@ -180,7 +180,7 @@ export default function ManajemenTugasPage() {
                   ))}
                 </Select>
               </div>
-              {delegationType !== "Internal Platform" && (
+              {delegationType !== "Internal Pialang" && (
                 <div>
                   <Label className="text-[11px]">Nama Lembaga / Perusahaan</Label>
                   <SearchableSelect
@@ -194,7 +194,7 @@ export default function ManajemenTugasPage() {
             </div>
             <div>
               <Label htmlFor="task-assignee">Assignee / Petugas</Label>
-              {delegationType === "Internal Platform" ? (
+              {delegationType === "Internal Pialang" ? (
                 <Select id="task-assignee" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
                   {PLATFORM_STAFF.map((s) => (
                     <option key={s.id} value={s.name}>{s.name}</option>

@@ -39,7 +39,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 const ACTIVE_ECOSYSTEM_TYPES: PlatformMembershipEcosystemType[] = ["Bursa", "Kliring", "Custody"];
 const ACTIVE_STATUSES: PlatformMembershipStatus[] = ["Aktif", "Suspended", "Non-Aktif"];
 const PENGAWAS_STATUSES: EcosystemPengawasMembershipStatus[] = ["Aktif", "Suspended", "Non-Aktif"];
-const PELAKU_USAHA_CATEGORIES: PelakuUsahaCategory[] = ["Pialang Berjangka", "CPFAK / PFAK", "Platform"];
+const PELAKU_USAHA_CATEGORIES: PelakuUsahaCategory[] = ["Pialang Berjangka", "CPFAK / PFAK", "Pialang Aset Digital"];
 const ASSOCIATIONS: EcosystemAssociation[] = ["ASPEBTINDO", "BAKTI"];
 
 const ACTIVE_STATUS_VARIANT: Record<PlatformMembershipStatus, "green" | "amber" | "muted"> = {
@@ -91,9 +91,9 @@ export default function ManagementMemberPage() {
   // Shared master data: every Platform/Pialang entity (Step 1 of the Tambah
   // Member cascade) and every Bursa/Kliring/Custody institution (Step 3,
   // filtered to the ecosystemType chosen in Step 2).
-  const pelakuUsahaCandidates = useMemo(() => ECOSYSTEM_ENTITIES.filter((e) => e.category === "Platform/Pialang"), []);
+  const pelakuUsahaCandidates = useMemo(() => ECOSYSTEM_ENTITIES.filter((e) => e.category === "Pialang"), []);
   const ecosystemCandidates = useMemo(
-    () => ECOSYSTEM_ENTITIES.filter((e) => e.ecosystemType === "Ecosystem Aktif" && e.category !== "Platform/Pialang"),
+    () => ECOSYSTEM_ENTITIES.filter((e) => e.ecosystemType === "Ecosystem Aktif" && e.category !== "Pialang"),
     []
   );
 
@@ -291,7 +291,7 @@ export default function ManagementMemberPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Kode Keanggotaan</TableHead>
-                <TableHead>Platform / Pialang</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Tipe Ekosistem</TableHead>
                 <TableHead>Lembaga</TableHead>
                 <TableHead>Terdaftar</TableHead>
@@ -406,16 +406,16 @@ export default function ManagementMemberPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{activeDialog === "add" ? "Tambah Member Ekosistem Active" : "Ubah Profil Member"}</DialogTitle>
-            <DialogDescription>Petakan keanggotaan sebuah Platform/Pialang di salah satu lembaga Bursa, Kliring, atau Custody.</DialogDescription>
+            <DialogDescription>Petakan keanggotaan sebuah Pialang di salah satu lembaga Bursa, Kliring, atau Custody.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Langkah 1 — Platform / Pialang</Label>
+              <Label>Langkah 1 — Pialang</Label>
               <SearchableSelect
                 value={activeForm.platformName}
                 onChange={selectActivePlatform}
-                groups={[{ label: "Platform / Pialang", options: pelakuUsahaCandidates.map((e) => e.name) }]}
-                placeholder="Pilih platform..."
+                groups={[{ label: "Pialang", options: pelakuUsahaCandidates.map((e) => e.name) }]}
+                placeholder="Pilih pialang..."
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -519,7 +519,7 @@ export default function ManagementMemberPage() {
               </Select>
             </div>
             <div>
-              <Label>Pelaku Usaha (dari Platform Management)</Label>
+              <Label>Pelaku Usaha (dari Pialang Management)</Label>
               <SearchableSelect
                 value={pengawasForm.companyName}
                 onChange={selectPelakuUsaha}

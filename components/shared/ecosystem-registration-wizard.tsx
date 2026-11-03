@@ -87,7 +87,7 @@ export interface EcosystemWizardValues extends Partial<EcosystemEntity> {
 
 function emptyValues(platformMode?: boolean): EcosystemWizardValues {
   return {
-    category: platformMode ? "Platform/Pialang" : "",
+    category: platformMode ? "Pialang" : "",
     ecosystemType: "Ecosystem Aktif",
     description: "",
     name: "",
@@ -257,8 +257,8 @@ export function EcosystemRegistrationWizard({
           <div>
             <h2 className="text-sm font-semibold text-navy">
               {isEdit
-                ? platformMode ? "Ajukan Perubahan Data Platform" : "Ajukan Perubahan Data Ekosistem"
-                : platformMode ? "Daftarkan Platform Baru" : "Daftarkan Ekosistem Baru"}
+                ? platformMode ? "Ajukan Perubahan Data Pialang" : "Ajukan Perubahan Data Ekosistem"
+                : platformMode ? "Daftarkan Pialang Baru" : "Daftarkan Ekosistem Baru"}
             </h2>
             <p className="text-[11px] text-muted">Langkah {step + 1} dari {steps.length}: {steps[step]}</p>
           </div>
@@ -293,7 +293,7 @@ export function EcosystemRegistrationWizard({
               {platformMode ? (
                 <div className="rounded-md border border-border bg-muted-bg/40 p-3 text-xs space-y-0.5">
                   <p><span className="text-muted">Ecosystem Type:</span> <span className="font-medium text-navy">Ecosystem Aktif</span></p>
-                  <p><span className="text-muted">Ecosystem Category:</span> <span className="font-medium text-navy">Platform/Pialang</span></p>
+                  <p><span className="text-muted">Ecosystem Category:</span> <span className="font-medium text-navy">Pialang</span></p>
                 </div>
               ) : (
                 <>
@@ -398,7 +398,7 @@ export function EcosystemRegistrationWizard({
                   <Label htmlFor="eco-website">Website</Label>
                   <Input id="eco-website" value={values.website ?? ""} onChange={(e) => set("website", e.target.value)} />
                 </div>
-                {values.ecosystemType === "Ecosystem Aktif" && values.category === "Platform/Pialang" && (
+                {values.ecosystemType === "Ecosystem Aktif" && values.category === "Pialang" && (
                   <>
                     <div>
                       <Label htmlFor="eco-bursa">Bursa</Label>

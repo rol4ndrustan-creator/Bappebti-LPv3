@@ -14,7 +14,7 @@ function wibIso(mock: string): string {
 function legacyPortal(role: string): AuditPortal {
   if (role.startsWith("Bappebti")) return "Bappebti";
   if (role === "Bursa" || role === "Kliring") return "EkosistemActive";
-  if (role === "Platform") return "Platform";
+  if (role === "Pialang") return "Pialang";
   return "Sistem";
 }
 
@@ -43,8 +43,8 @@ const PORTAL_EXAMPLES: OperationalAuditEvent[] = [
     timestamp: wibIso("14 Jun 2026, 09:20"),
     userName: "Rina Kusuma",
     institution: "PT Bursa Digital Nusantara",
-    roleLabel: "Petugas Kasus Platform",
-    portal: "Platform",
+    roleLabel: "Petugas Kasus Pialang",
+    portal: "Pialang",
     activity: "Ubah Status Tugas",
     ticket: "BPP-2026-000184",
     detail: "Memperbarui status tugas 'Konfirmasi status penarikan ke bank kustodian' dari 'Pending' menjadi 'In Progress'.",
@@ -54,8 +54,8 @@ const PORTAL_EXAMPLES: OperationalAuditEvent[] = [
     timestamp: wibIso("14 Jun 2026, 15:42"),
     userName: "Ferry Hartono",
     institution: "PT Bursa Digital Nusantara",
-    roleLabel: "Supervisor Platform",
-    portal: "Platform",
+    roleLabel: "Supervisor Pialang",
+    portal: "Pialang",
     activity: "Publikasi Respon Publik",
     ticket: "BPP-2026-000184",
     detail: "Mempublikasikan respon ke kolom tanggapan publik dan mengirim salinan ke email pelapor.",
@@ -80,7 +80,7 @@ const PORTAL_EXAMPLES: OperationalAuditEvent[] = [
     portal: "EkosistemActive",
     activity: "Buat Jadwal Musyawarah",
     ticket: "BPP-2026-000187",
-    detail: "Menjadwalkan 'Musyawarah Lanjutan Kendala Respons Platform #BPP-2026-000187' (Tautan Video Conference).",
+    detail: "Menjadwalkan 'Musyawarah Lanjutan Kendala Respons Pialang #BPP-2026-000187' (Tautan Video Conference).",
   },
   {
     id: "AUD-SEED-W1",

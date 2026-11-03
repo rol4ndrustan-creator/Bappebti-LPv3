@@ -34,13 +34,13 @@ export default function PemantauanRisikoPage() {
     {
       icon: Repeat,
       title: "Keterlambatan penarikan berulang",
-      desc: "Pola keterlambatan penarikan dana yang berulang pada beberapa platform dengan kategori Dana / Withdrawal.",
+      desc: "Pola keterlambatan penarikan dana yang berulang pada beberapa pialang dengan kategori Dana / Withdrawal.",
       count: CASES.filter((c) => c.category === "Dana / Withdrawal").length,
     },
     {
       icon: Network,
-      title: "Keterlibatan multi-platform",
-      desc: "Kasus yang melibatkan lebih dari satu platform atau memiliki keterkaitan dengan kasus lain.",
+      title: "Keterlibatan multi-pialang",
+      desc: "Kasus yang melibatkan lebih dari satu pialang atau memiliki keterkaitan dengan kasus lain.",
       count: multiPlatform.length,
     },
     {
@@ -51,8 +51,8 @@ export default function PemantauanRisikoPage() {
     },
     {
       icon: Clock,
-      title: "Platform response delay",
-      desc: "Indikasi keterlambatan respon platform terhadap permintaan klarifikasi atau penyelesaian kasus.",
+      title: "Pialang response delay",
+      desc: "Indikasi keterlambatan respon pialang terhadap permintaan klarifikasi atau penyelesaian kasus.",
       count: CASES.filter((c) => c.slaStatus !== "Aman").length,
     },
     {
@@ -67,7 +67,7 @@ export default function PemantauanRisikoPage() {
     <div>
       <PageHeader
         title="Pemantauan Risiko"
-        description="Deteksi pola risiko sistemik dan daftar kasus berisiko tinggi untuk pengawasan lintas platform, bursa, dan kliring."
+        description="Deteksi pola risiko sistemik dan daftar kasus berisiko tinggi untuk pengawasan lintas pialang, bursa, dan kliring."
       />
 
       {/* KPI Row */}
@@ -75,7 +75,7 @@ export default function PemantauanRisikoPage() {
         <KpiCard label="Kasus Kritis" value={critical.length} icon={ShieldAlert} tone="red" />
         <KpiCard label="Indikasi Fraud" value={fraud.length} icon={AlertTriangle} tone="red" />
         <KpiCard label="Pengaduan Nilai Tinggi" value={highValue.length} icon={Banknote} tone="amber" />
-        <KpiCard label="Multi-Platform Dispute" value={multiPlatform.length} icon={Network} tone="amber" />
+        <KpiCard label="Multi-Pialang Dispute" value={multiPlatform.length} icon={Network} tone="amber" />
         <KpiCard label="Privasi Data" value={dataPrivacy} icon={Lock} tone="default" />
         <KpiCard label="Repeated Complaint Pattern" value={repeatedPattern} icon={Repeat} tone="default" />
       </div>
@@ -120,7 +120,7 @@ export default function PemantauanRisikoPage() {
               <TableRow>
                 <TableHead>Tiket</TableHead>
                 <TableHead>Pengaduan</TableHead>
-                <TableHead>Platform</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Tingkat</TableHead>
                 <TableHead>Kategori</TableHead>
                 <TableHead>Nilai Transaksi</TableHead>

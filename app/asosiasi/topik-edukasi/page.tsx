@@ -19,8 +19,8 @@ const TOPICS = [
     description: "Tahapan resmi penutupan akun dan hak atas dana",
   },
   {
-    title: "How to Identify Licensed Platforms",
-    description: "Cara memverifikasi legalitas platform melalui Bappebti",
+    title: "How to Identify Licensed Pialang",
+    description: "Cara memverifikasi legalitas pialang melalui Bappebti",
   },
   {
     title: "What Evidence is Needed for Complaint",

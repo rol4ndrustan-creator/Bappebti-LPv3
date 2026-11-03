@@ -48,7 +48,7 @@ export default function MasterDataAnggotaPage() {
     <div>
       <PageHeader
         title="Master Data Anggota"
-        description="Data master anggota terdaftar (Platform/Pialang, Bursa, Kliring) beserta informasi izin dan routing."
+        description="Data master anggota terdaftar (Pialang, Bursa, Kliring) beserta informasi izin dan routing."
         actions={
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="size-3.5" /> Tambah Anggota

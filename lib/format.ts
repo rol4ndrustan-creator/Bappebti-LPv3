@@ -88,7 +88,7 @@ export function getPriorityTone(severity: "Rendah" | "Sedang" | "Tinggi" | "Krit
 
 const OWNER_LABEL: Record<OwnerType, string> = {
   Pelapor: "Anda (Pelapor)",
-  Platform: "Pelaku usaha (platform)",
+  Pialang: "Pialang Berjangka",
   Bursa: "Bursa",
   Kliring: "Lembaga kliring",
   Bappebti: "Bappebti",

@@ -11,6 +11,7 @@ import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
 import { useCasesData, addTimelineEvent, addInternalNote, setCurrentOwner } from "@/lib/mock-service/store";
 import { CASES, ACTIVE_BURSA } from "@/lib/mock-data";
+import { ChronologyBlock } from "@/components/shared/case-identity";
 
 export default function EscalationQueuePage() {
   const { showToast } = useToast();
@@ -34,7 +35,7 @@ export default function EscalationQueuePage() {
     <div>
       <PageHeader
         title="Escalation Queue"
-        description={`Kasus yang dieskalasikan ke ${ACTIVE_BURSA} untuk supervisi langsung terhadap penanganan platform.`}
+        description={`Kasus yang dieskalasikan ke ${ACTIVE_BURSA} untuk supervisi langsung terhadap penanganan pialang.`}
       />
 
       <Card>
@@ -43,7 +44,7 @@ export default function EscalationQueuePage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tiket</TableHead>
-                <TableHead>Platform</TableHead>
+                <TableHead>Pialang</TableHead>
                 <TableHead>Pengaduan</TableHead>
                 <TableHead>Alasan Eskalasi</TableHead>
                 <TableHead>Status</TableHead>
@@ -80,14 +81,14 @@ export default function EscalationQueuePage() {
                             size="sm"
                             onClick={() => setExpanded(isExpanded ? null : c.ticket)}
                           >
-                            {isExpanded ? "Tutup Review" : "Review Penanganan Platform"}
+                            {isExpanded ? "Tutup Review" : "Review Penanganan Pialang"}
                           </Button>
                           <Button
                             variant="secondary"
                             size="sm"
                             onClick={() => setFollowUpOpen(isFollowUp ? null : c.ticket)}
                           >
-                            Tanya Tindak Lanjut Platform
+                            Tanya Tindak Lanjut Pialang
                           </Button>
                           <div title={settlementRelated ? "" : "Hanya tersedia untuk kasus terkait settlement / kliring"}>
                             <Button
@@ -144,7 +145,7 @@ export default function EscalationQueuePage() {
                         <TableCell colSpan={7} className="bg-muted-bg/40">
                           <div className="py-2 space-y-2 max-w-2xl text-xs">
                             <p className="font-medium text-navy">Kronologi Penanganan</p>
-                            <p className="text-muted">{c.chronology}</p>
+                            <ChronologyBlock complaintCase={c} textClassName="text-muted" />
                             <div className="border-l-2 border-navy/20 pl-3 space-y-1.5 mt-2">
                               {c.timeline.map((t, i) => (
                                 <div key={i}>
@@ -164,7 +165,7 @@ export default function EscalationQueuePage() {
                           <div className="py-2 space-y-2 max-w-xl">
                             <p className="text-xs font-medium text-navy">Pertanyaan tindak lanjut kepada {c.platform}</p>
                             <Textarea
-                              placeholder="Tuliskan pertanyaan tindak lanjut untuk platform..."
+                              placeholder="Tuliskan pertanyaan tindak lanjut untuk pialang..."
                               value={followUpText}
                               onChange={(e) => setFollowUpText(e.target.value)}
                             />
@@ -176,7 +177,7 @@ export default function EscalationQueuePage() {
                                   addTimelineEvent(c.ticket, {
                                     actor: user.name,
                                     role: "Bursa",
-                                    action: "Tindak lanjut ditanyakan ke platform",
+                                    action: "Tindak lanjut ditanyakan ke pialang",
                                     note: followUpText.trim(),
                                     status: "info",
                                     visibility: "internal",

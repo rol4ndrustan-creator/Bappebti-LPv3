@@ -11,23 +11,23 @@ const SLA_RULES: { kategori: string; tingkat: "Rendah" | "Sedang" | "Tinggi" | "
   { kategori: "Settlement / Kliring", tingkat: "Sedang", responAwal: "24 jam", penyelesaian: "5 hari" },
   { kategori: "Akses akun", tingkat: "Sedang", responAwal: "24 jam", penyelesaian: "3 hari" },
   { kategori: "Penutupan akun", tingkat: "Rendah", responAwal: "48 jam", penyelesaian: "7 hari" },
-  { kategori: "Layanan / respon platform", tingkat: "Tinggi", responAwal: "24 jam", penyelesaian: "3 hari" },
+  { kategori: "Layanan / respon pialang", tingkat: "Tinggi", responAwal: "24 jam", penyelesaian: "3 hari" },
   { kategori: "Dugaan penipuan / fraud", tingkat: "Kritis", responAwal: "6 jam", penyelesaian: "2 hari" },
 ];
 
 const ESKALASI_RULES = [
   "Jika SLA terlampaui 2x tanpa penyelesaian -> eskalasi ke Bursa",
   "Jika kategori = Dugaan penipuan / fraud dan nilai > Rp50.000.000 -> langsung BAPPEBTI OWNED",
-  "Jika tidak ada respon platform > 72 jam -> eskalasi ke Bursa",
+  "Jika tidak ada respon pialang > 72 jam -> eskalasi ke Bursa",
   "Jika kasus telah dieskalasi ke Bursa namun tetap melampaui SLA tambahan -> eskalasi ke Bappebti",
 ];
 
 const OWNER_TRANSITIONS = [
   { from: "Pelapor", to: "Sistem Verifikasi", desc: "Pengaduan baru masuk dan menunggu verifikasi kelengkapan dokumen." },
-  { from: "Sistem Verifikasi", to: "Platform", desc: "Verifikasi awal selesai, kasus diteruskan ke platform/pialang terkait." },
-  { from: "Platform", to: "Bursa", desc: "Eskalasi karena SLA terlampaui atau tidak ada respon dari platform." },
-  { from: "Platform", to: "Kliring", desc: "Kasus terkait settlement/rekonsiliasi diteruskan ke kliring." },
-  { from: "Platform / Bursa / Kliring", to: "Bappebti", desc: "Kasus diambil alih sebagai BAPPEBTI OWNED karena indikasi fraud bernilai tinggi atau eskalasi berulang." },
+  { from: "Sistem Verifikasi", to: "Pialang", desc: "Verifikasi awal selesai, kasus diteruskan ke pialang terkait." },
+  { from: "Pialang", to: "Bursa", desc: "Eskalasi karena SLA terlampaui atau tidak ada respon dari pialang." },
+  { from: "Pialang", to: "Kliring", desc: "Kasus terkait settlement/rekonsiliasi diteruskan ke kliring." },
+  { from: "Pialang / Bursa / Kliring", to: "Bappebti", desc: "Kasus diambil alih sebagai BAPPEBTI OWNED karena indikasi fraud bernilai tinggi atau eskalasi berulang." },
   { from: "Bursa / Kliring / Bappebti", to: "Selesai", desc: "Resolusi diajukan dan diterima/divalidasi, kasus ditutup." },
 ];
 

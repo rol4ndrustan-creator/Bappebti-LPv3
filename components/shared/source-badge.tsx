@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 const SOURCE: Record<ComplaintSource, { icon: string; label: string; title: string; cls: string }> = {
   Bappebti: { icon: "🏛️", label: "Bappebti", title: "Pengaduan masuk dari kanal resmi Bappebti", cls: "bg-navy/10 text-navy border-navy/20" },
-  Platform: { icon: "🏢", label: "Platform", title: "Pengaduan masuk dari kanal internal Pialang", cls: "bg-amber-bg text-amber border-amber/30" },
+  Pialang: { icon: "🏢", label: "Pialang", title: "Pengaduan masuk dari kanal internal Pialang", cls: "bg-amber-bg text-amber border-amber/30" },
 };
 
 /** Badge "Sumber Pengaduan" (List Revisi 11 #5). */

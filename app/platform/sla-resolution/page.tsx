@@ -6,7 +6,7 @@ import { CASES } from "@/lib/mock-data";
 import { ComplaintCase } from "@/lib/types";
 import { AlertTriangle } from "lucide-react";
 
-const platformCases = CASES.filter((c) => c.currentOwner === "Platform");
+const platformCases = CASES.filter((c) => c.currentOwner === "Pialang");
 
 // Distribute "Aman" cases across the two safe buckets for a richer demo.
 const under12: ComplaintCase[] = [];
@@ -109,7 +109,7 @@ export default function SlaResolutionPage() {
     <div>
       <PageHeader
         title="SLA & Resolution"
-        description="Pemantauan usia kasus terhadap batas waktu SLA serta status kesiapan resolusi pada kasus yang ditangani Platform / Pialang."
+        description="Pemantauan usia kasus terhadap batas waktu SLA serta status kesiapan resolusi pada kasus yang ditangani Pialang."
       />
 
       <h2 className="text-sm font-semibold text-navy mb-2">SLA Aging Buckets</h2>

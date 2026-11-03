@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { CASES } from "@/lib/mock-data";
 import { useCasesData } from "@/lib/mock-service/store";
 import { useLifecycleViews } from "@/lib/mock-service/lifecycle-store";
-import { TICKET_STATUS_TONE } from "@/lib/ticket-lifecycle";
+import { TICKET_STATUS_TONE, slaDaysLabel } from "@/lib/ticket-lifecycle";
+import { useClock } from "@/lib/clock";
 import { formatWIB } from "@/lib/case-pdf";
 import { TicketStatus } from "@/lib/types";
 import { SourceBadge } from "@/components/shared/source-badge";
@@ -20,10 +21,11 @@ export function LifecycleQueue({
 }: {
   statuses: TicketStatus[];
   detailHref: (ticket: string) => string;
-  mode: "pialang-review" | "bappebti-review";
+  mode: "pialang-review" | "bappebti-review" | "triage";
 }) {
   const cases = useCasesData(CASES);
   const get = useLifecycleViews();
+  const now = useClock();
   const loading = !get(CASES[0]);
   const rows = cases
     .map((c) => ({ c, v: get(c) }))
@@ -39,7 +41,8 @@ export function LifecycleQueue({
           <TableHead>Pialang Terlapor</TableHead>
           <TableHead>Sumber</TableHead>
           <TableHead>Status Tiket</TableHead>
-          <TableHead>{mode === "pialang-review" ? "Batas Review Pialang" : "Alasan Penolakan Pialang"}</TableHead>
+          {mode === "bappebti-review" && <TableHead>Alasan Penolakan Pialang</TableHead>}
+          <TableHead>{mode === "pialang-review" ? "Sisa SLA Review" : "Sisa SLA Penyelesaian"}</TableHead>
           <TableHead>Aksi</TableHead>
         </TableRow>
       </TableHeader>
@@ -50,11 +53,11 @@ export function LifecycleQueue({
             <TableCell className="max-w-[240px]">
               <p className="truncate">{c.title}</p>
               <p className="text-[11px] text-muted">
-                {c.reporterName} · terbit {formatWIB(new Date(v!.lc.submittedAt))} WIB
+                {c.reporterName} · terbit {formatWIB(new Date(v!.lc.submittedAt)).slice(0, 10)}
               </p>
             </TableCell>
             <TableCell className="whitespace-nowrap">
-              {c.platform}
+              {c.platform || <span className="text-muted">Belum diketahui</span>}
               {v!.lc.respondent && <p className="text-[11px] text-muted">{v!.lc.respondent.position}: {v!.lc.respondent.name}</p>}
             </TableCell>
             <TableCell>
@@ -63,26 +66,29 @@ export function LifecycleQueue({
             <TableCell>
               <Badge variant={TICKET_STATUS_TONE[v!.status]}>{v!.status.toUpperCase()}</Badge>
             </TableCell>
-            <TableCell className="text-xs">
-              {mode === "pialang-review" ? (
-                <span className="whitespace-nowrap">{formatWIB(v!.pialangDeadline)} WIB</span>
-              ) : (
-                <>
-                  <p className="font-medium">{v!.lc.pialangReview?.reason}</p>
-                  <p className="text-[11px] text-muted">{v!.lc.pialangReview?.document}</p>
-                </>
-              )}
+            {mode === "bappebti-review" && (
+              <TableCell className="text-xs">
+                <p className="font-medium">{v!.lc.pialangReview?.reason}</p>
+                <p className="text-[11px] text-muted">{v!.lc.pialangReview?.document}</p>
+              </TableCell>
+            )}
+            <TableCell>
+              {now &&
+                (() => {
+                  const sla = slaDaysLabel(mode === "pialang-review" ? v!.pialangDeadline : v!.slaDeadline, now);
+                  return <Badge variant={sla.tone}>{sla.label}</Badge>;
+                })()}
             </TableCell>
             <TableCell>
               <Link href={detailHref(c.ticket)} className="text-navy inline-flex items-center gap-1 hover:underline whitespace-nowrap">
-                {mode === "pialang-review" ? "Verifikasi" : "Review"} <ArrowRight className="size-3" />
+                {mode === "pialang-review" ? "Verifikasi" : mode === "triage" ? "Triase" : "Review"} <ArrowRight className="size-3" />
               </Link>
             </TableCell>
           </TableRow>
         ))}
         {rows.length === 0 && (
           <TableRow>
-            <TableCell colSpan={7} className="text-center text-muted py-6">
+            <TableCell colSpan={mode === "bappebti-review" ? 8 : 7} className="text-center text-muted py-6">
               {loading ? "Memuat..." : "Tidak ada tiket pada antrean ini."}
             </TableCell>
           </TableRow>
