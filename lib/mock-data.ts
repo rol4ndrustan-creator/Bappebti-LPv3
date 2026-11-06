@@ -1443,8 +1443,8 @@ export const ECOSYSTEM_CATEGORY_CONFIG: EcosystemCategoryConfig[] = [
   { id: "ECAT-02", type: "Ecosystem Aktif", shortDescription: "Bursa", longDescription: "Bursa Khusus Komoditi", active: true, createdAt: "01 Jan 2024", displayDate: "01 Jan 2024", userMaker: "Rahma", userApproval: "Andi" },
   { id: "ECAT-03", type: "Ecosystem Aktif", shortDescription: "Kliring", longDescription: "Perusahaan penyedia jasa kliring bagi pialang berjangka", active: true, createdAt: "01 Jan 2024", displayDate: "01 Jan 2024", userMaker: "Rahma", userApproval: "Andi" },
   { id: "ECAT-04", type: "Ecosystem Aktif", shortDescription: "Custody", longDescription: "Perusahaan penyedia custody Khusus Komoditi", active: true, createdAt: "12 Jan 2024", displayDate: "12 Jan 2024", userMaker: "Rahma", userApproval: "Andi" },
-  { id: "ECAT-05", type: "Ecosystem Pengawas", shortDescription: "Asosiasi", longDescription: "Asosiasi Pengusaha Pialang Berjangka", active: true, createdAt: "15 Jan 2024", displayDate: "15 Jan 2024", userMaker: "Ratih", userApproval: "Yogi" },
-  { id: "ECAT-06", type: "Ecosystem Pengawas", shortDescription: "Asosiasi Lama", longDescription: "Asosiasi Pengusaha Pialang Berjangka (versi lama, sudah dinonaktifkan)", active: false, createdAt: "01 Nov 2023", displayDate: "01 Nov 2023", userMaker: "Rahma", userApproval: "Yogi" },
+  { id: "ECAT-05", type: "Ecosystem Pasif", shortDescription: "Asosiasi", longDescription: "Asosiasi Pengusaha Pialang Berjangka", active: true, createdAt: "15 Jan 2024", displayDate: "15 Jan 2024", userMaker: "Ratih", userApproval: "Yogi" },
+  { id: "ECAT-06", type: "Ecosystem Pasif", shortDescription: "Asosiasi Lama", longDescription: "Asosiasi Pengusaha Pialang Berjangka (versi lama, sudah dinonaktifkan)", active: false, createdAt: "01 Nov 2023", displayDate: "01 Nov 2023", userMaker: "Rahma", userApproval: "Yogi" },
 ];
 
 // Manajemen Ekosistem — registry of platforms/pialang, bursa, kliring, and
@@ -1462,8 +1462,8 @@ export const ECOSYSTEM_ENTITIES: EcosystemEntity[] = [
   { id: "ECO-009", name: "Bursa Berjangka Jakarta", category: "Bursa", ecosystemType: "Ecosystem Aktif", license: "BK-003/BAPPEBTI/2019", officialEmail: "helpdesk@bbj.co.id", status: "Disetujui", establishedAt: "21 Aug 1999", registeredAt: "02 Jan 2019", decidedBy: "Ratna Maharani", decidedAt: "08 Jan 2019" },
   { id: "ECO-010", name: "Kliring Berjangka Indonesia", category: "Kliring", ecosystemType: "Ecosystem Aktif", license: "KK-001/BAPPEBTI/2019", officialEmail: "helpdesk@kbi.co.id", status: "Disetujui", establishedAt: "21 Aug 1999", registeredAt: "02 Jan 2019", decidedBy: "Ratna Maharani", decidedAt: "08 Jan 2019" },
   { id: "ECO-011", name: "Kliring Aset Digital Nusantara", category: "Kliring", ecosystemType: "Ecosystem Aktif", license: "KK-002/BAPPEBTI/2021", officialEmail: "helpdesk@kadn.co.id", status: "Disetujui", establishedAt: "05 May 2018", registeredAt: "11 Mar 2021", decidedBy: "Bambang Setiawan", decidedAt: "15 Mar 2021" },
-  { id: "ECO-012", name: "Asosiasi Pialang Berjangka Indonesia", category: "Asosiasi", ecosystemType: "Ecosystem Pengawas", license: "AS-001/BAPPEBTI/2018", status: "Disetujui", establishedAt: "17 Jun 1999", registeredAt: "10 Jun 2018", decidedBy: "Ratna Maharani", decidedAt: "15 Jun 2018" },
-  { id: "ECO-016", name: "Badan Arbitrase Perdagangan Berjangka Komoditi Indonesia", shortName: "BAKTI", category: "Asosiasi", ecosystemType: "Ecosystem Pengawas", license: "AS-016/BAPPEBTI/2019", status: "Disetujui", establishedAt: "03 Mar 2010", registeredAt: "22 Apr 2019", decidedBy: "Ratna Maharani", decidedAt: "28 Apr 2019" },
+  { id: "ECO-012", name: "Asosiasi Pialang Berjangka Indonesia", category: "Asosiasi", ecosystemType: "Ecosystem Pasif", license: "AS-001/BAPPEBTI/2018", status: "Disetujui", establishedAt: "17 Jun 1999", registeredAt: "10 Jun 2018", decidedBy: "Ratna Maharani", decidedAt: "15 Jun 2018" },
+  { id: "ECO-016", name: "Badan Arbitrase Perdagangan Berjangka Komoditi Indonesia", shortName: "BAKTI", category: "Asosiasi", ecosystemType: "Ecosystem Pasif", license: "AS-016/BAPPEBTI/2019", status: "Disetujui", establishedAt: "03 Mar 2010", registeredAt: "22 Apr 2019", decidedBy: "Ratna Maharani", decidedAt: "28 Apr 2019" },
   { id: "ECO-015", name: "PT Kustodian Aset Komoditi Indonesia", category: "Custody", ecosystemType: "Ecosystem Aktif", license: "CUS-001/BAPPEBTI/2022", officialEmail: "helpdesk@kustodiankomoditi.co.id", status: "Disetujui", establishedAt: "14 Feb 2015", registeredAt: "20 Apr 2022", decidedBy: "Bambang Setiawan", decidedAt: "25 Apr 2022" },
   {
     id: "ECO-013",
@@ -1501,7 +1501,7 @@ export const ECOSYSTEM_ENTITIES: EcosystemEntity[] = [
     id: "ECO-014",
     name: "Asosiasi Trader Aset Digital Indonesia",
     category: "Asosiasi",
-    ecosystemType: "Ecosystem Pengawas",
+    ecosystemType: "Ecosystem Pasif",
     description: "Asosiasi yang mewadahi para trader aset digital terdaftar untuk edukasi dan advokasi konsumen.",
     shortName: "ATADI",
     license: "AS-014/BAPPEBTI/2026",

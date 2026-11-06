@@ -308,7 +308,7 @@ export function EcosystemRegistrationWizard({
                       }}
                     >
                       <option value="Ecosystem Aktif">Ecosystem Aktif</option>
-                      <option value="Ecosystem Pengawas">Ecosystem Pengawas</option>
+                      <option value="Ecosystem Pasif">Ecosystem Pasif</option>
                     </Select>
                   </div>
                   <div>

@@ -41,19 +41,6 @@ export function editIncidentDate(ticket: string, a: Actor, before: string, after
   record(ticket, a, "Koreksi Tanggal Kejadian", `Tanggal kejadian diubah dari '${before || "-"}' menjadi '${after}'.`, "info", "internal");
 }
 
-export function setLegalProceeding(ticket: string, a: Actor, answer: "Ya" | "Tidak", document?: string) {
-  updateLifecycle(ticket, (lc) => ({ ...lc, legalProceeding: { answer, document, ...stamp(a) } }));
-  if (document) addEvidence(ticket, [document]);
-  record(
-    ticket,
-    a,
-    "Verifikasi hukum dicatat",
-    answer === "Ya" ? `Sengketa telah diproses di pengadilan/kepolisian. Salinan: ${document}.` : "Sengketa belum pernah diproses di pengadilan/kepolisian.",
-    "info",
-    "internal"
-  );
-}
-
 // --- Revisi 13: triase, perbaikan berkas, penolakan Bappebti, mediasi --------
 
 export function assignPialangFromTriage(ticket: string, a: Actor, pialang: string) {

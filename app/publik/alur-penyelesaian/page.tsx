@@ -5,7 +5,7 @@ export default function AlurPenyelesaianPage() {
   return (
     <div>
       <PageHeader
-        title="Alur Penyelesaian Perselisihan"
+        title="Alur Layanan Penyelesaian Pengaduan"
         description="Bagaimana pengaduan Anda sebagai nasabah Perdagangan Berjangka Komoditi (PBK) ditangani: dari verifikasi, musyawarah dengan Pialang, mediasi oleh Bursa, hingga pilihan Pengadilan atau BAKTI."
       />
       <DisputeFlowDiagram />

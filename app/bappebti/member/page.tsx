@@ -260,7 +260,7 @@ export default function ManagementMemberPage() {
     };
     if (pengawasDialog === "add") {
       addPengawasMember(record);
-      showToast("Member Ekosistem Pengawas berhasil ditambahkan.");
+      showToast("Member Ekosistem Pasif berhasil ditambahkan.");
     } else if (pengawasDialog) {
       updatePengawasMember(pengawasDialog.id, record);
       showToast("Profil member berhasil diperbarui.");
@@ -272,7 +272,7 @@ export default function ManagementMemberPage() {
     <div>
       <PageHeader
         title="Management Member"
-        description="Pengelolaan data keanggotaan Ekosistem Active dan Ekosistem Pengawas secara terpusat oleh Bappebti."
+        description="Pengelolaan data keanggotaan Ekosistem Active dan Ekosistem Pasif secara terpusat oleh Bappebti."
         actions={
           <Button size="sm" onClick={tab === "active" ? openAddActive : openAddPengawas}>
             <Plus className="size-3.5" /> Tambah Member
@@ -283,7 +283,7 @@ export default function ManagementMemberPage() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="active">Member Ekosistem Active</TabsTrigger>
-          <TabsTrigger value="pengawas">Member Ekosistem Pengawas</TabsTrigger>
+          <TabsTrigger value="pengawas">Member Ekosistem Pasif</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active">
@@ -392,7 +392,7 @@ export default function ManagementMemberPage() {
               {pengawasMembers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center text-muted py-6">
-                    Belum ada member Ekosistem Pengawas.
+                    Belum ada member Ekosistem Pasif.
                   </TableCell>
                 </TableRow>
               )}
@@ -502,7 +502,7 @@ export default function ManagementMemberPage() {
       <Dialog open={!!pengawasDialog} onOpenChange={(v) => !v && setPengawasDialog(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{pengawasDialog === "add" ? "Tambah Member Ekosistem Pengawas" : "Ubah Profil Member"}</DialogTitle>
+            <DialogTitle>{pengawasDialog === "add" ? "Tambah Member Ekosistem Pasif" : "Ubah Profil Member"}</DialogTitle>
             <DialogDescription>Pelaku usaha di bawah asosiasi pengawas (ASPEBTINDO / BAKTI).</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">

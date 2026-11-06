@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/shared/searchable-select";
+import { FileUploader } from "@/components/shared/file-uploader";
 import { CaseActionDefinition, ActionButtonTone } from "@/lib/case-actions";
 import { ComplaintCase } from "@/lib/types";
 import type { VariantProps } from "class-variance-authority";
@@ -55,7 +56,9 @@ export function CaseActionDialog({
   }, [open, action.id]);
 
   const impact = action.impact(complaintCase);
-  const canConfirm = action.fields.every((f) => !f.required || values[f.id]?.trim());
+  const canConfirm = action.fields.every(
+    (f) => (!f.required || values[f.id]?.trim()) && (f.type !== "pdf" || !values[f.id] || values[f.id].toLowerCase().endsWith(".pdf"))
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -102,6 +105,21 @@ export function CaseActionDialog({
                   placeholder={f.placeholder}
                   onChange={(e) => setValues((prev) => ({ ...prev, [f.id]: e.target.value }))}
                 />
+              )}
+              {f.type === "pdf" && (
+                <>
+                  <FileUploader
+                    files={values[f.id] ? [values[f.id]] : []}
+                    onChange={(files) => setValues((prev) => ({ ...prev, [f.id]: files[0] ?? "" }))}
+                    multiple={false}
+                    maxFiles={1}
+                    accept=".pdf"
+                    label="Unggah dokumen bukti (PDF)"
+                  />
+                  {values[f.id] && !values[f.id].toLowerCase().endsWith(".pdf") && (
+                    <p className="text-[11px] text-red mt-1">Berkas harus berformat PDF.</p>
+                  )}
+                </>
               )}
               {f.type === "date" && (
                 <Input

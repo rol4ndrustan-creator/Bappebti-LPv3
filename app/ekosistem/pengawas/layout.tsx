@@ -15,7 +15,7 @@ const sidebarItems: SidebarItem[] = [
 
 export default function EkosistemPengawasLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell title="Ekosistem Pengawas" subtitle="ASPEBTINDO & BAKTI — Pengawasan Kepatuhan Industri" sidebarItems={sidebarItems} portal="ekosistem">
+    <PortalShell title="Ekosistem Pasif" subtitle="ASPEBTINDO & BAKTI — Pengawasan Kepatuhan Industri" sidebarItems={sidebarItems} portal="ekosistem">
       {children}
     </PortalShell>
   );

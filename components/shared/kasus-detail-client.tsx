@@ -27,6 +27,7 @@ import { useActingParty } from "@/lib/use-acting-party";
 import { DownloadCaseButton } from "@/components/shared/download-case-button";
 import { MusyawarahTab } from "@/components/shared/musyawarah";
 import { ChronologyBlock, ReportedPartyValue } from "@/components/shared/case-identity";
+import { MemberAssignmentPanel } from "@/components/shared/member-assignment-panel";
 import { logAudit } from "@/lib/mock-service/audit-store";
 import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
@@ -291,6 +292,10 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
 
       <div className="mb-4">
         <TicketLifecyclePanel complaintCase={c} viewerGroup={viewerGroup} />
+      </div>
+
+      <div className="mb-4">
+        <MemberAssignmentPanel complaintCase={c} editable={isBappebti || isPlatform} />
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>

@@ -29,6 +29,9 @@ export function EkosistemActiveRoleProvider({ children }: { children: React.Reac
 
   React.useEffect(() => {
     try {
+      // ?peran=Bursa|Kliring|Custody (mis. dari pengalihan portal Bursa/Kliring lama) diutamakan.
+      const fromUrl = new URLSearchParams(window.location.search).get("peran");
+      if (fromUrl && (ROLE_TYPES as string[]).includes(fromUrl)) window.localStorage.setItem(STORAGE_KEY, fromUrl);
       const stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored && (ROLE_TYPES as string[]).includes(stored)) {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync with localStorage on mount, required to avoid SSR/static-export hydration mismatch

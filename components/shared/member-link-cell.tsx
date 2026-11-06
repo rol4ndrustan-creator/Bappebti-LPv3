@@ -88,13 +88,13 @@ export function MemberLinkCell({
           // Banyak pengaduan selesai langsung antara Nasabah & Pialang tanpa anggota bursa/kliring:
           // tampilkan status netral + tombol kecil agar tata letak tabel tetap rapi.
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-            <span className="text-[11px] text-muted italic">Belum ada anggota yang ditugaskan</span>
+            <span className="text-[11px] text-muted italic">Belum ada anggota pasar yang dilibatkan</span>
             <button
               type="button"
               onClick={openModal}
               className="inline-flex items-center gap-0.5 rounded-md border border-dashed border-muted/60 px-1.5 py-0.5 text-[10.5px] text-muted hover:border-navy hover:text-navy"
             >
-              <Plus className="size-3" /> Tugaskan Member
+              <Plus className="size-3" /> Tambah Anggota
             </button>
           </span>
         ) : (

@@ -102,7 +102,7 @@ export const PORTAL_ROLE_SEED: RoleDefinition[] = [
     "Manajemen Tugas",
   ]),
   role("EkosistemActive", "custody", "Petugas Penanganan Custody", "Verifikasi aset kustodian terkait pengaduan.", ["Manajemen Pengaduan", "Manajemen Tugas"]),
-  role("EkosistemPengawas", "coord", "Koordinator Pengawas", "Akses penuh portal Ekosistem Pengawas.", ALL("EkosistemPengawas")),
+  role("EkosistemPengawas", "coord", "Koordinator Ekosistem Pasif", "Akses penuh portal Ekosistem Pasif.", ALL("EkosistemPengawas")),
   role("EkosistemPengawas", "auditor", "Auditor Asosiasi", "Pemantauan read-only pengaduan, musyawarah, dan jejak audit.", [
     "Manajemen Pengaduan",
     "Musyawarah",
@@ -131,7 +131,7 @@ export const PORTAL_USER_SEED: AdminUser[] = [
   user("Sari Wulandari", "sari.wulandari@kbi.co.id", "Petugas Penanganan Kliring", "Kliring Berjangka Indonesia", "Aktif", "15 Jun 2026, 10:05"),
   user("Budi Santoso", "budi.santoso@kbi.co.id", "Petugas Penanganan Kliring", "Kliring Berjangka Indonesia", "Nonaktif", "20 Mei 2026, 14:15"),
   user("Maya Lestari", "maya.lestari@kustodian.co.id", "Petugas Penanganan Custody", "PT Kustodian Aset Komoditi Indonesia", "Aktif", "13 Jun 2026, 15:20"),
-  user("Wulan Kartika", "wulan.kartika@aspebtindo.or.id", "Koordinator Pengawas", "Asosiasi Pialang Berjangka Indonesia", "Aktif", "15 Jun 2026, 11:15"),
+  user("Wulan Kartika", "wulan.kartika@aspebtindo.or.id", "Koordinator Ekosistem Pasif", "Asosiasi Pialang Berjangka Indonesia", "Aktif", "15 Jun 2026, 11:15"),
   user("Lina Hapsari", "lina.hapsari@aspebtindo.or.id", "Auditor Asosiasi", "Asosiasi Pialang Berjangka Indonesia", "Aktif", "13 Jun 2026, 14:00"),
   user("Rudi Hartanto", "rudi.hartanto@bakti.or.id", "Auditor Asosiasi", "Badan Arbitrase Perdagangan Berjangka Komoditi Indonesia", "Aktif", "12 Jun 2026, 09:30"),
 ];

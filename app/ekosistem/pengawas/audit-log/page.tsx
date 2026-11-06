@@ -10,7 +10,7 @@ export default function AuditLogPage() {
     <div>
       <PageHeader
         title="Audit Log"
-        description="Rekam jejak aktivitas operasional pengguna Ekosistem Pengawas untuk kepentingan kepatuhan (security & compliance)."
+        description="Rekam jejak aktivitas operasional pengguna Ekosistem Pasif untuk kepentingan kepatuhan (security & compliance)."
       />
       <AuditLogView portals={[...PORTALS]} detailHref={(t) => `/ekosistem/pengawas/kasus/${t}`} />
     </div>

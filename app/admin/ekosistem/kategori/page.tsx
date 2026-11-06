@@ -18,7 +18,7 @@ import { EcosystemType } from "@/lib/types";
 import { useToast } from "@/components/shared/toast-provider";
 import { Plus, Ban, CheckCircle2, Clock3 } from "lucide-react";
 
-const ECOSYSTEM_TYPES: EcosystemType[] = ["Ecosystem Aktif", "Ecosystem Pengawas"];
+const ECOSYSTEM_TYPES: EcosystemType[] = ["Ecosystem Aktif", "Ecosystem Pasif"];
 
 function parseDate(value: string): Date | null {
   const d = new Date(value);

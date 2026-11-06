@@ -368,7 +368,15 @@ export interface LinkedEcosystemEntity {
   id: string;
   type: "Bursa" | "Kliring" | "Custody";
   name: string;
+  /** Penugasan (List Revisi 14 #4) — PIC, status keterlibatan, instruksi. */
+  pic?: string;
+  involvement?: MemberInvolvementStatus;
+  instruction?: string;
+  assignedBy?: string;
+  assignedAt?: string;
 }
+
+export type MemberInvolvementStatus = "Diundang" | "Aktif Terlibat" | "Selesai";
 
 // Tugas Internal — a lightweight task-reminder module scoped to a case,
 // shared between the case detail page's "Tugas Internal" tab and the
@@ -497,7 +505,7 @@ export type EcosystemCategory = "Pialang" | "Bursa" | "Kliring" | "Asosiasi";
 // Ecosystem Type is fixed (only these two values ever exist); Ecosystem
 // Category is a manageable list configured in Konfigurasi > Category
 // Ecosystem, each category attached to one of these two types.
-export type EcosystemType = "Ecosystem Aktif" | "Ecosystem Pengawas";
+export type EcosystemType = "Ecosystem Aktif" | "Ecosystem Pasif";
 
 export interface EcosystemCategoryConfig {
   id: string;
@@ -971,7 +979,6 @@ export interface TicketLifecycle {
   incidentDateLog: (ActorStamp & { before: string; after: string })[];
   /** Pihak terlapor (orang) hasil profiling kepengurusan Pialang. */
   respondent?: { position: string; name: string };
-  legalProceeding?: ActorStamp & { answer: "Ya" | "Tidak"; document?: string };
   pialangReview?: ActorStamp & { decision: "Disetujui" | "Ditolak"; reason?: PialangRejectReason; document?: string; note?: string };
   bappebtiReview?: ActorStamp & { decision: "Kembalikan ke Pialang" | "Setujui Penolakan"; note: string };
   resolutionOffers: ResolutionOffer[];

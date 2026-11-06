@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
-// Dashboard disembunyikan untuk peran ini (List Revisi 11 #7) — langsung ke modul kerja utama.
+// Dashboard khusus Bursa/Kliring dihapus (List Revisi 14 #5): pekerjaan Bursa & Kliring
+// dilakukan di Ekosistem Active dengan konteks peran yang sesuai.
 export default function KliringIndex() {
-  redirect("/ekosistem/kliring/settlement-queue");
+  redirect("/ekosistem/active/pengaduan?peran=Kliring");
 }

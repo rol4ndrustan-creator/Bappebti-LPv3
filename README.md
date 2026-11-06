@@ -63,3 +63,11 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## List Revisi 14
+
+- Reject remarks limited to three standard reasons (issue resolved / issue being processed / already in court or arbitration) with mandatory PDF evidence; the court/police question is removed.
+- "Ekosistem Pengawas" is now labelled "Ekosistem Pasif".
+- Public portal redesigned: institutional header (logos in `public/images/logo/` are placeholders — replace with the official files using the same names), landing page, `/publik/cek-pengaduan` tracking, `/publik/bantuan`, account menu and footer.
+- Case detail has an "Anggota Pasar yang Dilibatkan" panel with a 3-step assignment modal.
+- Bursa/Kliring/Asosiasi dashboards removed from navigation; their URLs redirect to Ekosistem Active / Pasif.

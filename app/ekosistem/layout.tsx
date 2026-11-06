@@ -7,9 +7,7 @@ import { RequireInternalAuth } from "@/components/shared/require-internal-auth";
 
 const ROLES = [
   { label: "Ekosistem Active", href: "/ekosistem/active" },
-  { label: "Ekosistem Pengawas", href: "/ekosistem/pengawas" },
-  { label: "Bursa", href: "/ekosistem/bursa" },
-  { label: "Kliring", href: "/ekosistem/kliring" },
+  { label: "Ekosistem Pasif", href: "/ekosistem/pengawas" },
 ];
 
 export default function EkosistemLayout({ children }: { children: React.ReactNode }) {

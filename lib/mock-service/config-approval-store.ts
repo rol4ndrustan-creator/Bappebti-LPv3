@@ -78,7 +78,7 @@ function applyConfigChange(req: ConfigChangeRequest, decidedBy: string) {
     if (req.action === "Tambah") {
       addEcosystemCategory({
         id: `ECAT-${Date.now().toString(36).toUpperCase()}`,
-        type: data.type as "Ecosystem Aktif" | "Ecosystem Pengawas",
+        type: data.type as "Ecosystem Aktif" | "Ecosystem Pasif",
         shortDescription: String(data.shortDescription),
         longDescription: String(data.longDescription ?? ""),
         active: true,

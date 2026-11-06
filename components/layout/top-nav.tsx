@@ -12,10 +12,7 @@ const PORTALS = [
   { label: "Bappebti", href: "/bappebti" },
   { label: "Pialang", href: "/platform" },
   { label: "Ekosistem Active", href: "/ekosistem/active" },
-  { label: "Ekosistem Pengawas", href: "/ekosistem/pengawas" },
-  { label: "Bursa", href: "/ekosistem/bursa" },
-  { label: "Kliring", href: "/ekosistem/kliring" },
-  { label: "Asosiasi", href: "/asosiasi" },
+  { label: "Ekosistem Pasif", href: "/ekosistem/pengawas" },
 ];
 
 export function TopNav() {

@@ -30,7 +30,6 @@ import {
   submitRevision,
   proposeResolutionOffer,
   respondResolutionOffer,
-  setLegalProceeding,
   submitArbitration,
 } from "@/lib/lifecycle-actions";
 import { formatWIB } from "@/lib/case-pdf";
@@ -41,7 +40,7 @@ import { downloadBaktiRegistrationForm, downloadCourtCoverLetter } from "@/lib/l
 import { CalendarClock, Check, Download, FileText, Gavel, Handshake, Pencil, Scale, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const REJECT_REASONS: PialangRejectReason[] = ["Isu sudah selesai", "Isu sedang aktif (sedang diproses)", "Isu sudah masuk ke proses pengadilan / arbitrase"];
+export const REJECT_REASONS: PialangRejectReason[] = ["Isu sudah selesai", "Isu sedang aktif (sedang diproses)", "Isu sudah masuk ke proses pengadilan / arbitrase"];
 
 /** Pihak yang sedang bertindak, untuk kronologi & audit. */
 export function useLifecycleActor(c?: ComplaintCase): Actor {
@@ -256,7 +255,7 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
               terlewati, komplain otomatis disetujui dan lanjut ke musyawarah.
             </p>
             {isPlatform ? (
-              <PialangVerification complaintCase={c} view={v} actor={actor} onReject={() => setDialog("reject")} />
+              <PialangVerification complaintCase={c} actor={actor} onReject={() => setDialog("reject")} />
             ) : (
               <p className="text-muted">Menunggu keputusan Pialang ({c.platform}).</p>
             )}
@@ -270,12 +269,6 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
         {lc.pialangReview?.decision === "Disetujui" && (
           <p className="text-muted">
             Disetujui Pialang oleh {lc.pialangReview.by} pada {fmt(lc.pialangReview.at)}.
-          </p>
-        )}
-        {lc.legalProceeding && (
-          <p className="text-muted">
-            Diproses di pengadilan/kepolisian: <span className="font-medium text-foreground">{lc.legalProceeding.answer}</span>
-            {lc.legalProceeding.document && ` — ${lc.legalProceeding.document}`}
           </p>
         )}
 
@@ -389,38 +382,24 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
   );
 }
 
-function PialangVerification({ complaintCase: c, view, actor, onReject }: { complaintCase: ComplaintCase; view: LifecycleView; actor: Actor; onReject: () => void }) {
+function PialangVerification({ complaintCase: c, actor, onReject }: { complaintCase: ComplaintCase; actor: Actor; onReject: () => void }) {
   const { showToast } = useToast();
-  const answered = view.lc.legalProceeding;
-  const [answer, setAnswer] = React.useState<"Ya" | "Tidak" | "">(answered?.answer ?? "");
-  const [files, setFiles] = React.useState<string[]>(answered?.document ? [answered.document] : []);
-  const legalComplete = answer === "Tidak" || (answer === "Ya" && files.length > 0);
-
   return (
     <div className="space-y-2">
-      <div className="rounded-md border border-border bg-card p-2.5 space-y-1.5">
-        <p className="font-medium">Apakah sengketa telah diproses di pengadilan atau kepolisian?</p>
-        <div className="flex gap-3">
-          {(["Ya", "Tidak"] as const).map((o) => (
-            <label key={o} className="flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name={`legal-${c.ticket}`} checked={answer === o} onChange={() => setAnswer(o)} /> {o}
-            </label>
+      <div className="rounded-md border border-border bg-card p-2.5 space-y-1">
+        <p className="font-medium">Remark verifikasi (alasan baku penolakan)</p>
+        <ul className="list-disc pl-5 text-foreground/90">
+          {REJECT_REASONS.map((r) => (
+            <li key={r}>{r}</li>
           ))}
-        </div>
-        {answer === "Ya" && (
-          <div>
-            <p className="text-muted mb-1">Wajib unggah salinan Laporan Polisi (LP) atau tanda bukti registrasi perkara pengadilan.</p>
-            <FileUploader files={files} onChange={setFiles} multiple={false} maxFiles={1} accept=".pdf,.jpg,.jpeg,.png" label="Unggah salinan LP / registrasi perkara" />
-          </div>
-        )}
+        </ul>
+        <p className="text-muted">Komplain hanya dapat ditolak dengan salah satu remark di atas dan wajib melampirkan bukti PDF.</p>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button
           size="sm"
           variant="success"
-          disabled={!legalComplete}
           onClick={() => {
-            if (answer && answer !== answered?.answer) setLegalProceeding(c.ticket, actor, answer, answer === "Ya" ? files[0] : undefined);
             pialangApprove(c.ticket, actor);
             showToast("Komplain disetujui dan dilanjutkan ke tahap musyawarah.");
           }}
@@ -431,7 +410,6 @@ function PialangVerification({ complaintCase: c, view, actor, onReject }: { comp
           <X className="size-3.5" /> Tolak Komplain
         </Button>
       </div>
-      {!legalComplete && <p className="text-muted">Jawab pertanyaan verifikasi hukum sebelum menyetujui komplain.</p>}
     </div>
   );
 }

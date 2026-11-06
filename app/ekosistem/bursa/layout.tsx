@@ -5,7 +5,6 @@ const iconCls = "size-4 shrink-0";
 
 const sidebarItems: SidebarItem[] = [
   { label: "Pialang Monitoring", href: "/ekosistem/bursa/platform-monitoring", icon: <Building2 className={iconCls} /> },
-  { label: "Escalation Queue", href: "/ekosistem/bursa/escalation-queue", icon: <ArrowUpRight className={iconCls} /> },
   { label: "Supervisory Actions", href: "/ekosistem/bursa/supervisory-actions", icon: <ClipboardList className={iconCls} /> },
   { label: "Klarifikasi", href: "/ekosistem/bursa/klarifikasi", icon: <MessageCircle className={iconCls} /> },
   { label: "Reporting", href: "/ekosistem/bursa/reporting", icon: <FileBarChart className={iconCls} /> },

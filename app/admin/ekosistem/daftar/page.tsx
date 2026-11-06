@@ -143,7 +143,7 @@ export default function DaftarEkosistemPage() {
     <div>
       <PageHeader
         title="Daftar Ekosistem"
-        description="Registrasi dan daftar seluruh pelaku ekosistem (Ecosystem Aktif maupun Ecosystem Pengawas) beserta status pendaftarannya."
+        description="Registrasi dan daftar seluruh pelaku ekosistem (Ecosystem Aktif maupun Ecosystem Pasif) beserta status pendaftarannya."
         actions={
           <Button size="sm" onClick={openNew}>
             <Plus className="size-3.5" /> Daftar Baru
@@ -170,7 +170,7 @@ export default function DaftarEkosistemPage() {
           <Select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">Semua tipe</option>
             <option value="Ecosystem Aktif">Ecosystem Aktif</option>
-            <option value="Ecosystem Pengawas">Ecosystem Pengawas</option>
+            <option value="Ecosystem Pasif">Ecosystem Pasif</option>
           </Select>
         </div>
         <div className="w-48">

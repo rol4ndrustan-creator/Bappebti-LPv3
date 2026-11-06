@@ -149,7 +149,6 @@ const SPECS: Record<string, SeedSpec> = {
   "BPP-2026-000189": (ago) => ({
     submittedAt: ago(40),
     pialangReview: { decision: "Disetujui", by: "Tim Legal Rifan", institution: "PT Rifan Financindo Berjangka", at: ago(39) },
-    legalProceeding: { answer: "Ya", document: "Laporan Polisi LP-B-1234-VI-2026.pdf", by: "Tim Legal Rifan", institution: "PT Rifan Financindo Berjangka", at: ago(39) },
     musyawarahFailedAt: ago(12),
     arbitration: {
       institution: "BAKTI",

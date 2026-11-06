@@ -4,7 +4,6 @@ import { Landmark, FileSearch, FileCheck2, MessageCircle, FileBarChart } from "l
 const iconCls = "size-4 shrink-0";
 
 const sidebarItems: SidebarItem[] = [
-  { label: "Settlement Queue", href: "/ekosistem/kliring/settlement-queue", icon: <Landmark className={iconCls} /> },
   { label: "Reconciliation Review", href: "/ekosistem/kliring/reconciliation-review", icon: <FileSearch className={iconCls} /> },
   { label: "Settlement Evidence", href: "/ekosistem/kliring/settlement-evidence", icon: <FileCheck2 className={iconCls} /> },
   { label: "Klarifikasi", href: "/ekosistem/kliring/klarifikasi", icon: <MessageCircle className={iconCls} /> },

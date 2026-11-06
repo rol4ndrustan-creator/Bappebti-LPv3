@@ -8,6 +8,7 @@ import { WORKFLOW_STATES, deriveWorkflowState } from "./workflow-config";
 import { BURSA_LIST, KLIRING_LIST, PLATFORM_LIST } from "./mock-data";
 import { DEMO_USERS } from "./permissions";
 import {
+  addEvidence,
   addTimelineEvent,
   closeCase,
   reopenCase,
@@ -30,7 +31,7 @@ export type CaseActionId =
 
 export type ActionButtonTone = "primary" | "secondary" | "success" | "destructive" | "muted";
 
-export type ActionFieldType = "text" | "textarea" | "select" | "date";
+export type ActionFieldType = "text" | "textarea" | "select" | "date" | "pdf";
 
 export interface ActionFieldSpec {
   id: string;
@@ -71,13 +72,11 @@ const PIC_OPTION_GROUPS = [
   { label: "Kliring", options: KLIRING_LIST },
 ];
 
+/** Remark penolakan baku (List Revisi 14 #1) — sama dengan modal Tolak Komplain / Tolak Pengaduan. */
 export const CLOSE_ADMINISTRATIVE_REASONS = [
-  "Duplikat",
-  "Di luar kewenangan",
-  "Data tidak lengkap",
-  "Pelapor tidak merespons",
-  "Pengaduan tidak valid",
-  "Lainnya",
+  "Isu sudah selesai",
+  "Isu sedang aktif (sedang diproses)",
+  "Isu sudah masuk ke proses pengadilan / arbitrase",
 ];
 
 export const CASE_ACTIONS: Record<CaseActionId, CaseActionDefinition> = {
@@ -196,7 +195,8 @@ export const CASE_ACTIONS: Record<CaseActionId, CaseActionDefinition> = {
     body: () => "Pengaduan akan ditutup tanpa penyelesaian substantif.",
     impact: () => ({ status: "Ditutup Secara Administratif", owner: "-", sla: "Ditutup" }),
     fields: [
-      { id: "reasonCategory", label: "Alasan", type: "select", required: true, options: CLOSE_ADMINISTRATIVE_REASONS },
+      { id: "reasonCategory", label: "Alasan (remark baku)", type: "select", required: true, options: CLOSE_ADMINISTRATIVE_REASONS },
+      { id: "evidencePdf", label: "Dokumen bukti pendukung (PDF)", type: "pdf", required: true },
       { id: "note", label: "Catatan tambahan (opsional)", type: "textarea", required: false },
     ],
     confirmLabel: "Tutup Secara Administratif",
@@ -426,6 +426,7 @@ export function executeCaseAction(actionId: CaseActionId, { ticket, actor, value
       });
       break;
     case "close-administrative":
+      if (values.evidencePdf) addEvidence(ticket, [values.evidencePdf]);
       transitionTo(ticket, "CLOSED_ADMINISTRATIVE", {
         actor,
         role: "Bappebti",

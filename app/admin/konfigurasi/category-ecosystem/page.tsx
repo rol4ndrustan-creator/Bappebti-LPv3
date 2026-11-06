@@ -18,7 +18,7 @@ import { EcosystemType } from "@/lib/types";
 import { useToast } from "@/components/shared/toast-provider";
 import { Plus, Ban, CheckCircle2, Clock3 } from "lucide-react";
 
-const ECOSYSTEM_TYPES: EcosystemType[] = ["Ecosystem Aktif", "Ecosystem Pengawas"];
+const ECOSYSTEM_TYPES: EcosystemType[] = ["Ecosystem Aktif", "Ecosystem Pasif"];
 
 export default function CategoryEcosystemPage() {
   const categories = useEcosystemCategoryConfig(ECOSYSTEM_CATEGORY_CONFIG);
@@ -91,7 +91,7 @@ export default function CategoryEcosystemPage() {
     <div>
       <PageHeader
         title="Category Ecosystem"
-        description="Kelola kategori ekosistem yang tersedia saat mendaftarkan entitas baru pada Manajemen Ekosistem. Setiap kategori wajib terhubung ke salah satu Ecosystem Type (Aktif / Pengawas)."
+        description="Kelola kategori ekosistem yang tersedia saat mendaftarkan entitas baru pada Manajemen Ekosistem. Setiap kategori wajib terhubung ke salah satu Ecosystem Type (Aktif / Pasif)."
         actions={
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="size-3.5" /> Tambah Kategori

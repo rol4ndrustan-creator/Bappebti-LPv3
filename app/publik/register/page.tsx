@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { InstitutionLogos } from "@/components/publik/public-shell";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,15 +94,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-10">
+    <div className="flex flex-col items-center justify-center py-4 md:py-8">
       <div className="w-full max-w-2xl">
         <div className="flex flex-col items-center mb-6 gap-2">
-          <div className="flex size-10 items-center justify-center rounded-md bg-navy text-white text-base font-bold bg-linear-to-b from-white/20 to-transparent shadow-sm shadow-black/20">
-            B
-          </div>
+          <InstitutionLogos />
           <div className="text-center">
-            <p className="text-sm font-semibold text-navy">Layanan Pengaduan Bappebti</p>
-            <p className="text-[11px] text-muted">Pendaftaran Akun Publik</p>
+            <p className="text-base font-semibold text-navy">Layanan Pengaduan Bappebti</p>
+            <p className="text-xs text-muted">Pendaftaran Akun Publik</p>
           </div>
         </div>
 
