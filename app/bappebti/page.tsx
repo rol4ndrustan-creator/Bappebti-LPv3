@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { TicketLink } from "@/components/shared/ticket-link";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { KpiCard } from "@/components/shared/kpi-card";
@@ -266,8 +267,10 @@ function DashboardContent({ cases: CASES, toolbar }: { cases: ComplaintCase[]; t
               <TableBody>
                 {criticalQueue.map((c) => (
                   <TableRow key={c.ticket}>
-                    <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
-                    <TableCell className="max-w-[220px] truncate">{c.title}</TableCell>
+                    <TableCell><TicketLink ticket={c.ticket} href={`/bappebti/kasus/${c.ticket}`} /></TableCell>
+                    <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                     <TableCell className="text-muted">{c.platform}</TableCell>
                     <TableCell>
                       <SeverityBadge severity={c.severity} />
@@ -303,8 +306,10 @@ function DashboardContent({ cases: CASES, toolbar }: { cases: ComplaintCase[]; t
               <TableBody>
                 {overdueQueue.map((c) => (
                   <TableRow key={c.ticket}>
-                    <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
-                    <TableCell className="max-w-[220px] truncate">{c.title}</TableCell>
+                    <TableCell><TicketLink ticket={c.ticket} href={`/bappebti/kasus/${c.ticket}`} /></TableCell>
+                    <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                     <TableCell className="text-muted">{c.platform}</TableCell>
                     <TableCell>
                       <SlaBadge sla={c.slaStatus} />

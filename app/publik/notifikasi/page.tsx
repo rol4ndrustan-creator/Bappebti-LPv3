@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TicketLink } from "@/components/shared/ticket-link";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ export default function NotifikasiPage() {
           {items.map((n, i) => (
             <TableRow key={i}>
               <TableCell className="whitespace-nowrap text-muted">{n.time}</TableCell>
-              <TableCell className="whitespace-nowrap font-medium text-navy">{n.ticket}</TableCell>
+              <TableCell><TicketLink ticket={n.ticket} href={`/publik/pengaduan/${n.ticket}`} /></TableCell>
               <TableCell className="whitespace-nowrap">{n.type}</TableCell>
               <TableCell className="max-w-[360px]">{n.message}</TableCell>
               <TableCell>

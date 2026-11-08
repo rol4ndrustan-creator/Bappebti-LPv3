@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TicketLink } from "@/components/shared/ticket-link";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { SeverityBadge, StatusBadge, OwnerBadge, SlaBadge } from "@/components/shared/badges";
 import { ComplaintCase } from "@/lib/types";
@@ -29,11 +30,13 @@ export function CaseTable({ cases }: { cases: ComplaintCase[] }) {
       <TableBody>
         {cases.map((c) => (
           <TableRow key={c.ticket}>
-            <TableCell className="font-medium text-navy whitespace-nowrap">{c.ticket}</TableCell>
+            <TableCell><TicketLink ticket={c.ticket} href={`/bappebti/kasus/${c.ticket}`} /></TableCell>
               <TableCell>
                 <SourceBadge source={c.source} />
               </TableCell>
-            <TableCell className="max-w-[240px] truncate">{c.title}</TableCell>
+            <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
             <TableCell className="whitespace-nowrap">{c.reporterName}</TableCell>
             <TableCell className="text-muted whitespace-nowrap">{c.reporter?.verifiedEmail ?? "-"}</TableCell>
             <TableCell className="text-muted whitespace-nowrap">{c.platform}</TableCell>

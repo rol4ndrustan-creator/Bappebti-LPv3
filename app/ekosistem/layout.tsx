@@ -15,7 +15,7 @@ export default function EkosistemLayout({ children }: { children: React.ReactNod
 
   return (
     <RequireInternalAuth>
-      <div className="flex flex-1 min-h-0 flex-col" data-portal="ekosistem">
+      <div className="flex flex-1 min-h-0 min-w-0 flex-col" data-portal="ekosistem">
         <div className="border-b border-border bg-card px-4 py-2 flex items-center gap-2 overflow-x-auto scrollbar-thin">
           <span className="text-xs font-medium text-muted mr-2 shrink-0">AKUN EKOSISTEM &middot; PERAN:</span>
           {ROLES.map((r) => {
@@ -34,7 +34,7 @@ export default function EkosistemLayout({ children }: { children: React.ReactNod
             );
           })}
         </div>
-        <div className="flex flex-1 min-h-0">{children}</div>
+        <div className="flex flex-1 min-h-0 min-w-0">{children}</div>
       </div>
     </RequireInternalAuth>
   );

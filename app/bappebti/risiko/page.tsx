@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TicketLink } from "@/components/shared/ticket-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { SeverityBadge } from "@/components/shared/badges";
@@ -130,8 +131,10 @@ export default function PemantauanRisikoPage() {
             <TableBody>
               {highRiskCases.map((c) => (
                 <TableRow key={c.ticket}>
-                  <TableCell className="font-medium text-navy whitespace-nowrap">{c.ticket}</TableCell>
-                  <TableCell className="max-w-[240px] truncate">{c.title}</TableCell>
+                  <TableCell><TicketLink ticket={c.ticket} href={`/bappebti/kasus/${c.ticket}`} /></TableCell>
+                  <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                   <TableCell className="text-muted whitespace-nowrap">{c.platform}</TableCell>
                   <TableCell>
                     <SeverityBadge severity={c.severity} />

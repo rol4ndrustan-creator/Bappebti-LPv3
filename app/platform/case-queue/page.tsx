@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { TicketLink } from "@/components/shared/ticket-link";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { SimpleStatusBadge } from "@/components/shared/badges";
@@ -10,18 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { PicAssignPopover } from "@/components/shared/pic-assign-popover";
-import { MemberLinkCell } from "@/components/shared/member-link-cell";
-import { CASES, ECOSYSTEM_ENTITIES } from "@/lib/mock-data";
-import { LinkedEcosystemEntity } from "@/lib/types";
+import { MemberChips } from "@/components/shared/member-link-cell";
+import { CASES } from "@/lib/mock-data";
 import { useDemoSession } from "@/lib/demo-session";
-import { useCasesData, setPlatformPic, setLinkedEcosystemEntities } from "@/lib/mock-service/store";
+import { useCasesData, setPlatformPic } from "@/lib/mock-service/store";
 import { PLATFORM_STAFF } from "@/lib/permissions";
 import { Eye } from "lucide-react";
 import { SourceBadge } from "@/components/shared/source-badge";
 import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
 const UNASSIGNED = "Belum Ditugaskan";
-const ECOSYSTEM_CATEGORY_TYPE: Record<string, LinkedEcosystemEntity["type"]> = { Bursa: "Bursa", Kliring: "Kliring", Custody: "Custody" };
 
 export default function CaseQueuePage() {
   const { user } = useDemoSession();
@@ -41,15 +40,6 @@ export default function CaseQueuePage() {
     return matchesSearch && matchesPic;
   });
 
-  const ecosystemCandidates = useMemo(
-    () =>
-      ECOSYSTEM_ENTITIES.filter((e) => e.ecosystemType === "Ecosystem Aktif" && ECOSYSTEM_CATEGORY_TYPE[e.category]).map((e) => ({
-        id: e.id,
-        name: e.name,
-        type: ECOSYSTEM_CATEGORY_TYPE[e.category],
-      })),
-    []
-  );
 
   return (
     <div>
@@ -98,14 +88,14 @@ export default function CaseQueuePage() {
           {cases.map((c) => (
             <TableRow key={c.ticket}>
               <TableCell className="whitespace-nowrap">
-                <Link href={`/platform/kasus/${c.ticket}`} className="font-medium text-navy hover:underline">
-                  {c.ticket}
-                </Link>
+                <TicketLink ticket={c.ticket} href={`/platform/kasus/${c.ticket}`} />
               </TableCell>
               <TableCell>
                 <SourceBadge source={c.source} />
               </TableCell>
-              <TableCell className="max-w-[240px] truncate">{c.title}</TableCell>
+              <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
               <TableCell>
                 <PicAssignPopover
                   currentPic={c.platformPic}
@@ -114,12 +104,7 @@ export default function CaseQueuePage() {
                 />
               </TableCell>
               <TableCell>
-                <MemberLinkCell
-                  ticket={c.ticket}
-                  entities={c.linkedEcosystemEntities ?? []}
-                  candidateEntities={ecosystemCandidates}
-                  onSave={(ticket, entities) => setLinkedEcosystemEntities(ticket, entities)}
-                />
+<MemberChips entities={c.linkedEcosystemEntities} />
               </TableCell>
               <TableCell>
                 <TicketStatusBadge complaintCase={c} />

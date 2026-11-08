@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { TicketLink } from "@/components/shared/ticket-link";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Input } from "@/components/ui/input";
@@ -174,11 +175,13 @@ export default function PengaduanListPage() {
         <TableBody>
           {filtered.map((c) => (
             <TableRow key={c.ticket}>
-              <TableCell className="font-medium text-navy whitespace-nowrap">{c.ticket}</TableCell>
+              <TableCell><TicketLink ticket={c.ticket} href={`/publik/pengaduan/${c.ticket}`} /></TableCell>
               <TableCell>
                 <SourceBadge source={c.source} />
               </TableCell>
-              <TableCell className="max-w-xs">{c.title}</TableCell>
+              <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
               <TableCell className="whitespace-nowrap">{c.platform}</TableCell>
               <TableCell className="whitespace-nowrap">{c.category}</TableCell>
               <TableCell>

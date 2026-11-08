@@ -203,7 +203,7 @@ export function PortalShell({
   const fallbackActiveHref = useMemo(() => computeActiveHref(sidebarItems, pathname, null), [sidebarItems, pathname]);
 
   return (
-    <div className="flex flex-1 min-h-0" data-portal={portal}>
+    <div className="flex flex-1 min-h-0 min-w-0" data-portal={portal}>
       <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-card">
         <div className="px-4 py-3 border-b border-border">
           <p className="text-sm font-semibold text-navy">{title}</p>

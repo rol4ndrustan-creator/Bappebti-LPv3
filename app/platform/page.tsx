@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TicketLink } from "@/components/shared/ticket-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { StatusBadge, SlaBadge } from "@/components/shared/badges";
@@ -81,8 +82,10 @@ export default function PlatformDashboardPage() {
               <TableBody>
                 {actionQueue.map((c) => (
                   <TableRow key={c.ticket}>
-                    <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
-                    <TableCell className="max-w-[180px] truncate">{c.title}</TableCell>
+                    <TableCell><TicketLink ticket={c.ticket} href={`/platform/kasus/${c.ticket}`} /></TableCell>
+                    <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                     <TableCell><StatusBadge status={c.status} /></TableCell>
                     <TableCell className="text-muted">{actionNote(c.status)}</TableCell>
                   </TableRow>
@@ -109,8 +112,10 @@ export default function PlatformDashboardPage() {
               <TableBody>
                 {evidenceCases.map((c) => (
                   <TableRow key={c.ticket}>
-                    <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
-                    <TableCell className="max-w-[160px] truncate">{c.title}</TableCell>
+                    <TableCell><TicketLink ticket={c.ticket} href={`/platform/kasus/${c.ticket}`} /></TableCell>
+                    <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                     <TableCell className="text-muted">{c.evidences.length} berkas</TableCell>
                     <TableCell className="text-muted">
                       {c.clarifications.some((cl) => cl.role === "Pialang")
@@ -150,8 +155,10 @@ export default function PlatformDashboardPage() {
                 )}
                 {dueSoonCases.map((c) => (
                   <TableRow key={c.ticket}>
-                    <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
-                    <TableCell className="max-w-[160px] truncate">{c.title}</TableCell>
+                    <TableCell><TicketLink ticket={c.ticket} href={`/platform/kasus/${c.ticket}`} /></TableCell>
+                    <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                     <TableCell><SlaBadge sla={c.slaStatus} /></TableCell>
                     <TableCell className="text-muted">{c.slaDeadline}</TableCell>
                   </TableRow>
@@ -184,8 +191,10 @@ export default function PlatformDashboardPage() {
                 )}
                 {resolutionSummary.map((c) => (
                   <TableRow key={c.ticket}>
-                    <TableCell className="font-medium text-navy">{c.ticket}</TableCell>
-                    <TableCell className="max-w-[140px] truncate">{c.title}</TableCell>
+                    <TableCell><TicketLink ticket={c.ticket} href={`/platform/kasus/${c.ticket}`} /></TableCell>
+                    <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                     <TableCell className="text-muted max-w-[260px]">{c.resolutionProposal}</TableCell>
                   </TableRow>
                 ))}

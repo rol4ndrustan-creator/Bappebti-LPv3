@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { TicketLink } from "@/components/shared/ticket-link";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CASES } from "@/lib/mock-data";
@@ -49,9 +50,11 @@ export function LifecycleQueue({
       <TableBody>
         {rows.map(({ c, v }) => (
           <TableRow key={c.ticket}>
-            <TableCell className="font-medium text-navy whitespace-nowrap">{c.ticket}</TableCell>
-            <TableCell className="max-w-[240px]">
-              <p className="truncate">{c.title}</p>
+            <TableCell>
+              <TicketLink ticket={c.ticket} href={detailHref(c.ticket)} />
+            </TableCell>
+            <TableCell className="min-w-[220px] max-w-[300px]">
+              <p className="line-clamp-2" title={c.title}>{c.title}</p>
               <p className="text-[11px] text-muted">
                 {c.reporterName} · terbit {formatWIB(new Date(v!.lc.submittedAt)).slice(0, 10)}
               </p>

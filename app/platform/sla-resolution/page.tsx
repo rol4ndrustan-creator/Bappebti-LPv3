@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/shared/page-header";
+import { TicketLink } from "@/components/shared/ticket-link";
 import { StatusBadge, SlaBadge } from "@/components/shared/badges";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -180,8 +181,10 @@ export default function SlaResolutionPage() {
                 )}
                 {overdueCases.map((c) => (
                   <TableRow key={c.ticket} className="bg-red-bg/40">
-                    <TableCell className="font-medium text-red">{c.ticket}</TableCell>
-                    <TableCell className="max-w-[160px] truncate">{c.title}</TableCell>
+                    <TableCell><TicketLink ticket={c.ticket} href={`/platform/kasus/${c.ticket}`} className="text-red" /></TableCell>
+                    <TableCell className="min-w-[200px] max-w-[280px]">
+                <span className="line-clamp-2" title={c.title}>{c.title}</span>
+              </TableCell>
                     <TableCell><SlaBadge sla={c.slaStatus} /></TableCell>
                     <TableCell className="text-red">{c.slaDeadline}</TableCell>
                   </TableRow>
