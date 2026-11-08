@@ -11,7 +11,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 /** Logo instansi. File di public/images/logo/ adalah placeholder — ganti dengan logo resmi (nama file sama). */
 export function InstitutionLogos({ size = "md" }: { size?: "md" | "lg" }) {
-  const cls = size === "lg" ? "h-14 w-14" : "h-10 w-10";
+  const cls = size === "lg" ? "h-14 w-14" : "h-9 w-9 sm:h-11 sm:w-11";
   return (
     <span className="flex items-center gap-2 shrink-0">
       {/* eslint-disable-next-line @next/next/no-img-element -- aset statis ekspor; next/image tidak menambah basePath */}
@@ -48,16 +48,24 @@ export function PublicHeader({ onLogout }: { onLogout: () => void }) {
   const pathname = usePathname();
   const { isAuthenticated, account } = usePublikAuth();
   const [open, setOpen] = React.useState(false);
+  const [lastPath, setLastPath] = React.useState(pathname);
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
+    setOpen(false);
+  }
 
   return (
-    <header className="bg-white border-b border-border">
-      <div className="max-w-6xl mx-auto px-4 md:px-6 h-20 flex items-center gap-4">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-h-16 sm:min-h-20 py-2.5 flex items-center gap-3 sm:gap-4">
         <Link href="/publik" className="flex items-center gap-3 min-w-0">
           <InstitutionLogos />
           <span className="leading-tight min-w-0">
-            <span className="block text-[11px] font-medium uppercase tracking-wider text-muted">Kementerian Perdagangan Republik Indonesia</span>
-            <span className="block text-sm md:text-base font-bold text-navy truncate">Badan Pengawas Perdagangan Berjangka Komoditi</span>
-            <span className="block text-xs text-foreground/70">Layanan Pengaduan Nasabah</span>
+            <span className="hidden sm:block text-[11px] font-medium uppercase tracking-wider text-slate-500">Kementerian Perdagangan Republik Indonesia</span>
+            <span className="block text-[13px] sm:text-base font-bold leading-snug text-navy">
+              <span className="sm:hidden">Bappebti</span>
+              <span className="hidden sm:inline">Badan Pengawas Perdagangan Berjangka Komoditi</span>
+            </span>
+            <span className="block text-xs text-slate-600">Layanan Pengaduan Nasabah</span>
           </span>
         </Link>
 
@@ -67,8 +75,8 @@ export function PublicHeader({ onLogout }: { onLogout: () => void }) {
               key={n.href}
               href={n.href}
               className={cn(
-                "px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                isActive(pathname, n.href) ? "text-navy bg-navy/5" : "text-foreground/80 hover:text-navy hover:bg-muted-bg"
+                "px-3 py-2 text-[15px] font-medium rounded-lg transition-colors",
+                isActive(pathname, n.href) ? "text-navy bg-navy/5" : "text-slate-700 hover:text-navy hover:bg-slate-50"
               )}
             >
               {n.label}
@@ -86,39 +94,39 @@ export function PublicHeader({ onLogout }: { onLogout: () => void }) {
             </>
           ) : (
             <>
-              <Link href="/publik/masuk" className="px-4 py-2 text-sm font-semibold text-navy border border-navy rounded-md hover:bg-navy/5">
+              <Link href="/publik/masuk" className="px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-300 rounded-lg bg-white shadow-sm hover:bg-slate-50">
                 Masuk
               </Link>
-              <Link href="/publik/register" className="px-4 py-2 text-sm font-semibold text-white bg-navy rounded-md hover:bg-navy-dark">
+              <Link href="/publik/register" className="px-4 py-2 text-sm font-semibold text-white bg-navy rounded-lg shadow-sm hover:bg-navy-dark">
                 Daftar
               </Link>
             </>
           )}
         </nav>
 
-        <button type="button" className="lg:hidden ml-auto rounded-md p-2 text-foreground hover:bg-muted-bg" aria-label="Buka menu" onClick={() => setOpen(!open)}>
+        <button type="button" className="lg:hidden ml-auto rounded-md p-2 text-foreground hover:bg-muted-bg" aria-label="Buka menu" aria-expanded={open} onClick={() => setOpen(!open)}>
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
       </div>
 
       {open && (
-        <nav className="lg:hidden border-t border-border px-4 py-3 flex flex-col gap-1" aria-label="Navigasi utama (seluler)">
+        <nav className="lg:hidden border-t border-slate-200 bg-white px-4 sm:px-6 py-3 flex flex-col gap-1" aria-label="Navigasi utama (seluler)">
           {PUBLIC_NAV.map((n) => (
-            <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className={cn("px-3 py-2 rounded-md text-sm font-medium", isActive(pathname, n.href) ? "bg-navy/5 text-navy" : "text-foreground")}>
+            <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className={cn("px-3 py-2.5 rounded-lg text-[15px] font-medium", isActive(pathname, n.href) ? "bg-navy/5 text-navy" : "text-slate-700")}>
               {n.label}
             </Link>
           ))}
           <div className="flex gap-2 pt-2">
             {isAuthenticated ? (
-              <button type="button" onClick={onLogout} className="flex-1 rounded-md border border-border px-3 py-2 text-sm">
+              <button type="button" onClick={onLogout} className="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm font-semibold text-slate-700">
                 Keluar
               </button>
             ) : (
               <>
-                <Link href="/publik/masuk" className="flex-1 text-center rounded-md border border-navy px-3 py-2 text-sm font-semibold text-navy">
+                <Link href="/publik/masuk" className="flex-1 text-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">
                   Masuk
                 </Link>
-                <Link href="/publik/register" className="flex-1 text-center rounded-md bg-navy px-3 py-2 text-sm font-semibold text-white">
+                <Link href="/publik/register" className="flex-1 text-center rounded-lg bg-navy px-3 py-2.5 text-sm font-semibold text-white">
                   Daftar
                 </Link>
               </>
@@ -135,7 +143,7 @@ export function PublicAccountNav() {
   const pathname = usePathname();
   return (
     <div className="bg-navy">
-      <nav className="max-w-6xl mx-auto px-4 md:px-6 flex gap-1 overflow-x-auto scrollbar-thin" aria-label="Menu akun">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex gap-1 overflow-x-auto scrollbar-thin" aria-label="Menu akun">
         {ACCOUNT_NAV.map((n) => {
           const Icon = n.icon;
           const active = isActive(pathname, n.href);
@@ -159,11 +167,11 @@ export function PublicAccountNav() {
 
 export function PublicFooter() {
   return (
-    <footer className="bg-navy-dark text-white/85 mt-auto">
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
-        <div className="md:col-span-2 space-y-3">
+    <footer className="bg-[#064e3b] text-emerald-50/85 mt-auto">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
+        <div className="sm:col-span-2 space-y-3">
           <div className="flex items-center gap-3">
-            <span className="rounded-md bg-white p-1">
+            <span className="shrink-0 rounded-lg bg-white p-1">
               <InstitutionLogos />
             </span>
             <span className="leading-tight">
@@ -171,14 +179,14 @@ export function PublicFooter() {
               <span className="block text-xs text-white/70">Kementerian Perdagangan Republik Indonesia</span>
             </span>
           </div>
-          <p className="text-xs leading-relaxed text-white/70 max-w-md">
+          <p className="text-sm leading-relaxed text-white/75 max-w-md">
             Layanan pengaduan nasabah Perdagangan Berjangka Komoditi: verifikasi oleh Pialang Berjangka, musyawarah, mediasi Bursa, hingga penyelesaian melalui
             arbitrase BAKTI atau pengadilan.
           </p>
         </div>
         <div>
           <p className="font-semibold text-white mb-2">Layanan</p>
-          <ul className="space-y-1.5 text-xs">
+          <ul className="space-y-2 text-sm">
             <li><Link href="/publik/login" className="hover:text-white">Buat Pengaduan</Link></li>
             <li><Link href="/publik/cek-pengaduan" className="hover:text-white">Cek Status Pengaduan</Link></li>
             <li><Link href="/publik/alur-penyelesaian" className="hover:text-white">Alur Layanan</Link></li>
@@ -186,7 +194,7 @@ export function PublicFooter() {
         </div>
         <div>
           <p className="font-semibold text-white mb-2">Bantuan</p>
-          <ul className="space-y-1.5 text-xs">
+          <ul className="space-y-2 text-sm">
             <li><Link href="/publik/bantuan" className="hover:text-white">Pertanyaan Umum (FAQ)</Link></li>
             <li><Link href="/publik/bantuan#kontak" className="hover:text-white">Kontak Layanan</Link></li>
             <li><Link href="/publik/register" className="hover:text-white">Daftar Akun Pelapor</Link></li>
@@ -194,7 +202,7 @@ export function PublicFooter() {
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 text-[11px] text-white/60 flex flex-wrap justify-between gap-2">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 text-xs text-white/60 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between gap-2">
           <span>© {2026} Badan Pengawas Perdagangan Berjangka Komoditi. Hak cipta dilindungi.</span>
           <span>Prototipe layanan pengaduan — data yang ditampilkan adalah data simulasi.</span>
         </div>

@@ -42,13 +42,28 @@
    where it's declared, and that resolved value is what inherits down —
    redeclaring --accent deeper in the tree does not make an already-
    inherited --navy re-resolve against it. */
+/* Revisi 15: Portal Publik design system — Primary Emerald (#0D5C3A /
+   #064E3B), Accent Amber, Neutral Slate, Border Slate-200, Plus Jakarta Sans. */
 [data-portal="publik"] {
-  --accent: #3f9142;
-  --accent-dark: #2d6b30;
-  --accent-light: #5cb75f;
+  --accent: #0d5c3a;
+  --accent-dark: #064e3b;
+  --accent-light: #15803d;
   --navy: var(--accent);
   --navy-dark: var(--accent-dark);
   --navy-light: var(--accent-light);
+  --foreground: #0f172a;
+  --background: #f8fafc;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --muted-bg: #f1f5f9;
+  --amber: #d97706;
+  --amber-bg: #fef3c7;
+  color: var(--foreground);
+  font-family: var(--font-jakarta), var(--font-sans), Arial, Helvetica, sans-serif;
+  font-size: 15px;
+}
+[data-portal="publik"] * {
+  border-color: var(--border);
 }
 [data-portal="platform"] {
   --accent: #7a1f2b;

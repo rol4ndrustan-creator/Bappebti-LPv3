@@ -25,7 +25,7 @@ export function TopNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-navy text-white">
-      <div className="flex h-14 items-center gap-4 px-4">
+      <div className="flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
         <Link href="/publik" className="flex items-center gap-2 shrink-0">
           <span className="flex h-8 w-8 items-center justify-center rounded-md border border-white/40 bg-navy-dark bg-linear-to-b from-white/20 to-transparent shadow-sm shadow-black/40 text-base font-bold">
             B
@@ -62,7 +62,7 @@ export function TopNav() {
           </select>
         </div>
 
-        <div className="ml-auto shrink-0 flex items-center gap-2">
+        <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
           <InternalAuthIndicator />
           <ResetDemoDataButton />
           <DemoRoleSwitcher />

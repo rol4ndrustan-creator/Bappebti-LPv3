@@ -42,7 +42,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
   const isLanding = pathname === "/publik";
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col bg-[#f6f8fb] overflow-y-auto" data-portal="publik">
+    <div className="flex flex-1 min-h-0 flex-col bg-background overflow-y-auto" data-portal="publik">
       <PublicHeader onLogout={handleLogout} />
       {isAuthenticated && requiresAuth && <PublicAccountNav />}
       {blocked ? (
@@ -50,7 +50,7 @@ export default function PublikLayout({ children }: { children: React.ReactNode }
       ) : isLanding ? (
         <main className="flex-1">{children}</main>
       ) : (
-        <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">{children}</main>
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
       )}
       <PublicFooter />
     </div>

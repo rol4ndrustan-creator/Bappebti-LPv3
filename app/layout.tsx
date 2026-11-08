@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { TopNav } from "@/components/layout/top-nav";
 import { ToastProvider } from "@/components/shared/toast-provider";
@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Layanan Pengaduan Bappebti",
   description: "Demo pialang pengaduan terintegrasi Bappebti - PT Capio Teknologi Indonesia",
@@ -30,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <DemoSessionProvider>
