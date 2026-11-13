@@ -35,7 +35,8 @@ export const MENU_TREE: MenuTreeItem[] = [
       { key: "pengaduan.triase", label: "Triase Pengaduan", href: "/bappebti/pengaduan/triase", iconName: "" },
       { key: "pengaduan.ditolak-pialang", label: "Verifikasi Ditolak Pialang", href: "/bappebti/pengaduan/ditolak-pialang", iconName: "" },
       { key: "pengaduan.bappebti", label: "Penanganan Bappebti", href: "/bappebti/pengaduan/penanganan-bappebti", iconName: "" },
-      { key: "pengaduan.tanpa-platform", label: "Tanpa Pialang User ID", href: "/bappebti/pengaduan/tanpa-platform", iconName: "" },
+      // Revisi 17: "Tanpa Pialang User ID" disembunyikan — tiket tanpa Pialang /
+      // Pialang User ID ditangani satu pintu lewat Triase Pengaduan.
       { key: "pengaduan.menunggu-konfirmasi", label: "Menunggu Konfirmasi Pelapor", href: "/bappebti/pengaduan/menunggu-konfirmasi", iconName: "" },
       { key: "pengaduan.selesai-otomatis", label: "Ditutup Otomatis", href: "/bappebti/pengaduan/selesai-otomatis", iconName: "" },
     ],

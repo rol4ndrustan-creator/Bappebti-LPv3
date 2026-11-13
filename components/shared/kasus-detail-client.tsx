@@ -21,13 +21,13 @@ import { EscalationBanner } from "@/components/shared/escalation-banner";
 import { ClarificationThread } from "@/components/shared/clarification-thread";
 import { EvidenceList } from "@/components/shared/evidence-list";
 import { FileUploader } from "@/components/shared/file-uploader";
-import { TicketLifecyclePanel, ResolutionOffersSection } from "@/components/shared/ticket-lifecycle";
+import { TicketLifecycleControls, ResolutionOffersSection } from "@/components/shared/ticket-lifecycle";
 import { CaseActionDialog, TONE_TO_BUTTON_VARIANT } from "@/components/shared/case-action-dialog";
 import { useActingParty } from "@/lib/use-acting-party";
 import { DownloadCaseButton } from "@/components/shared/download-case-button";
 import { MusyawarahTab } from "@/components/shared/musyawarah";
 import { ChronologyBlock, ReportedPartyValue } from "@/components/shared/case-identity";
-import { MemberAssignmentPanel } from "@/components/shared/member-assignment-panel";
+import { useMemberAssignment } from "@/components/shared/member-assignment-panel";
 import { logAudit } from "@/lib/mock-service/audit-store";
 import { useToast } from "@/components/shared/toast-provider";
 import { useDemoSession } from "@/lib/demo-session";
@@ -93,6 +93,8 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   const [taskPriority, setTaskPriority] = useState<TaskPriority>("Sedang");
   const [taskDueDate, setTaskDueDate] = useState("");
   const [deletingTask, setDeletingTask] = useState<CaseTask | null>(null);
+  const memberGroup = getViewerGroup(user.role);
+  const memberAssignment = useMemberAssignment(c, memberGroup === "Bappebti" || memberGroup === "Pialang");
 
   if (!c) {
     return (
@@ -216,25 +218,24 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
   const canEscalateToBappebti =
     (viewerGroup === "Pialang" || viewerGroup === "EkosistemActive") && c.currentOwner !== "Bappebti" && c.status !== "Selesai";
 
-  const bannerActions = (
+  // Revisi 17 #2: aksi sekunder banner. Tombol "Tugaskan / Alihkan Penanggung
+  // Jawab" dihapus; penugasan Pialang cukup lewat satu pintu triase.
+  const secondaryActions = (
     <>
+      {memberAssignment.trigger}
       {isBappebti && (
-        <>
-          <Button size="sm" variant="outline" onClick={() => setActiveAction("assign-to-member")}>
-            Tugaskan / Alihkan Penanggung Jawab
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setActiveAction("close-administrative")}>
-            Tutup Secara Administratif
-          </Button>
-        </>
+        <Button size="sm" variant="ghost" className="text-foreground/70" onClick={() => setActiveAction("close-administrative")}>
+          Tutup Secara Administratif
+        </Button>
       )}
       {canEscalateToBappebti && (
-        <Button size="sm" variant="outline" onClick={() => setEscalating(true)}>
+        <Button size="sm" variant="ghost" onClick={() => setEscalating(true)}>
           Eskalasi ke Bappebti
         </Button>
       )}
     </>
   );
+  const hasSecondary = !!memberAssignment.trigger || isBappebti || canEscalateToBappebti;
 
   return (
     <div>
@@ -286,16 +287,29 @@ export default function KasusDetailClient({ ticket }: { ticket: string }) {
         <EscalationBanner complaintCase={c} />
       </div>
 
+      {/* Revisi 17 #2: satu banner ringkas — kartu "Siklus Tiket" dan "Anggota Pasar yang Dilibatkan" dilebur ke sini. */}
       <div className="mb-4">
-        <CaseStatusExplanation complaintCase={c} viewer="internal" actions={isInternal ? bannerActions : undefined} />
-      </div>
-
-      <div className="mb-4">
-        <TicketLifecyclePanel complaintCase={c} viewerGroup={viewerGroup} />
-      </div>
-
-      <div className="mb-4">
-        <MemberAssignmentPanel complaintCase={c} editable={isBappebti || isPlatform} />
+        <TicketLifecycleControls complaintCase={c} viewerGroup={viewerGroup}>
+          {(lc) => (
+            <CaseStatusExplanation
+              complaintCase={c}
+              viewer="internal"
+              facts={
+                <>
+                  {lc?.facts}
+                  <div className="sm:col-span-2">
+                    <dt className="text-muted">Anggota pasar yang dilibatkan</dt>
+                    <dd className="mt-0.5 font-medium text-foreground">{memberAssignment.list}</dd>
+                  </div>
+                </>
+              }
+              notes={lc?.notes}
+              primary={lc?.primary}
+              secondary={isInternal && hasSecondary ? secondaryActions : undefined}
+            />
+          )}
+        </TicketLifecycleControls>
+        {memberAssignment.dialogs}
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>

@@ -82,10 +82,33 @@ export function SlaCountdown({ view }: { view: LifecycleView }) {
 }
 
 // ---------------------------------------------------------------------------
-// Panel "Siklus Tiket" pada detail pengaduan internal
+// Kontrol siklus tiket pada detail pengaduan internal.
+// Revisi 17 #2: kartu "Siklus Tiket" tidak lagi dirender terpisah. Fakta
+// (tiket terbit, pihak terlapor, tanggal kejadian), catatan status, dan aksi
+// utamanya dikembalikan sebagai potongan yang ditata oleh banner status
+// (CaseStatusExplanation), sehingga halaman detail cukup satu kartu ringkas.
 // ---------------------------------------------------------------------------
 
-export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { complaintCase: ComplaintCase; viewerGroup: ViewerGroup }) {
+export interface LifecycleControlParts {
+  /** Butir <div><dt/><dd/></div> untuk grid fakta banner. */
+  facts: React.ReactNode;
+  /** Catatan kontekstual sesuai status (hasil triase, penolakan, mediasi, dst.). */
+  notes: React.ReactNode;
+  /** Form & tombol aksi utama (assign Pialang, perbaikan berkas, tolak, verifikasi Pialang, review Bappebti, hasil mediasi). */
+  primary: React.ReactNode;
+}
+
+const noteCls = "rounded-md border border-border bg-white/70 px-3 py-2";
+
+export function TicketLifecycleControls({
+  complaintCase: c,
+  viewerGroup,
+  children,
+}: {
+  complaintCase: ComplaintCase;
+  viewerGroup: ViewerGroup;
+  children: (parts: LifecycleControlParts | null) => React.ReactNode;
+}) {
   const v = useLifecycleView(c);
   const params = useBusinessParams();
   const actor = useLifecycleActor(c);
@@ -93,7 +116,7 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
   const [dialog, setDialog] = React.useState<null | "reject" | "bappebti-reject" | "edit-date" | "return" | "approve-reject" | "revision" | "mediation">(null);
   const [assignTo, setAssignTo] = React.useState("");
 
-  if (!v) return <div className="h-24 rounded-lg border border-border bg-card animate-pulse" />;
+  if (!v) return <>{children(null)}</>;
   const { lc, status } = v;
   const isPlatform = viewerGroup === "Pialang";
   const isBappebti = viewerGroup === "Bappebti";
@@ -101,232 +124,233 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
   const isBursa = viewerGroup === "EkosistemActive";
   const canPreReview = status === "Triase Bappebti" || status === "Menunggu Verifikasi Pialang";
 
-  return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="flex items-center gap-2">
-          <Scale className="size-4" /> Siklus Tiket
-        </CardTitle>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={TICKET_STATUS_TONE[status]}>{status.toUpperCase()}</Badge>
-          <SlaCountdown view={v} />
-        </div>
-      </CardHeader>
-      <CardContent className="py-3 space-y-3 text-xs">
-        <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <dt className="text-muted">Tiket terbit</dt>
-            <dd className="font-medium">{fmt(lc.submittedAt)}</dd>
-          </div>
-          <div>
-            <dt className="text-muted">Pihak terlapor</dt>
-            <dd className="font-medium">
-              {c.platform || "Belum diketahui (triase Bappebti)"}
-              {lc.respondent && c.platform && (
-                <span className="block text-muted font-normal">
-                  {lc.respondent.name} — {lc.respondent.position}
-                </span>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted">Tanggal Kejadian</dt>
-            <dd className="font-medium flex items-center gap-1.5">
-              {lc.incidentDate ?? "-"}
-              {canEditDate && (
-                <button title="Koreksi tanggal kejadian" onClick={() => setDialog("edit-date")} className="rounded p-0.5 text-muted hover:bg-muted-bg hover:text-navy">
-                  <Pencil className="size-3.5" />
-                </button>
-              )}
-            </dd>
-            {v.expired && <dd className="text-red mt-0.5">Melewati batas kedaluwarsa perkara ({params.kedaluwarsaDays} hari).</dd>}
-          </div>
-        </dl>
-
+  const facts = (
+    <>
+      <div>
+        <dt className="text-muted">Pihak terlapor</dt>
+        <dd className="font-medium text-foreground">
+          {c.platform || "Belum diketahui (triase Bappebti)"}
+          {lc.respondent && c.platform && (
+            <span className="block font-normal text-muted">
+              {lc.respondent.name} — {lc.respondent.position}
+            </span>
+          )}
+        </dd>
+      </div>
+      <div>
+        <dt className="text-muted">Tanggal kejadian</dt>
+        <dd className="font-medium text-foreground flex items-center gap-1">
+          <span className="tabular-nums">{lc.incidentDate ?? "-"}</span>
+          {canEditDate && (
+            <button
+              type="button"
+              title="Koreksi tanggal kejadian"
+              aria-label="Koreksi tanggal kejadian"
+              onClick={() => setDialog("edit-date")}
+              className="rounded p-1 text-muted hover:bg-amber/10 hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30"
+            >
+              <Pencil className="size-3.5" />
+            </button>
+          )}
+        </dd>
+        {v.expired && <dd className="text-red mt-0.5">Melewati batas kedaluwarsa perkara ({params.kedaluwarsaDays} hari).</dd>}
         {lc.incidentDateLog.length > 0 && (
-          <div className="rounded-md border border-border p-2">
-            <p className="font-semibold mb-1">Riwayat Koreksi Tanggal Kejadian</p>
-            <ul className="space-y-0.5">
-              {lc.incidentDateLog.map((l, i) => (
-                <li key={i}>
-                  {fmt(l.at)} — <span className="font-medium">{l.by}</span> ({l.institution}): {l.before || "-"} → {l.after}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <dd className="mt-0.5">
+            <details className="group">
+              <summary className="cursor-pointer text-muted hover:text-navy">Riwayat koreksi ({lc.incidentDateLog.length})</summary>
+              <ul className="mt-1 space-y-0.5 text-muted">
+                {lc.incidentDateLog.map((l, i) => (
+                  <li key={i}>
+                    {fmt(l.at)} — <span className="font-medium text-foreground">{l.by}</span> ({l.institution}): {l.before || "-"} → {l.after}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </dd>
         )}
+      </div>
+      <div>
+        <dt className="text-muted">Tiket terbit</dt>
+        <dd className="font-medium text-foreground tabular-nums">{fmt(lc.submittedAt)}</dd>
+      </div>
+    </>
+  );
 
-        {/* Revisi 13 #6: triase Bappebti bila pelapor belum mengetahui nama Pialang */}
-        {status === "Triase Bappebti" && (
-          <div className="rounded-md border border-navy/30 bg-navy/5 p-3 space-y-2">
-            <p className="font-semibold text-navy">Triase Bappebti — Pialang belum diketahui pelapor</p>
-            {isBappebti ? (
-              <div className="flex flex-wrap items-end gap-2">
-                <div className="w-72">
-                  <Label className="text-[11px]">Teruskan ke Pialang</Label>
-                  <Select value={assignTo} onChange={(e) => setAssignTo(e.target.value)}>
-                    <option value="">Pilih Pialang hasil analisis...</option>
-                    {PLATFORM_LIST.filter((p) => p !== "Tidak tahu / belum terdaftar").map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                <Button
-                  size="sm"
-                  disabled={!assignTo}
-                  onClick={() => {
-                    assignPialangFromTriage(c.ticket, actor, assignTo);
-                    showToast(`Pengaduan diteruskan ke ${assignTo} untuk verifikasi.`);
-                    setAssignTo("");
-                  }}
-                >
-                  Assign ke Pialang
-                </Button>
-              </div>
-            ) : (
-              <p className="text-muted">Menunggu analisis dan penugasan oleh Bappebti.</p>
-            )}
-          </div>
-        )}
-        {lc.triage?.assignedPialang && (
+  const notes = (
+    <>
+      {status === "Triase Bappebti" && !isBappebti && <p className={noteCls}>Triase Bappebti: pelapor belum mengetahui Pialang. Menunggu analisis dan penugasan oleh Bappebti.</p>}
+      {lc.triage?.assignedPialang && (
+        <p className="text-muted">
+          Hasil triase: diteruskan ke <span className="font-medium text-foreground">{lc.triage.assignedPialang}</span> oleh {lc.triage.by}, {fmt(lc.triage.at)}.
+        </p>
+      )}
+
+      {lc.revisionRequest && (
+        <div className={noteCls}>
+          <p className="font-semibold text-foreground">Permintaan perbaikan berkas</p>
+          <p>{lc.revisionRequest.note}</p>
           <p className="text-muted">
-            Hasil triase: diteruskan ke {lc.triage.assignedPialang} oleh {lc.triage.by} pada {fmt(lc.triage.at)}.
+            Diminta {lc.revisionRequest.by} ({lc.revisionRequest.institution}), {fmt(lc.revisionRequest.at)}
+            {lc.revisionRequest.resolvedAt ? ` · Perbaikan diterima ${fmt(lc.revisionRequest.resolvedAt)}: ${lc.revisionRequest.response ?? ""}` : " · Menunggu perbaikan nasabah"}
           </p>
-        )}
+        </div>
+      )}
+      {lc.bappebtiRejection && (
+        <p className="rounded-md border border-red/20 bg-red-bg px-3 py-2 text-red">
+          Ditolak Bappebti — {lc.bappebtiRejection.reason}. Bukti: {lc.bappebtiRejection.document}
+          {lc.bappebtiRejection.note && `. ${lc.bappebtiRejection.note}`} ({lc.bappebtiRejection.by}, {fmt(lc.bappebtiRejection.at)})
+        </p>
+      )}
 
-        {/* Revisi 13 #8: perbaikan berkas (Need Revision) */}
-        {lc.revisionRequest && (
-          <div className={cn("rounded-md border p-3 space-y-1", status === "Perlu Perbaikan Berkas" ? "border-amber/40 bg-amber-bg/40" : "border-border")}>
-            <p className="font-semibold">Permintaan Perbaikan Berkas</p>
-            <p>{lc.revisionRequest.note}</p>
-            <p className="text-muted">
-              Diminta {lc.revisionRequest.by} ({lc.revisionRequest.institution}), {fmt(lc.revisionRequest.at)}
-              {lc.revisionRequest.resolvedAt ? ` · Perbaikan diterima ${fmt(lc.revisionRequest.resolvedAt)}: ${lc.revisionRequest.response ?? ""}` : " · Menunggu perbaikan nasabah"}
-            </p>
-          </div>
-        )}
-        {(isPlatform || isBappebti) && canPreReview && (
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => setDialog("revision")}>
-              Minta Perbaikan Berkas
-            </Button>
-            {isBappebti && (
-              <Button size="sm" variant="destructive" onClick={() => setDialog("bappebti-reject")}>
-                <X className="size-3.5" /> Tolak Pengaduan
-              </Button>
-            )}
-          </div>
-        )}
-        {lc.bappebtiRejection && (
-          <p className="rounded px-2 py-1.5 bg-red-bg text-red">
-            Ditolak Bappebti — {lc.bappebtiRejection.reason}. Bukti: {lc.bappebtiRejection.document}
-            {lc.bappebtiRejection.note && `. ${lc.bappebtiRejection.note}`} ({lc.bappebtiRejection.by}, {fmt(lc.bappebtiRejection.at)})
-          </p>
-        )}
-
-        {/* Revisi 13 #8: mediasi Bursa */}
-        {lc.mediation && (
-          <div className={cn("rounded-md border p-3 space-y-1.5", status === "Proses Mediasi Bursa" ? "border-amber/40 bg-amber-bg/40" : "border-border")}>
-            <p className="font-semibold">Mediasi Bursa — {lc.mediation.bursa}</p>
-            <p className="text-muted">Dimulai {fmt(lc.mediation.at)} oleh {lc.mediation.by}.</p>
-            {lc.mediation.outcome ? (
-              <p>
-                Hasil: <span className="font-semibold">{lc.mediation.outcome}</span>
-                {lc.mediation.note && ` — ${lc.mediation.note}`} ({fmt(lc.mediation.endedAt)})
-              </p>
-            ) : isBursa || isBappebti ? (
-              <Button size="sm" onClick={() => setDialog("mediation")}>
-                Catat Hasil Mediasi
-              </Button>
-            ) : (
-              <p className="text-muted">Menunggu hasil mediasi dari Bursa.</p>
-            )}
-          </div>
-        )}
-
-        {/* #3 Verifikasi komplain baru oleh Pialang */}
-        {status === "Menunggu Verifikasi Pialang" && (
-          <div className="rounded-md border border-navy/30 bg-navy/5 p-3 space-y-2">
-            <p className="font-semibold text-navy">Verifikasi Komplain Baru oleh Pialang</p>
+      {lc.mediation && (
+        <div className={noteCls}>
+          <p className="font-semibold text-foreground">Mediasi Bursa — {lc.mediation.bursa}</p>
+          <p className="text-muted">Dimulai {fmt(lc.mediation.at)} oleh {lc.mediation.by}.</p>
+          {lc.mediation.outcome ? (
             <p>
-              Batas review Pialang: <span className="font-medium">{fmt(v.pialangDeadline.toISOString())}</span> ({params.slaReviewPialangBusinessDays} hari kerja). Jika
-              terlewati, komplain otomatis disetujui dan lanjut ke musyawarah.
+              Hasil: <span className="font-semibold">{lc.mediation.outcome}</span>
+              {lc.mediation.note && ` — ${lc.mediation.note}`} ({fmt(lc.mediation.endedAt)})
             </p>
-            {isPlatform ? (
-              <PialangVerification complaintCase={c} actor={actor} onReject={() => setDialog("reject")} />
-            ) : (
-              <p className="text-muted">Menunggu keputusan Pialang ({c.platform}).</p>
-            )}
-          </div>
-        )}
-        {v.autoApproved && (
-          <p className="rounded-md bg-green-bg/60 px-2 py-1.5">
-            Komplain <span className="font-semibold">disetujui otomatis</span> karena SLA Review Pialang ({params.slaReviewPialangBusinessDays} hari kerja) terlewati.
+          ) : (
+            !(isBursa || isBappebti) && <p className="text-muted">Menunggu hasil mediasi dari Bursa.</p>
+          )}
+        </div>
+      )}
+
+      {status === "Menunggu Verifikasi Pialang" && (
+        <div className={noteCls}>
+          <p className="font-semibold text-foreground">Verifikasi komplain baru oleh Pialang</p>
+          <p>
+            Batas review Pialang: <span className="font-medium tabular-nums">{fmt(v.pialangDeadline.toISOString())}</span> ({params.slaReviewPialangBusinessDays} hari
+            kerja). Jika terlewati, komplain otomatis disetujui dan lanjut ke musyawarah.
           </p>
-        )}
-        {lc.pialangReview?.decision === "Disetujui" && (
+          {!isPlatform && <p className="text-muted">Menunggu keputusan Pialang ({c.platform}).</p>}
+        </div>
+      )}
+      {v.autoApproved && (
+        <p className="rounded-md border border-green/20 bg-green-bg/60 px-3 py-2">
+          Komplain <span className="font-semibold">disetujui otomatis</span> karena SLA Review Pialang ({params.slaReviewPialangBusinessDays} hari kerja) terlewati.
+        </p>
+      )}
+      {lc.pialangReview?.decision === "Disetujui" && (
+        <p className="text-muted">
+          Disetujui Pialang oleh {lc.pialangReview.by}, {fmt(lc.pialangReview.at)}.
+        </p>
+      )}
+
+      {lc.pialangReview?.decision === "Ditolak" && (
+        <div className={noteCls}>
+          <p className="font-semibold text-foreground">Pengajuan reject oleh Pialang</p>
+          <p>
+            Alasan: <span className="font-medium">{lc.pialangReview.reason}</span>
+          </p>
+          {lc.pialangReview.note && <p>Keterangan: {lc.pialangReview.note}</p>}
+          {lc.pialangReview.document && (
+            <p className="inline-flex items-center gap-1">
+              <FileText className="size-3.5" /> Bukti penolakan: {lc.pialangReview.document}
+            </p>
+          )}
           <p className="text-muted">
-            Disetujui Pialang oleh {lc.pialangReview.by} pada {fmt(lc.pialangReview.at)}.
+            Diajukan oleh {lc.pialangReview.by} ({lc.pialangReview.institution}), {fmt(lc.pialangReview.at)}.
           </p>
-        )}
-
-        {/* #3-4 Penolakan Pialang & review Bappebti */}
-        {lc.pialangReview?.decision === "Ditolak" && (
-          <div className={cn("rounded-md border p-3 space-y-1.5", status === "Pengajuan Reject" ? "border-amber/40 bg-amber-bg/40" : "border-border")}>
-            <p className="font-semibold">Pengajuan Reject oleh Pialang</p>
-            <p>
-              Alasan: <span className="font-medium">{lc.pialangReview.reason}</span>
+          {lc.bappebtiReview ? (
+            <p className={cn("mt-1 rounded px-2 py-1", lc.bappebtiReview.decision === "Setujui Penolakan" ? "bg-red-bg text-red" : "bg-green-bg text-green")}>
+              Keputusan Bappebti: <span className="font-semibold">{lc.bappebtiReview.decision}</span> — {lc.bappebtiReview.note} ({lc.bappebtiReview.by},{" "}
+              {fmt(lc.bappebtiReview.at)})
             </p>
-            {lc.pialangReview.note && <p>Keterangan: {lc.pialangReview.note}</p>}
-            {lc.pialangReview.document && (
-              <p className="inline-flex items-center gap-1">
-                <FileText className="size-3.5" /> Bukti penolakan: {lc.pialangReview.document}
-              </p>
-            )}
-            <p className="text-muted">
-              Diajukan oleh {lc.pialangReview.by} ({lc.pialangReview.institution}) pada {fmt(lc.pialangReview.at)}.
-            </p>
-            {lc.bappebtiReview ? (
-              <p className={cn("rounded px-2 py-1", lc.bappebtiReview.decision === "Setujui Penolakan" ? "bg-red-bg text-red" : "bg-green-bg text-green")}>
-                Keputusan Bappebti: <span className="font-semibold">{lc.bappebtiReview.decision}</span> — {lc.bappebtiReview.note} ({lc.bappebtiReview.by},{" "}
-                {fmt(lc.bappebtiReview.at)})
-              </p>
-            ) : isBappebti ? (
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Button size="sm" onClick={() => setDialog("return")}>
-                  Kembalikan ke Pialang
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => setDialog("approve-reject")}>
-                  Setujui Penolakan
-                </Button>
-              </div>
-            ) : (
-              <p className="text-muted">Menunggu review Bappebti.</p>
-            )}
-          </div>
-        )}
+          ) : (
+            !isBappebti && <p className="text-muted">Menunggu review Bappebti.</p>
+          )}
+        </div>
+      )}
 
-        {/* Ringkasan arbitrase / pengadilan */}
-        {v.arbitrationWindow && !lc.arbitration && (
-          <p className="rounded-md bg-amber-bg/50 px-2 py-1.5">
-            Musyawarah berakhir Tidak Sepakat ({fmt(lc.musyawarahFailedAt)}). Jendela arbitrase nasabah:{" "}
-            {formatWIB(v.arbitrationWindow.start).slice(0, 10)} s/d {formatWIB(new Date(v.arbitrationWindow.end.getTime() - 1)).slice(0, 10)} (
-            {params.arbitrationWindowBusinessDays} hari kerja).
-          </p>
-        )}
-        {lc.arbitration && (
-          <p className="rounded-md bg-navy/5 px-2 py-1.5">
-            <Gavel className="inline size-3.5 mr-1" />
-            Arbitrase BAKTI diajukan {fmt(lc.arbitration.submittedAt)} · Verifikasi: {lc.arbitration.verification?.decision ?? "menunggu"} · Sidang:{" "}
-            {lc.arbitration.hearings.length} · Putusan: {lc.arbitration.verdict?.decision ?? "belum ada"}
-          </p>
-        )}
-        {status === "Selesai Non-Arbitrase" && (
-          <CourtLetterButton complaintCase={c} failedAt={lc.musyawarahFailedAt ?? lc.submittedAt} />
-        )}
-      </CardContent>
+      {v.arbitrationWindow && !lc.arbitration && (
+        <p className={noteCls}>
+          Musyawarah berakhir Tidak Sepakat ({fmt(lc.musyawarahFailedAt)}). Jendela arbitrase nasabah:{" "}
+          {formatWIB(v.arbitrationWindow.start).slice(0, 10)} s/d {formatWIB(new Date(v.arbitrationWindow.end.getTime() - 1)).slice(0, 10)} (
+          {params.arbitrationWindowBusinessDays} hari kerja).
+        </p>
+      )}
+      {lc.arbitration && (
+        <p className={noteCls}>
+          <Gavel className="inline size-3.5 mr-1" />
+          Arbitrase BAKTI diajukan {fmt(lc.arbitration.submittedAt)} · Verifikasi: {lc.arbitration.verification?.decision ?? "menunggu"} · Sidang:{" "}
+          {lc.arbitration.hearings.length} · Putusan: {lc.arbitration.verdict?.decision ?? "belum ada"}
+        </p>
+      )}
+      {status === "Selesai Non-Arbitrase" && <CourtLetterButton complaintCase={c} failedAt={lc.musyawarahFailedAt ?? lc.submittedAt} />}
+    </>
+  );
+
+  const showTriageAssign = status === "Triase Bappebti" && isBappebti;
+  const showVerification = status === "Menunggu Verifikasi Pialang" && isPlatform;
+  const showRejectReview = lc.pialangReview?.decision === "Ditolak" && !lc.bappebtiReview && isBappebti;
+  const showMediation = !!lc.mediation && !lc.mediation.outcome && (isBursa || isBappebti);
+  const showRevision = (isPlatform || isBappebti) && canPreReview;
+  const hasPrimary = showTriageAssign || showVerification || showRejectReview || showMediation || showRevision;
+  const primary = !hasPrimary ? null : (
+    <>
+      {/* Satu pintu penugasan Pialang (triase Bappebti) */}
+      {showTriageAssign && (
+        <div className="col-span-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <label htmlFor={`assign-pialang-${c.ticket}`} className="sr-only">
+            Teruskan ke Pialang
+          </label>
+          <Select id={`assign-pialang-${c.ticket}`} className="h-8 text-sm sm:w-64" value={assignTo} onChange={(e) => setAssignTo(e.target.value)}>
+            <option value="">Pilih Pialang hasil analisis...</option>
+            {PLATFORM_LIST.filter((p) => p !== "Tidak tahu / belum terdaftar").map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </Select>
+          <Button
+            size="sm"
+            disabled={!assignTo}
+            onClick={() => {
+              assignPialangFromTriage(c.ticket, actor, assignTo);
+              showToast(`Pengaduan diteruskan ke ${assignTo} untuk verifikasi.`);
+              setAssignTo("");
+            }}
+          >
+            Assign ke Pialang
+          </Button>
+        </div>
+      )}
+      {showVerification && (
+        <PialangVerification complaintCase={c} actor={actor} onReject={() => setDialog("reject")} />
+      )}
+      {showRejectReview && (
+        <>
+          <Button size="sm" onClick={() => setDialog("return")}>
+            Kembalikan ke Pialang
+          </Button>
+          <Button size="sm" variant="destructive" onClick={() => setDialog("approve-reject")}>
+            Setujui Penolakan
+          </Button>
+        </>
+      )}
+      {showMediation && (
+        <Button size="sm" onClick={() => setDialog("mediation")}>
+          Catat Hasil Mediasi
+        </Button>
+      )}
+      {showRevision && (
+        <Button size="sm" variant="outline" className="bg-white" onClick={() => setDialog("revision")}>
+          Minta Perbaikan Berkas
+        </Button>
+      )}
+      {showRevision && isBappebti && (
+        <Button size="sm" variant="destructive" onClick={() => setDialog("bappebti-reject")}>
+          <X className="size-3.5" /> Tolak Pengaduan
+        </Button>
+      )}
+    </>
+  );
+
+  return (
+    <>
+      {children({ facts, notes, primary })}
 
       {dialog === "reject" && <RejectDialog complaintCase={c} actor={actor} mode="pialang" onClose={() => setDialog(null)} />}
       {dialog === "bappebti-reject" && <RejectDialog complaintCase={c} actor={actor} mode="bappebti" onClose={() => setDialog(null)} />}
@@ -378,15 +402,15 @@ export function TicketLifecyclePanel({ complaintCase: c, viewerGroup }: { compla
           }}
         />
       )}
-    </Card>
+    </>
   );
 }
 
 function PialangVerification({ complaintCase: c, actor, onReject }: { complaintCase: ComplaintCase; actor: Actor; onReject: () => void }) {
   const { showToast } = useToast();
   return (
-    <div className="space-y-2">
-      <div className="rounded-md border border-border bg-card p-2.5 space-y-1">
+    <div className="col-span-2 w-full space-y-2">
+      <div className="rounded-md border border-border bg-white/70 px-3 py-2 space-y-1">
         <p className="font-medium">Remark verifikasi (alasan baku penolakan)</p>
         <ul className="list-disc pl-5 text-foreground/90">
           {REJECT_REASONS.map((r) => (

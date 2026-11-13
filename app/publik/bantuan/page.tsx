@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Clock, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, ChevronDown, Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
 const FAQ = [
   {
@@ -60,18 +60,54 @@ export default function BantuanPage() {
         <aside id="kontak" className="scroll-mt-6">
           <h2 className="text-lg font-semibold text-foreground mb-3">Kontak Layanan</h2>
           <div className="rounded-lg border border-border bg-white p-5 space-y-4 text-sm">
-            <p className="flex items-start gap-3">
-              <Phone className="size-4 mt-0.5 text-navy shrink-0" /> <span>Call center: (021) 0000-0000 <span className="block text-xs text-muted">Nomor simulasi</span></span>
-            </p>
-            <p className="flex items-start gap-3">
-              <Mail className="size-4 mt-0.5 text-navy shrink-0" /> <span>pengaduan@contoh.go.id <span className="block text-xs text-muted">Alamat simulasi</span></span>
-            </p>
-            <p className="flex items-start gap-3">
-              <Clock className="size-4 mt-0.5 text-navy shrink-0" /> <span>Senin–Jumat, 08.00–16.00 WIB</span>
-            </p>
-            <p className="flex items-start gap-3">
-              <MapPin className="size-4 mt-0.5 text-navy shrink-0" /> <span>Badan Pengawas Perdagangan Berjangka Komoditi, Jakarta</span>
-            </p>
+            <div className="flex items-start gap-3">
+              <Mail className="size-4 mt-0.5 text-navy shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-muted">Email</p>
+                <a href="mailto:humas.bappebti@kemendag.go.id" className="font-medium text-foreground break-all hover:text-navy hover:underline">
+                  humas.bappebti@kemendag.go.id
+                </a>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <MessageCircle className="size-4 mt-0.5 text-navy shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-muted">SMS / WhatsApp Center</p>
+                <a href="https://wa.me/628111109901" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground tabular-nums hover:text-navy hover:underline">
+                  0811-1109-901
+                </a>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Phone className="size-4 mt-0.5 text-navy shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-muted">Telepon</p>
+                <p className="font-medium text-foreground tabular-nums">
+                  {["35289028", "35289027", "35289110", "35289109"].map((n, i) => (
+                    <span key={n}>
+                      {i > 0 && ", "}
+                      <a href={`tel:+6221${n}`} className="whitespace-nowrap hover:text-navy hover:underline">
+                        {i === 0 ? `(021) ${n}` : n}
+                      </a>
+                    </span>
+                  ))}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Clock className="size-4 mt-0.5 text-navy shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-muted">Jam Layanan</p>
+                <p className="font-medium text-foreground">Senin–Jumat, 08.00–16.00 WIB</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <MapPin className="size-4 mt-0.5 text-navy shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-muted">Kantor</p>
+                <p className="font-medium text-foreground">Badan Pengawas Perdagangan Berjangka Komoditi, Jakarta</p>
+              </div>
+            </div>
           </div>
         </aside>
       </section>

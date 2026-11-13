@@ -58,13 +58,13 @@ You are continuing work on **Bappebti-LPv3**, a clickable prototype of the Bappe
 5. Before a role-dependent page loads, set the role flags: `localStorage.setItem('bappebti-demo-role','dewi')` and `localStorage.setItem('bappebti-internal-authed','1')`. Public pages need `'andra'` and `bappebti-publik-authed`.
 
 **Open items / things the user must supply**
-- The logos in `public/images/logo/logo-bappebti.svg` and `logo-kemendag.svg` are labelled placeholders. They need replacing with official files under the same names.
-- The phone number and email on `/publik/bantuan` are marked "simulasi" and need the official contacts.
+- Official logo: `public/images/logo/logo-kemendag-bappebti.png` (Kemendag + Bappebti lockup, cropped from the user's image, transparent background). `InstitutionLogos` in `public-shell.tsx` renders it. A vector original would be sharper if the user can supply one.
+- `/publik/bantuan` shows the official contacts (email humas.bappebti@kemendag.go.id, SMS/WA 0811-1109-901, phones (021) 35289028/27/110/109).
 - The user's "Project Knowledge" files (`design-system-guidelines.md`, `responsive-rules.md`, `component-patterns.md`) are not in the repo. Revisi 15 followed the rules as pasted in chat:
   - Colours: primary emerald #0D5C3A / #064E3B, accent amber, neutral slate.
   - Layout: mobile-first, no truncated text at 375px.
   - Responsive steps: max-w-7xl containers; at most 2 columns on tablet.
-- The Aksi (eye icon) column in tables was kept alongside the ticket links; ask whether to remove it.
+- The eye-icon Aksi column was removed (Revisi 17); ticket numbers are the link to the detail page.
 
 **Next step:** wait for the user's next "LIST REVISI" and implement it. After each batch: test, commit, push to `main`, confirm the GitHub Actions deploy, and report in Indonesian.
 
@@ -76,3 +76,4 @@ You are continuing work on **Bappebti-LPv3**, a clickable prototype of the Bappe
 - Revisi 14: 3 standard reject remarks; "Ekosistem Pasif" wording; public portal redesign; member assignment panel; Bursa/Kliring/Asosiasi removed from navigation.
 - Revisi 15: public landing page per the government-portal design system; demo bar wraps on mobile.
 - Revisi 16: tables contained with horizontal scroll, ticket numbers as links, read-only MEMBER column in the Pialang listing.
+- Revisi 17: "Tanpa Pialang User ID" menu hidden (URL redirects to Triase Pengaduan); internal case detail consolidated into one status banner (`CaseStatusExplanation` with `facts`/`notes`/`primary`/`secondary`, fed by `TicketLifecycleControls` render-prop and `useMemberAssignment`); "Siklus Tiket" and member cards no longer rendered; duplicate "Tugaskan / Alihkan Penanggung Jawab" button removed; official logo and contacts; eye-icon column removed.

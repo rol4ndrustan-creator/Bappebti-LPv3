@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { TicketLink } from "@/components/shared/ticket-link";
-import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { SimpleStatusBadge } from "@/components/shared/badges";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -16,7 +15,6 @@ import { CASES } from "@/lib/mock-data";
 import { useDemoSession } from "@/lib/demo-session";
 import { useCasesData, setPlatformPic } from "@/lib/mock-service/store";
 import { PLATFORM_STAFF } from "@/lib/permissions";
-import { Eye } from "lucide-react";
 import { SourceBadge } from "@/components/shared/source-badge";
 import { TicketStatusBadge } from "@/components/shared/ticket-lifecycle";
 
@@ -81,7 +79,6 @@ export default function CaseQueuePage() {
             <TableHead>PIC</TableHead>
             <TableHead>Member</TableHead>
             <TableHead>Status Tiket</TableHead>
-            <TableHead>Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -109,16 +106,11 @@ export default function CaseQueuePage() {
               <TableCell>
                 <TicketStatusBadge complaintCase={c} />
               </TableCell>
-              <TableCell>
-                <Link href={`/platform/kasus/${c.ticket}`} title="Lihat Detail" className="inline-flex rounded p-1 text-muted hover:bg-muted-bg hover:text-navy">
-                  <Eye className="size-4" />
-                </Link>
-              </TableCell>
             </TableRow>
           ))}
           {cases.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted py-6">
+              <TableCell colSpan={6} className="text-center text-muted py-6">
                 {isSupervisor ? "Tidak ada kasus yang sesuai dengan filter." : "Tidak ada tiket yang ditugaskan kepada Anda."}
               </TableCell>
             </TableRow>

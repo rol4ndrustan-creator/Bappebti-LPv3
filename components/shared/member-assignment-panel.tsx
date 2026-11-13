@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +15,7 @@ import { setLinkedEcosystemEntities, addTimelineEvent } from "@/lib/mock-service
 import { logAudit } from "@/lib/mock-service/audit-store";
 import { useDemoSession } from "@/lib/demo-session";
 import { ComplaintCase, LinkedEcosystemEntity, MemberInvolvementStatus } from "@/lib/types";
-import { Building2, Check, Landmark, Pencil, Plus, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Building2, Check, Landmark, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type LembagaType = LinkedEcosystemEntity["type"];
@@ -30,83 +29,86 @@ const STATUS_TONE: Record<MemberInvolvementStatus, "navy" | "amber" | "green"> =
 const STATUSES: MemberInvolvementStatus[] = ["Diundang", "Aktif Terlibat", "Selesai"];
 
 /**
- * Panel "Anggota Pasar yang Dilibatkan" (List Revisi 14 #4): penugasan
- * Bursa/Kliring/Custody pada satu kasus. Banyak pengaduan selesai langsung
- * antara Nasabah dan Pialang, sehingga kondisi tanpa anggota adalah normal.
+ * Penugasan Bursa/Kliring/Custody pada satu kasus (List Revisi 14 #4).
+ * Banyak pengaduan selesai langsung antara Nasabah dan Pialang, sehingga
+ * kondisi tanpa anggota adalah normal.
+ *
+ * Revisi 17 #2: panel terpisah tidak lagi ditampilkan di halaman detail.
+ * Hook ini memberi daftar ringkas (untuk grid fakta banner status) dan
+ * pemicu modal 3 langkah (untuk baris aksi sekunder banner).
  */
-export function MemberAssignmentPanel({ complaintCase: c, editable }: { complaintCase: ComplaintCase; editable: boolean }) {
-  const members = c.linkedEcosystemEntities ?? [];
+export function useMemberAssignment(c: ComplaintCase | undefined, editable: boolean) {
+  const members = c?.linkedEcosystemEntities ?? [];
+  const ticket = c?.ticket ?? "";
   const { user } = useDemoSession();
   const { showToast } = useToast();
   const [modal, setModal] = React.useState<{ mode: "add" } | { mode: "edit"; member: LinkedEcosystemEntity } | null>(null);
   const [removing, setRemoving] = React.useState<LinkedEcosystemEntity | null>(null);
 
   function save(next: LinkedEcosystemEntity[], action: string, note: string) {
-    setLinkedEcosystemEntities(c.ticket, next);
-    addTimelineEvent(c.ticket, { actor: user.name, role: user.institution, action, note, status: "info", visibility: "internal" });
-    logAudit({ activity: action, ticket: c.ticket, detail: note });
+    setLinkedEcosystemEntities(ticket, next);
+    addTimelineEvent(ticket, { actor: user.name, role: user.institution, action, note, status: "info", visibility: "internal" });
+    logAudit({ activity: action, ticket, detail: note });
   }
 
-  return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="flex items-center gap-2">
-          <Users className="size-4" /> Anggota Pasar yang Dilibatkan
-        </CardTitle>
-        {editable && members.length > 0 && (
-          <Button size="sm" variant="secondary" onClick={() => setModal({ mode: "add" })}>
-            <Plus className="size-3.5" /> Tambah Anggota
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent className="py-3">
-        {members.length === 0 ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-border px-3 py-3">
-            <p className="text-sm text-muted">Belum ada anggota pasar yang dilibatkan</p>
-            {editable && (
-              <Button size="sm" variant="secondary" onClick={() => setModal({ mode: "add" })}>
-                <Plus className="size-3.5" /> Tambah Anggota
-              </Button>
-            )}
-          </div>
-        ) : (
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {members.map((m) => {
-              const meta = TYPE_META[m.type];
-              const Icon = meta.icon;
-              return (
-                <li key={m.id} className="flex items-start gap-3 rounded-md border border-border p-3">
-                  <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-md border", meta.cls)} title={meta.label}>
-                    <Icon className="size-4" />
-                  </span>
-                  <div className="min-w-0 flex-1 text-xs">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className={cn("rounded border px-1.5 py-0.5 text-[10px] font-semibold", meta.cls)}>{meta.label}</span>
-                      <Badge variant={STATUS_TONE[m.involvement ?? "Diundang"]}>{(m.involvement ?? "Diundang").toUpperCase()}</Badge>
-                    </div>
-                    <p className="mt-1 text-sm font-medium truncate" title={m.name}>
-                      {m.name}
-                    </p>
-                    <p className="text-muted">PIC: {m.pic || "Belum ditentukan"}</p>
-                    {m.instruction && <p className="mt-0.5 text-foreground/80 line-clamp-2">Tugas: {m.instruction}</p>}
-                  </div>
-                  {editable && (
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <Button size="sm" variant="ghost" onClick={() => setModal({ mode: "edit", member: m })}>
-                        <Pencil className="size-3.5" /> Edit
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-red" onClick={() => setRemoving(m)}>
-                        <Trash2 className="size-3.5" /> Hapus Penugasan
-                      </Button>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </CardContent>
+  const list =
+    members.length === 0 ? (
+      <span className="font-normal text-muted">Belum ada anggota pasar yang dilibatkan</span>
+    ) : (
+      <ul className="flex flex-wrap gap-1.5">
+        {members.map((m) => {
+          const meta = TYPE_META[m.type];
+          const Icon = meta.icon;
+          const status = m.involvement ?? "Diundang";
+          return (
+            <li key={m.id} className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border bg-white py-0.5 pl-1.5 pr-0.5">
+              <span className={cn("flex size-5 shrink-0 items-center justify-center rounded border", meta.cls)} title={meta.label}>
+                <Icon className="size-3" />
+              </span>
+              <span className="min-w-0 truncate" title={`${meta.label} · ${m.name} · PIC ${m.pic || "-"}${m.instruction ? ` · Tugas: ${m.instruction}` : ""}`}>
+                {m.name}
+              </span>
+              <Badge variant={STATUS_TONE[status]} className="shrink-0">
+                {status.toUpperCase()}
+              </Badge>
+              {editable ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setModal({ mode: "edit", member: m })}
+                    aria-label={`Edit penugasan ${m.name}`}
+                    title="Edit penugasan"
+                    className="rounded p-1 text-muted hover:bg-muted-bg hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30"
+                  >
+                    <Pencil className="size-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRemoving(m)}
+                    aria-label={`Hapus penugasan ${m.name}`}
+                    title="Hapus penugasan"
+                    className="rounded p-1 text-muted hover:bg-red-bg hover:text-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red/30"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                </>
+              ) : (
+                <span className="pr-1" />
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    );
 
+  const trigger = editable ? (
+    <Button size="sm" variant="ghost" onClick={() => setModal({ mode: "add" })}>
+      <Plus className="size-3.5" /> Tugaskan Anggota Pasar
+    </Button>
+  ) : null;
+
+  const dialogs = (
+    <>
       {modal && (
         <MemberModal
           existing={modal.mode === "edit" ? modal.member : undefined}
@@ -135,7 +137,7 @@ export function MemberAssignmentPanel({ complaintCase: c, editable }: { complain
           <DialogHeader>
             <DialogTitle>Hapus Penugasan</DialogTitle>
             <DialogDescription>
-              {removing?.name} tidak lagi dilibatkan dalam penanganan tiket {c.ticket}. Lanjutkan?
+              {removing?.name} tidak lagi dilibatkan dalam penanganan tiket {ticket}. Lanjutkan?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -157,8 +159,10 @@ export function MemberAssignmentPanel({ complaintCase: c, editable }: { complain
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </>
   );
+
+  return { list, trigger, dialogs };
 }
 
 function MemberModal({

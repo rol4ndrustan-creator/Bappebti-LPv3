@@ -9,16 +9,18 @@ import { Bell, FileText, LayoutDashboard, LogOut, Menu, PlusCircle, UserCircle, 
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-/** Logo instansi. File di public/images/logo/ adalah placeholder — ganti dengan logo resmi (nama file sama). */
-export function InstitutionLogos({ size = "md" }: { size?: "md" | "lg" }) {
-  const cls = size === "lg" ? "h-14 w-14" : "h-9 w-9 sm:h-11 sm:w-11";
+/** Logo resmi gabungan Kementerian Perdagangan + Bappebti (public/images/logo/logo-kemendag-bappebti.png, rasio ±3,17 : 1). */
+export function InstitutionLogos({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
+  const cls = size === "lg" ? "h-14 sm:h-16" : size === "sm" ? "h-9 sm:h-10" : "h-10 sm:h-12";
   return (
-    <span className="flex items-center gap-2 shrink-0">
-      {/* eslint-disable-next-line @next/next/no-img-element -- aset statis ekspor; next/image tidak menambah basePath */}
-      <img src={`${BASE}/images/logo/logo-kemendag.svg`} alt="Logo Kementerian Perdagangan" className={cls} />
-      {/* eslint-disable-next-line @next/next/no-img-element -- idem */}
-      <img src={`${BASE}/images/logo/logo-bappebti.svg`} alt="Logo Bappebti" className={cls} />
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element -- aset statis ekspor; next/image tidak menambah basePath
+    <img
+      src={`${BASE}/images/logo/logo-kemendag-bappebti.png`}
+      alt="Kementerian Perdagangan Republik Indonesia — Bappebti"
+      width={682}
+      height={215}
+      className={cn("w-auto shrink-0 select-none", cls)}
+    />
   );
 }
 
@@ -59,13 +61,10 @@ export function PublicHeader({ onLogout }: { onLogout: () => void }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-h-16 sm:min-h-20 py-2.5 flex items-center gap-3 sm:gap-4">
         <Link href="/publik" className="flex items-center gap-3 min-w-0">
           <InstitutionLogos />
+          <span className="h-9 w-px shrink-0 bg-slate-200" aria-hidden />
           <span className="leading-tight min-w-0">
-            <span className="hidden sm:block text-[11px] font-medium uppercase tracking-wider text-slate-500">Kementerian Perdagangan Republik Indonesia</span>
-            <span className="block text-[13px] sm:text-base font-bold leading-snug text-navy">
-              <span className="sm:hidden">Bappebti</span>
-              <span className="hidden sm:inline">Badan Pengawas Perdagangan Berjangka Komoditi</span>
-            </span>
-            <span className="block text-xs text-slate-600">Layanan Pengaduan Nasabah</span>
+            <span className="block text-[13px] sm:text-[15px] font-semibold text-slate-900">Layanan Pengaduan</span>
+            <span className="block text-xs text-slate-500">Nasabah PBK</span>
           </span>
         </Link>
 
@@ -171,12 +170,8 @@ export function PublicFooter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
         <div className="sm:col-span-2 space-y-3">
           <div className="flex items-center gap-3">
-            <span className="shrink-0 rounded-lg bg-white p-1">
-              <InstitutionLogos />
-            </span>
-            <span className="leading-tight">
-              <span className="block font-semibold text-white">Badan Pengawas Perdagangan Berjangka Komoditi</span>
-              <span className="block text-xs text-white/70">Kementerian Perdagangan Republik Indonesia</span>
+            <span className="shrink-0 rounded-md bg-white px-3 py-2">
+              <InstitutionLogos size="sm" />
             </span>
           </div>
           <p className="text-sm leading-relaxed text-white/75 max-w-md">

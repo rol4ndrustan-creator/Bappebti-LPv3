@@ -11,7 +11,7 @@ export default function LoginChoicePage() {
     <div className="flex flex-col items-center justify-center py-4 md:py-8">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-6 gap-2">
-          <InstitutionLogos />
+          <InstitutionLogos size="lg" />
           <div className="text-center">
             <p className="text-base font-semibold text-navy">Layanan Pengaduan Bappebti</p>
             <p className="text-xs text-muted">Portal Publik</p>

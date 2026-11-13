@@ -20,65 +20,78 @@ import { cn } from "@/lib/utils";
 export function CaseStatusExplanation({
   complaintCase,
   viewer = "public",
-  actions,
+  facts,
+  notes,
+  primary,
+  secondary,
 }: {
   complaintCase: ComplaintCase;
   viewer?: "public" | "internal";
-  /** Optional standalone action buttons, right-aligned in the banner's header row (internal viewers only). */
-  actions?: React.ReactNode;
+  /** Butir fakta tambahan (<div><dt/><dd/></div>) yang ikut grid ringkasan. */
+  facts?: React.ReactNode;
+  /** Catatan kontekstual siklus tiket, tampil di bawah grid. */
+  notes?: React.ReactNode;
+  /** Aksi utama (kiri) pada area aksi di bawah banner. */
+  primary?: React.ReactNode;
+  /** Aksi sekunder (kanan, lebih tenang) pada area aksi di bawah banner. */
+  secondary?: React.ReactNode;
 }) {
   const lifecycle = useLifecycleView(complaintCase);
   // Setelah siklus tiket termuat, kartu status mengikuti siklus tiket (List Revisi 12).
   const ex = lifecycle ? lifecycleExplanation(lifecycle, complaintCase, viewer, formatWIB) : getStatusExplanation(complaintCase, viewer);
+  const hasActions = !!(primary || secondary);
 
   return (
-    <div
+    <section
+      aria-label="Status dan tindakan tiket"
       className={cn(
-        "rounded-lg border p-4",
+        "rounded-lg border p-4 sm:p-5",
         ex.actionRequiredFromViewer ? "border-amber/40 bg-amber-bg/40" : "border-border bg-card"
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          {lifecycle ? <Badge variant={TICKET_STATUS_TONE[lifecycle.status]}>{lifecycle.status.toUpperCase()}</Badge> : <CaseStatusBadge complaintCase={complaintCase} />}
-          {lifecycle && <SlaCountdown view={lifecycle} />}
-          {ex.actionRequiredFromViewer ? (
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber">
-              <AlertCircle className="size-3.5" /> Tindakan diperlukan
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-green">
-              <CheckCircle2 className="size-3.5" /> Tidak ada tindakan yang diperlukan saat ini
-            </span>
-          )}
+      <div className="flex flex-wrap items-center gap-2">
+        {lifecycle ? <Badge variant={TICKET_STATUS_TONE[lifecycle.status]}>{lifecycle.status.toUpperCase()}</Badge> : <CaseStatusBadge complaintCase={complaintCase} />}
+        {lifecycle && <SlaCountdown view={lifecycle} />}
+        {ex.actionRequiredFromViewer ? (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber">
+            <AlertCircle className="size-3.5" /> Tindakan diperlukan
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-green">
+            <CheckCircle2 className="size-3.5" /> Tidak ada tindakan yang diperlukan saat ini
+          </span>
+        )}
+      </div>
+      <p className="mt-3 max-w-[75ch] text-sm text-foreground leading-relaxed">{ex.what}</p>
+      <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 text-xs">
+        <div>
+          <dt className="text-muted">Penanggung jawab</dt>
+          <dd className="font-medium text-foreground">{ex.who}</dd>
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
-      </div>
-      <p className="text-sm text-foreground leading-relaxed">{ex.what}</p>
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
-        <dl className="space-y-2">
-          <div>
-            <dt className="text-muted">Siapa yang menangani</dt>
-            <dd className="font-medium text-foreground">{ex.who}</dd>
-          </div>
-          <div>
-            <dt className="text-muted">Batas waktu</dt>
-            <dd className="font-medium text-foreground">{ex.deadline}</dd>
-          </div>
-        </dl>
-        <dl className="space-y-2">
-          <div>
-            <dt className="text-muted">Tindakan yang diperlukan</dt>
-            <dd className="font-medium text-foreground">{ex.action}</dd>
-          </div>
-          <div>
-            <dt className="text-muted">Sumber Pengaduan</dt>
-            <dd className="mt-0.5">
-              <SourceBadge source={complaintCase.source} withDescription />
-            </dd>
-          </div>
-        </dl>
-      </div>
-    </div>
+        <div>
+          <dt className="text-muted">Tindakan yang diperlukan</dt>
+          <dd className="font-medium text-foreground">{ex.action}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">Batas waktu</dt>
+          <dd className="font-medium text-foreground tabular-nums">{ex.deadline}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">Sumber pengaduan</dt>
+          <dd className="mt-0.5">
+            <SourceBadge source={complaintCase.source} withDescription />
+          </dd>
+        </div>
+        {facts}
+      </dl>
+      {notes && <div className="mt-4 space-y-2 text-xs empty:hidden">{notes}</div>}
+      {hasActions && (
+        <div className="mt-4 flex flex-col gap-x-6 gap-y-3 border-t border-amber/25 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
+          {/* Mobile: tombol utama dua kolom selebar kartu; ≥sm: satu baris yang membungkus. */}
+          <div className="grid grid-cols-2 gap-2 empty:hidden sm:flex sm:flex-wrap sm:items-center">{primary}</div>
+          <div className="-ml-3 flex flex-wrap items-center gap-1 empty:hidden sm:ml-auto sm:-mr-3">{secondary}</div>
+        </div>
+      )}
+    </section>
   );
 }

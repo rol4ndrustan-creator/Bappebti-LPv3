@@ -8,7 +8,7 @@ export default function TriasePengaduanPage() {
     <div>
       <PageHeader
         title="Triase Pengaduan"
-        description="Pengaduan yang pelapornya belum mengetahui nama Pialang. Analisis lalu teruskan (assign) ke Pialang terkait, minta perbaikan berkas, atau tolak pengaduan."
+        description="Satu pintu untuk pengaduan tanpa Pialang maupun tanpa Pialang User ID. Analisis lalu teruskan (assign) ke Pialang terkait, minta perbaikan berkas, atau tolak pengaduan."
       />
       <LifecycleQueue statuses={["Triase Bappebti"]} detailHref={(t) => `/bappebti/kasus/${t}`} mode="triage" />
     </div>

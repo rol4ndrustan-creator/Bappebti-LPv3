@@ -1283,7 +1283,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     id: "role-intake",
     name: "Petugas Intake Bappebti",
     description: "Verifikasi awal dan triase pengaduan yang baru masuk.",
-    menuKeys: ["dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "pengaduan.triase", "musyawarah", "arbitrase", "pengaduan.tanpa-platform", "kritik", "kritik.daftar", "kritik.belum-dibaca"],
+    menuKeys: ["dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "pengaduan.triase", "musyawarah", "arbitrase", "kritik", "kritik.daftar", "kritik.belum-dibaca"],
     createdAt: "01 Jun 2026",
     builtIn: true,
   },
@@ -1292,7 +1292,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     name: "Petugas Kasus Bappebti",
     description: "Menangani penyelesaian kasus pengaduan harian.",
     menuKeys: [
-      "dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "pengaduan.triase", "musyawarah", "arbitrase", "pengaduan.bappebti", "pengaduan.tanpa-platform",
+      "dashboard-eksekutif", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "pengaduan.triase", "musyawarah", "arbitrase", "pengaduan.bappebti",
       "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis", "risiko", "kinerja",
       "kritik", "kritik.daftar", "kritik.belum-dibaca", "kritik.tindak-lanjut", "laporan",
     ],
@@ -1305,7 +1305,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     description: "Supervisi penanganan kasus, kinerja anggota, dan eskalasi.",
     menuKeys: [
       "dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "pengaduan.triase", "musyawarah", "arbitrase", "pengaduan.bappebti",
-      "pengaduan.tanpa-platform", "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis",
+      "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis",
       "risiko", "kinerja", "kritik", "kritik.daftar", "kritik.belum-dibaca", "kritik.tindak-lanjut",
       "laporan", "audit-logs",
     ],
@@ -1334,7 +1334,7 @@ export const ROLE_DEFINITIONS: RoleDefinition[] = [
     description: "Akses penuh ke seluruh menu administrasi dan konfigurasi sistem.",
     menuKeys: [
       "dashboard-eksekutif", "dashboard-admin", "pengaduan", "pengaduan.semua", "pengaduan.ditolak-pialang", "pengaduan.triase", "musyawarah", "arbitrase", "pengaduan.bappebti",
-      "pengaduan.tanpa-platform", "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis",
+      "pengaduan.menunggu-konfirmasi", "pengaduan.selesai-otomatis",
       "risiko", "kinerja", "kritik", "kritik.daftar", "kritik.belum-dibaca", "kritik.tindak-lanjut",
       "laporan", "user-management", "user-management.users", "user-management.roles", "user-management.approval",
       "ekosistem", "ekosistem.kategori", "ekosistem.daftar", "ekosistem.approval",
